@@ -92,7 +92,7 @@ export default function Dashboard() {
       id: Date.now()
     });
 
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100) as any;
   }
 
   function handleQuickAdd(accountId: string, type: "Deposit" | "Withdrawal") {
