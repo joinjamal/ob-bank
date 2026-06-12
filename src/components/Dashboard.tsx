@@ -91,7 +91,7 @@ export default function Dashboard() {
       type: payload.type,
       id: Date.now()
     });
-
+    // @ts-ignore
     animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100) as any;
   }
 
