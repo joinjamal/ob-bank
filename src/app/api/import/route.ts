@@ -17,6 +17,24 @@ type CsvRow = {
   reason?: string;
 };
 
+function parseCsvDate(value?: string) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return new Date();
+
+  const dayFirstMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dayFirstMatch) {
+    const [, day, month, year] = dayFirstMatch;
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12));
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid date: ${raw}. Use YYYY-MM-DD or DD/MM/YYYY.`);
+  }
+
+  return parsed;
+}
+
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const session = cookieStore.get(adminCookieName())?.value;
@@ -38,7 +56,8 @@ export async function POST(request: Request) {
 
   let imported = 0;
 
-  for (const row of parsed.data) {
+  for (let index = 0; index < parsed.data.length; index += 1) {
+    const row = parsed.data[index];
     const accountName = row.account ?? row.name ?? row.kid;
     const amount = Number(row.amount);
     const reason = String(row.reason ?? "").trim();
@@ -63,7 +82,7 @@ export async function POST(request: Request) {
       await tx.transaction.create({
         data: {
           account: { connect: { id: account.id } },
-          date: row.date ? new Date(row.date) : new Date(),
+          date: parseCsvDate(row.date),
           type,
           amount,
           reason
@@ -71,6 +90,8 @@ export async function POST(request: Request) {
       });
 
       await recalculateAccountBalance(tx, account.id);
+    }).catch((error) => {
+      throw new Error(`Row ${index + 2}: ${error instanceof Error ? error.message : "Import failed."}`);
     });
 
     imported += 1;
