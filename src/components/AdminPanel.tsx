@@ -24,7 +24,7 @@ export default function AdminPanel() {
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const animationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const animationTimer = useRef<number | null>(null);
 
   const sortedAccounts = useMemo(
     () =>

@@ -28,7 +28,7 @@ export default function Dashboard() {
     accountId: string;
     type: "Deposit" | "Withdrawal";
   } | null>(null);
-  const animationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const animationTimer = useRef<number | null>(null);
 
   const sortedAccounts = useMemo(
     () =>
