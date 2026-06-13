@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { BadgeDollarSign, Gamepad2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BadgeDollarSign, Shield } from "lucide-react";
+import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
 import BalanceCard from "@/components/BalanceCard";
-import TrendChart from "@/components/TrendChart";
 import KidTransactionModal from "@/components/KidTransactionModal";
+import TrendChart from "@/components/TrendChart";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
 import { playTransactionSound } from "@/lib/sounds";
 
@@ -22,11 +23,12 @@ export default function Dashboard() {
   const [ledger, setLedger] = useState<LedgerPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
+  const [activeKidModal, setActiveKidModal] = useState<{
+    accountId: string;
+    type: "Deposit" | "Withdrawal";
+  } | null>(null);
   const animationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
-
-  const [activeKidModal, setActiveKidModal] = useState<{ accountId: string; type: "Deposit" | "Withdrawal" } | null>(null);
 
   const sortedAccounts = useMemo(
     () =>
@@ -35,6 +37,8 @@ export default function Dashboard() {
       ),
     [accounts]
   );
+
+  const activeAccount = activeKidModal ? sortedAccounts.find((account) => account.id === activeKidModal.accountId) : null;
 
   const loadData = useCallback(async () => {
     setError("");
@@ -57,9 +61,11 @@ export default function Dashboard() {
     loadData()
       .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong."))
       .finally(() => setIsLoading(false));
-      
+
     return () => {
-      if (animationTimer.current) window.clearTimeout(animationTimer.current);
+      if (animationTimer.current) {
+        window.clearTimeout(animationTimer.current);
+      }
     };
   }, [loadData]);
 
@@ -68,11 +74,12 @@ export default function Dashboard() {
     await loadData();
   }
 
-  function handleQuickAdd(accountId: string, type: "Deposit" | "Withdrawal") {
-    setActiveKidModal({ accountId, type });
-  }
-
-  async function saveKidTransaction(payload: { accountId: string; type: "Deposit" | "Withdrawal"; amount: number; reason: string }) {
+  async function saveKidTransaction(payload: {
+    accountId: string;
+    type: "Deposit" | "Withdrawal";
+    amount: number;
+    reason: string;
+  }) {
     const response = await fetch("/api/transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,54 +94,60 @@ export default function Dashboard() {
     await loadData();
     playTransactionSound(payload.type);
 
-    if (animationTimer.current) window.clearTimeout(animationTimer.current);
+    if (animationTimer.current) {
+      window.clearTimeout(animationTimer.current);
+    }
+
     setMoneyAnimation({ accountId: payload.accountId, type: payload.type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100) as any;
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
   }
 
-  const activeAccount = activeKidModal ? sortedAccounts.find(a => a.id === activeKidModal.accountId) : null;
-
   return (
-    <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-8 border-b-4 border-arcade-dark pb-6">
-          <div className="mb-4 inline-flex items-center gap-2 rounded bg-arcade-dark px-3 py-1 font-arcade text-xs text-arcade-green shadow-retro">
-            <Gamepad2 size={14} />
-            INSERT COIN TO PLAY
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
+              <BadgeDollarSign size={17} className="text-mint" />
+              Save, spend, and grow
+            </div>
+            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-6xl">OB Bank</h1>
+            <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
+              Build your balance, choose a goal, and watch your progress climb.
+            </p>
           </div>
-          <h1 className="font-arcade text-4xl text-arcade-dark sm:text-6xl uppercase" style={{ textShadow: "4px 4px 0px #39ff14" }}>OB Bank Arcade</h1>
-          <p className="mt-4 max-w-2xl font-rounded text-lg font-bold text-arcade-dark/70">
-            Player 1 and Player 2, check your scores and claim your coins!
-          </p>
+          <Link
+            href="/admin"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+          >
+            <Shield size={17} className="text-mint" />
+            Parent
+          </Link>
         </header>
 
-        {error && <p className="mb-5 rounded border-2 border-arcade-pink bg-arcade-pink/10 p-4 font-arcade text-xs uppercase text-arcade-pink">{error}</p>}
+        {error && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{error}</p>}
 
         {isLoading ? (
-          <div className="grid min-h-[50vh] place-items-center rounded-xl border-4 border-arcade-dark bg-white p-8 font-arcade text-xl text-arcade-dark shadow-retro">
-            LOADING GAME...
+          <div className="grid min-h-[50vh] place-items-center rounded-[8px] bg-white/80 p-8 text-xl font-black shadow-lift">
+            Loading OB Bank...
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-5">
+            <div className="grid gap-5 md:grid-cols-2">
               {sortedAccounts.map((account) => (
-                <BalanceCard 
-                  key={account.id} 
-                  account={account} 
+                <BalanceCard
+                  key={account.id}
+                  account={account}
                   animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
-                  showQuickActions={true}
-                  onAvatarUpload={handleAvatarUpload} 
-                  onQuickAdd={handleQuickAdd}
+                  showQuickActions
+                  onAvatarUpload={handleAvatarUpload}
+                  onQuickAdd={(accountId, type) => setActiveKidModal({ accountId, type })}
                 />
               ))}
             </div>
-            <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-              <div className="rounded-xl border-4 border-arcade-dark bg-white p-2 shadow-retro">
-                <TrendChart data={ledger} />
-              </div>
-              <div className="rounded-xl border-4 border-arcade-dark bg-white p-2 shadow-retro">
-                <ActivityFeed transactions={transactions} compact />
-              </div>
+            <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+              <TrendChart data={ledger} />
+              <ActivityFeed transactions={transactions} compact />
             </div>
           </div>
         )}

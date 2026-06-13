@@ -18,24 +18,26 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
   const [error, setError] = useState("");
 
   const isDeposit = type === "Deposit";
-  const actionColor = isDeposit ? "bg-arcade-green text-arcade-dark" : "bg-arcade-pink text-white";
+  const title = isDeposit ? "Add to savings" : "Record spending";
+  const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setError("");
     const parsedAmount = Number(amount);
-    if (!parsedAmount || parsedAmount <= 0) {
-      setError("Please enter a valid amount!");
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setError("Enter an amount bigger than zero.");
       return;
     }
-    
+
     setIsSaving(true);
     try {
       await onSave({
         accountId: account.id,
         type,
         amount: parsedAmount,
-        reason: reason || (isDeposit ? "Found some coins!" : "Bought something cool!")
+        reason: reason.trim() || (isDeposit ? "Saved money" : "Spent money")
       });
       onClose();
     } catch (err) {
@@ -45,59 +47,55 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-arcade-dark/80 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm overflow-hidden rounded-xl border-4 border-white bg-arcade-bg shadow-retro font-arcade">
-        <header className={`flex items-center justify-between p-4 ${actionColor}`}>
-          <h2 className="text-sm uppercase tracking-widest flex items-center gap-2">
-            {isDeposit ? <ArrowUpCircle size={20} /> : <ArrowDownCircle size={20} />}
-            {isDeposit ? "ADD COINS" : "SPEND COINS"}
-          </h2>
-          <button onClick={onClose} className="rounded-full bg-black/20 p-1 hover:bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/55 p-4 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm overflow-hidden rounded-[8px] bg-white shadow-lift">
+        <header className={`${isDeposit ? "bg-mint" : "bg-coral"} flex items-center justify-between p-5 text-white`}>
+          <div className="flex items-center gap-3">
+            <Icon size={24} />
+            <div>
+              <h2 className="text-xl font-black">{title}</h2>
+              <p className="text-sm font-bold opacity-85">{account.name}&apos;s vault</p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-white/20">
             <X size={18} />
           </button>
         </header>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {error && <p className="text-xs text-arcade-pink font-bold bg-arcade-pink/10 p-2 rounded">{error}</p>}
-          
-          <div>
-            <label className="mb-2 block text-xs text-white">How much?</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl text-white/50">$</span>
-              <input
-                type="number"
-                step="0.01"
-                required
-                disabled={isSaving}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded border-2 border-white/20 bg-arcade-dark py-3 pl-8 pr-3 text-xl text-white outline-none focus:border-arcade-green"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-xs text-white">What for?</label>
+        <div className="space-y-4 p-5">
+          {error && <p className="rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{error}</p>}
+          <label className="block">
+            <span className="mb-2 block text-sm font-black text-ink/70">Amount</span>
             <input
-              type="text"
+              type="number"
+              step="0.01"
+              disabled={isSaving}
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="25"
+              className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 text-lg font-black outline-none transition focus:border-mint"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-black text-ink/70">Reason</span>
+            <input
               disabled={isSaving}
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="w-full rounded border-2 border-white/20 bg-arcade-dark p-3 text-sm text-white font-rounded outline-none focus:border-arcade-green"
-              placeholder={isDeposit ? "e.g. Tooth fairy" : "e.g. Video game"}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder={isDeposit ? "Allowance, gift, chore..." : "Toy, snack, game..."}
+              className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 font-bold outline-none transition focus:border-mint"
             />
-          </div>
+          </label>
 
           <button
-            type="submit"
             disabled={isSaving}
-            className={`w-full rounded-lg border-b-4 border-black/20 py-4 text-sm uppercase tracking-wider shadow-sm transition hover:-translate-y-1 active:translate-y-1 active:border-b-0 ${actionColor}`}
+            className={`${isDeposit ? "bg-mint" : "bg-coral"} h-12 w-full rounded-[8px] font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:opacity-60`}
           >
-            {isSaving ? "SAVING..." : "PRESS START"}
+            {isSaving ? "Saving..." : "Save"}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

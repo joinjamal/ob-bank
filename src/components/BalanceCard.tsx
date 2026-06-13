@@ -1,10 +1,10 @@
 "use client";
 
-import { ChangeEvent, useRef, useState, FormEvent } from "react";
-import { ArrowDownCircle, ArrowUpCircle, Camera, Target, X } from "lucide-react";
+import { ChangeEvent, useEffect, useRef, useState, type FormEvent } from "react";
+import { ArrowDownCircle, ArrowUpCircle, Camera, Target, Trophy, X } from "lucide-react";
+import { updateAccountGoal } from "@/app/actions";
 import { Account } from "@/components/types";
 import { formatMoney } from "@/lib/money";
-import { updateAccountGoal } from "@/app/actions";
 
 type Props = {
   account: Account;
@@ -34,14 +34,10 @@ function resizeImage(file: File) {
 
         canvas.width = size;
         canvas.height = size;
-
         const scale = Math.max(size / image.width, size / image.height);
         const width = image.width * scale;
         const height = image.height * scale;
-        const x = (size - width) / 2;
-        const y = (size - height) / 2;
-
-        context.drawImage(image, x, y, width, height);
+        context.drawImage(image, (size - width) / 2, (size - height) / 2, width, height);
         resolve(canvas.toDataURL("image/jpeg", 0.82));
       };
       image.src = String(reader.result ?? "");
@@ -58,20 +54,32 @@ export default function BalanceCard({
   onQuickAdd
 }: Props) {
   const isBasil = account.name === "Basil";
+  const panel = isBasil ? "bg-basil-soft" : "bg-osama-soft";
   const isDeposit = animation?.type === "Deposit";
   const isWithdrawal = animation?.type === "Withdrawal";
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
+  const [savedGoalName, setSavedGoalName] = useState(account.goalName);
+  const [savedGoalAmount, setSavedGoalAmount] = useState(account.goalAmount);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalNameInput, setGoalNameInput] = useState(account.goalName || "");
   const [goalAmountInput, setGoalAmountInput] = useState(account.goalAmount ? String(account.goalAmount) : "");
 
+  useEffect(() => {
+    setSavedGoalName(account.goalName);
+    setSavedGoalAmount(account.goalAmount);
+    setGoalNameInput(account.goalName || "");
+    setGoalAmountInput(account.goalAmount ? String(account.goalAmount) : "");
+  }, [account.goalAmount, account.goalName]);
+
+  const goalAmount = savedGoalAmount ?? 0;
+  const progressPercentage = goalAmount > 0 ? Math.min(100, (account.currentBalance / goalAmount) * 100) : 0;
+  const remaining = Math.max(0, goalAmount - account.currentBalance);
+  const hasGoal = goalAmount > 0 && Boolean(savedGoalName);
+
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-    if (!file || !onAvatarUpload) return;
-
-    if (!file.type.startsWith("image/")) return;
+    if (!file || !onAvatarUpload || !file.type.startsWith("image/")) return;
 
     setIsUploading(true);
     try {
@@ -83,32 +91,32 @@ export default function BalanceCard({
     }
   }
 
-  async function handleSaveGoal(e: FormEvent) {
-    e.preventDefault();
+  async function handleSaveGoal(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const amount = Number(goalAmountInput);
-    if (!goalNameInput.trim() || !amount || amount <= 0) return;
-    
-    await updateAccountGoal(account.id, goalNameInput.trim(), amount);
+    const nextGoalName = goalNameInput.trim() || null;
+    const nextGoalAmount = Number.isFinite(amount) && amount > 0 ? amount : null;
+    await updateAccountGoal(account.id, nextGoalName, nextGoalAmount);
+    setSavedGoalName(nextGoalName);
+    setSavedGoalAmount(nextGoalAmount);
     setShowGoalModal(false);
   }
 
-  const goalAmount = account.goalAmount ? Number(account.goalAmount) : 0;
-  const progressPercentage = goalAmount > 0 ? Math.min(100, (account.currentBalance / goalAmount) * 100) : 0;
-  const hasGoal = goalAmount > 0;
-
   return (
     <>
-      <section className="relative overflow-hidden rounded-xl border-4 border-arcade-dark bg-white p-5 shadow-retro transition-transform hover:-translate-y-1">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(rgba(0,0,0,1) 1px, transparent 1px)", backgroundSize: "100% 4px" }} />
-        
+      <section className={`relative overflow-hidden rounded-[8px] ${panel} p-5 shadow-lift`}>
+        <div
+          className="absolute -right-12 -top-14 h-40 w-40 rounded-full opacity-20"
+          style={{ backgroundColor: account.themeColor }}
+        />
         <div className="relative flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="mb-4 inline-flex items-center gap-2 rounded bg-arcade-dark px-3 py-1 font-arcade text-xs text-white uppercase tracking-widest shadow-sm">
-              PLAYER {isBasil ? "1" : "2"} : {account.name}
+          <div className="min-w-0 flex-1">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm font-extrabold">
+              <Trophy size={15} style={{ color: account.themeColor }} />
+              {account.name}&apos;s vault
             </div>
-            
-            <p className="font-arcade text-[10px] text-arcade-dark/50 uppercase tracking-widest">Score / Balance</p>
-            <p className="mt-2 font-arcade text-3xl sm:text-4xl" style={{ color: account.themeColor }}>
+            <p className="text-sm font-bold text-ink/60">Current balance</p>
+            <p className="mt-1 text-4xl font-black tracking-normal sm:text-5xl">
               {formatMoney(account.currentBalance)}
             </p>
           </div>
@@ -120,27 +128,31 @@ export default function BalanceCard({
                   <>
                     <span className="avatar-coin avatar-coin-one">+</span>
                     <span className="avatar-coin avatar-coin-two">+</span>
+                    <span className="avatar-spark avatar-spark-one" />
+                    <span className="avatar-spark avatar-spark-two" />
                   </>
                 ) : (
                   <>
                     <span className="avatar-receipt avatar-receipt-one">-</span>
                     <span className="avatar-receipt avatar-receipt-two">-</span>
+                    <span className="avatar-puff avatar-puff-one" />
+                    <span className="avatar-puff avatar-puff-two" />
                   </>
                 )}
               </div>
             )}
-
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={!onAvatarUpload || isUploading}
-              className={`group relative h-20 w-20 overflow-hidden rounded-md border-4 border-arcade-dark bg-arcade-bg shadow-sm transition hover:scale-105 disabled:cursor-default ${
+              className={`group relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-white shadow-md transition hover:scale-105 disabled:cursor-default ${
                 isDeposit ? "avatar-deposit" : ""
               } ${isWithdrawal ? "avatar-withdrawal" : ""}`}
+              aria-label={`Change ${account.name}'s photo`}
             >
-              <img src={account.avatarUrl} alt={`${account.name} avatar`} className="h-full w-full object-cover pixelated" />
+              <img src={account.avatarUrl} alt={`${account.name} avatar`} className="h-full w-full object-cover" />
               {onAvatarUpload && (
-                <span className="absolute bottom-1 right-1 grid h-6 w-6 place-items-center rounded bg-arcade-dark text-white opacity-95 shadow-sm transition group-hover:bg-arcade-green group-hover:text-black">
+                <span className="absolute bottom-0 right-0 grid h-7 w-7 place-items-center rounded-full bg-ink text-white opacity-95 shadow-sm transition group-hover:bg-mint">
                   <Camera size={14} />
                 </span>
               )}
@@ -149,36 +161,36 @@ export default function BalanceCard({
           </div>
         </div>
 
-        <div className="relative mt-6 rounded-lg border-2 border-arcade-dark bg-gray-100 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="font-arcade text-[10px] uppercase text-arcade-dark flex items-center gap-2">
-              <Target size={12} />
-              {hasGoal ? account.goalName : "NO MISSION"}
-            </span>
-            {hasGoal && (
-              <span className="font-arcade text-[10px] text-arcade-dark/60">
-                {formatMoney(goalAmount)}
-              </span>
-            )}
+        <div className="relative mt-5 rounded-[8px] bg-white/80 p-4 shadow-sm">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-2 text-sm font-black text-ink/70">
+                <Target size={16} className="text-mint" />
+                {hasGoal ? savedGoalName : "Choose a saving goal"}
+              </p>
+              <p className="mt-1 text-sm font-bold text-ink/50">
+                {hasGoal ? `${formatMoney(remaining)} left to go` : "Pick something worth saving for."}
+              </p>
+            </div>
+            {hasGoal && <span className="text-sm font-black text-ink/70">{formatMoney(goalAmount)}</span>}
           </div>
-          
-          <div className="relative h-6 w-full overflow-hidden rounded border-2 border-arcade-dark bg-white">
-            <div 
-              className="absolute inset-y-0 left-0 bg-arcade-yellow transition-all duration-1000 ease-out"
+          <div className="h-4 overflow-hidden rounded-full bg-ink/10">
+            <div
+              className="h-full rounded-full bg-mint transition-all duration-700"
               style={{ width: `${progressPercentage}%` }}
             />
-            {progressPercentage >= 100 && (
-              <div className="absolute inset-0 flex items-center justify-center font-arcade text-[10px] text-arcade-dark">
-                MISSION COMPLETE!
-              </div>
-            )}
           </div>
-          
-          <button 
+          {hasGoal && progressPercentage >= 100 && (
+            <p className="mt-2 rounded-[8px] bg-mint/15 px-3 py-2 text-sm font-black text-mint">
+              Goal reached. Nice saving.
+            </p>
+          )}
+          <button
+            type="button"
             onClick={() => setShowGoalModal(true)}
-            className="mt-3 text-[10px] font-arcade uppercase text-arcade-dark/50 hover:text-arcade-dark transition underline decoration-dotted"
+            className="mt-3 text-sm font-black text-ink/55 underline decoration-dotted underline-offset-4 transition hover:text-ink"
           >
-            {hasGoal ? "CHANGE MISSION" : "SET A MISSION"}
+            {hasGoal ? "Change goal" : "Set goal"}
           </button>
         </div>
 
@@ -186,66 +198,54 @@ export default function BalanceCard({
           <div className="relative mt-5 grid grid-cols-2 gap-3">
             <button
               onClick={() => onQuickAdd(account.id, "Deposit")}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded border-b-4 border-black/20 bg-arcade-green font-arcade text-xs text-arcade-dark shadow-sm transition hover:-translate-y-0.5 active:translate-y-1 active:border-b-0 uppercase"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] bg-mint px-3 py-2 font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <ArrowUpCircle size={16} />
-              ADD
+              <ArrowUpCircle size={18} />
+              Add
             </button>
             <button
               onClick={() => onQuickAdd(account.id, "Withdrawal")}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded border-b-4 border-black/20 bg-arcade-pink font-arcade text-xs text-white shadow-sm transition hover:-translate-y-0.5 active:translate-y-1 active:border-b-0 uppercase"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] bg-coral px-3 py-2 font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <ArrowDownCircle size={16} />
-              SPEND
+              <ArrowDownCircle size={18} />
+              Spend
             </button>
           </div>
         )}
       </section>
 
       {showGoalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-arcade-dark/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border-4 border-white bg-arcade-bg font-arcade shadow-retro">
-            <header className="flex items-center justify-between border-b-4 border-white p-4">
-              <h2 className="text-sm uppercase tracking-widest text-white">SET MISSION</h2>
-              <button onClick={() => setShowGoalModal(false)} className="text-white hover:text-arcade-pink">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/55 p-4 backdrop-blur-sm">
+          <form onSubmit={handleSaveGoal} className="w-full max-w-sm rounded-[8px] bg-white p-5 shadow-lift">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-black">Saving goal</h2>
+              <button type="button" onClick={() => setShowGoalModal(false)} className="grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink">
                 <X size={18} />
               </button>
-            </header>
-            <form onSubmit={handleSaveGoal} className="p-5 space-y-4">
-              <div>
-                <label className="mb-2 block text-xs text-white">Target Name</label>
-                <input
-                  type="text"
-                  required
-                  value={goalNameInput}
-                  onChange={(e) => setGoalNameInput(e.target.value)}
-                  className="w-full rounded border-2 border-white/20 bg-arcade-dark p-3 text-xs text-white outline-none focus:border-arcade-yellow"
-                  placeholder="e.g. New Bike"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-xs text-white">Target Amount</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/50">$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={goalAmountInput}
-                    onChange={(e) => setGoalAmountInput(e.target.value)}
-                    className="w-full rounded border-2 border-white/20 bg-arcade-dark py-3 pl-8 pr-3 text-xs text-white outline-none focus:border-arcade-yellow"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded border-b-4 border-black/20 bg-arcade-yellow py-3 text-xs uppercase text-arcade-dark transition active:translate-y-1 active:border-b-0"
-              >
-                SAVE MISSION
-              </button>
-            </form>
-          </div>
+            </div>
+            <label className="block">
+              <span className="mb-2 block text-sm font-black text-ink/70">Goal name</span>
+              <input
+                value={goalNameInput}
+                onChange={(event) => setGoalNameInput(event.target.value)}
+                placeholder="Bike, headphones, game..."
+                className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 font-bold outline-none transition focus:border-mint"
+              />
+            </label>
+            <label className="mt-4 block">
+              <span className="mb-2 block text-sm font-black text-ink/70">Goal amount</span>
+              <input
+                value={goalAmountInput}
+                onChange={(event) => setGoalAmountInput(event.target.value)}
+                inputMode="decimal"
+                placeholder="150"
+                className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 font-bold outline-none transition focus:border-mint"
+              />
+            </label>
+            <button className="mt-5 h-12 w-full rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5">
+              Save goal
+            </button>
+          </form>
         </div>
       )}
     </>

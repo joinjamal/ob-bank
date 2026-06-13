@@ -88,7 +88,7 @@ export default function AdminPanel() {
     }
 
     setMoneyAnimation({ accountId: payload.accountId, type: payload.type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100) as any;
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
   }
 
   return (
