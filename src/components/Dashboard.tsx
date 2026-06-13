@@ -74,6 +74,14 @@ export default function Dashboard() {
     await loadData();
   }
 
+  function handleProfileStyleChange(accountId: string, profileColor: string, profilePattern: string) {
+    setAccounts((current) =>
+      current.map((account) =>
+        account.id === accountId ? { ...account, profileColor, profilePattern } : account
+      )
+    );
+  }
+
   async function saveKidTransaction(payload: {
     accountId: string;
     type: "Deposit" | "Withdrawal";
@@ -141,12 +149,13 @@ export default function Dashboard() {
                   animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
                   showQuickActions
                   onAvatarUpload={handleAvatarUpload}
+                  onProfileStyleChange={handleProfileStyleChange}
                   onQuickAdd={(accountId, type) => setActiveKidModal({ accountId, type })}
                 />
               ))}
             </div>
             <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
-              <TrendChart data={ledger} />
+              <TrendChart data={ledger} accounts={sortedAccounts} />
               <ActivityFeed transactions={transactions} compact />
             </div>
           </div>

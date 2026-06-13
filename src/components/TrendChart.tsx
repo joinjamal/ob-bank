@@ -3,7 +3,7 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { format } from "date-fns";
 import { TrendingUp, Trophy } from "lucide-react";
-import { LedgerPoint } from "@/components/types";
+import { Account, LedgerPoint } from "@/components/types";
 import { formatMoney } from "@/lib/money";
 
 function getChange(data: LedgerPoint[], key: "basilBalance" | "osamaBalance") {
@@ -37,7 +37,28 @@ function TrailBadge({
   );
 }
 
-export default function TrendChart({ data }: { data: LedgerPoint[] }) {
+function mixWithInk(hex: string, amount = 0.32) {
+  const normalized = /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex : "#3DCC91";
+  const r = parseInt(normalized.slice(1, 3), 16);
+  const g = parseInt(normalized.slice(3, 5), 16);
+  const b = parseInt(normalized.slice(5, 7), 16);
+  const ink = { r: 23, g: 32, b: 51 };
+  const next = {
+    r: Math.round(r * (1 - amount) + ink.r * amount),
+    g: Math.round(g * (1 - amount) + ink.g * amount),
+    b: Math.round(b * (1 - amount) + ink.b * amount)
+  };
+
+  return `#${[next.r, next.g, next.b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+export default function TrendChart({ data, accounts }: { data: LedgerPoint[]; accounts: Account[] }) {
+  const basilAccount = accounts.find((account) => account.name === "Basil");
+  const osamaAccount = accounts.find((account) => account.name === "Osama");
+  const basilFill = basilAccount?.profileColor || "#DCEBFF";
+  const osamaFill = osamaAccount?.profileColor || "#ECE4FF";
+  const basilLine = mixWithInk(basilFill);
+  const osamaLine = mixWithInk(osamaFill);
   const chartData = data.map((point) => ({
     ...point,
     label: format(new Date(point.date), "MMM d")
@@ -76,8 +97,8 @@ export default function TrendChart({ data }: { data: LedgerPoint[] }) {
 
         {latest && (
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <TrailBadge name="Basil" color="#2F7DF6" balance={latest.basilBalance} change={basilChange} />
-            <TrailBadge name="Osama" color="#8E5CF7" balance={latest.osamaBalance} change={osamaChange} />
+            <TrailBadge name="Basil" color={basilLine} balance={latest.basilBalance} change={basilChange} />
+            <TrailBadge name="Osama" color={osamaLine} balance={latest.osamaBalance} change={osamaChange} />
           </div>
         )}
       </div>
@@ -92,12 +113,12 @@ export default function TrendChart({ data }: { data: LedgerPoint[] }) {
             <AreaChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="basilTrail" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2F7DF6" stopOpacity={0.28} />
-                  <stop offset="95%" stopColor="#2F7DF6" stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={basilFill} stopOpacity={0.72} />
+                  <stop offset="95%" stopColor={basilFill} stopOpacity={0.04} />
                 </linearGradient>
                 <linearGradient id="osamaTrail" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8E5CF7" stopOpacity={0.24} />
-                  <stop offset="95%" stopColor="#8E5CF7" stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={osamaFill} stopOpacity={0.68} />
+                  <stop offset="95%" stopColor={osamaFill} stopOpacity={0.04} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="#172033" strokeDasharray="4 8" opacity={0.08} />
@@ -116,7 +137,10 @@ export default function TrendChart({ data }: { data: LedgerPoint[] }) {
                 tickFormatter={(value) => formatMoney(Number(value))}
               />
               <Tooltip
-                formatter={(value: number, name: string) => [formatMoney(value), name === "basilBalance" ? "Basil" : "Osama"]}
+                formatter={(value: number, name: string) => [
+                  formatMoney(value),
+                  name === "Basil" || name === "Osama" ? name : name === "basilBalance" ? "Basil" : "Osama"
+                ]}
                 labelFormatter={(label) => `Trail stop: ${label}`}
                 contentStyle={{
                   border: "none",
@@ -129,7 +153,7 @@ export default function TrendChart({ data }: { data: LedgerPoint[] }) {
                 type="monotone"
                 dataKey="basilBalance"
                 name="Basil"
-                stroke="#2F7DF6"
+                stroke={basilLine}
                 strokeWidth={5}
                 fill="url(#basilTrail)"
                 dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
@@ -139,7 +163,7 @@ export default function TrendChart({ data }: { data: LedgerPoint[] }) {
                 type="monotone"
                 dataKey="osamaBalance"
                 name="Osama"
-                stroke="#8E5CF7"
+                stroke={osamaLine}
                 strokeWidth={5}
                 fill="url(#osamaTrail)"
                 dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}

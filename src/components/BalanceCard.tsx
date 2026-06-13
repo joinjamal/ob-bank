@@ -11,6 +11,7 @@ type Props = {
   animation?: { type: "Deposit" | "Withdrawal"; id: number } | null;
   showQuickActions?: boolean;
   onAvatarUpload?: (accountId: string, avatarUrl: string) => Promise<void>;
+  onProfileStyleChange?: (accountId: string, profileColor: string, profilePattern: string) => void;
   onQuickAdd?: (accountId: string, type: "Deposit" | "Withdrawal") => void;
 };
 
@@ -51,6 +52,7 @@ export default function BalanceCard({
   animation = null,
   showQuickActions = false,
   onAvatarUpload,
+  onProfileStyleChange,
   onQuickAdd
 }: Props) {
   const isBasil = account.name === "Basil";
@@ -111,6 +113,7 @@ export default function BalanceCard({
     setSavedProfileColor(profileColor);
     setSavedProfilePattern(profilePattern);
     await updateAccountProfileStyle(account.id, profileColor, profilePattern);
+    onProfileStyleChange?.(account.id, profileColor, profilePattern);
     setShowStyleModal(false);
   }
 
