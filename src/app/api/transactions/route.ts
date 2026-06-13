@@ -23,12 +23,6 @@ export async function POST(request: Request) {
     const type = body.type === "Withdrawal" ? TransactionType.Withdrawal : TransactionType.Deposit;
     const amount = Number(body.amount);
     const reason = String(body.reason ?? "").trim();
-    const cookieStore = await cookies();
-    const session = cookieStore.get(adminCookieName())?.value;
-
-    if (!isValidAdminSession(session)) {
-      return NextResponse.json({ message: "Admin access is required." }, { status: 401 });
-    }
 
     if (!accountId || !Number.isFinite(amount) || amount <= 0) {
       return NextResponse.json(
