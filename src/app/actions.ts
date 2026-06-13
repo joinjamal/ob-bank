@@ -66,6 +66,16 @@ export async function updateAccountAvatar(accountId: string, avatarUrl: string) 
   revalidatePath("/admin");
 }
 
+export async function updateAccountGoal(accountId: string, goalName: string | null, goalAmount: number | null) {
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { goalName, goalAmount }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
 export async function updateTransaction(
   transactionId: string,
   payload: { type: "Deposit" | "Withdrawal"; amount: number; reason?: string }
