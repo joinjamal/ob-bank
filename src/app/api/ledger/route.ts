@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { serializeLedger } from "@/lib/serializers";
+import { buildWealthTrailFromTransactions } from "@/lib/ledger";
 
 export async function GET() {
-  const rows = await prisma.historicalLedger.findMany({ orderBy: { date: "asc" } });
-  return NextResponse.json(rows.map(serializeLedger));
+  const rows = await buildWealthTrailFromTransactions();
+  return NextResponse.json(rows);
 }
