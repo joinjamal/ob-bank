@@ -7,7 +7,9 @@ export function serializeAccount(account: Account) {
     name: account.name,
     avatarUrl: account.avatarUrl,
     currentBalance: toMoney(account.currentBalance),
-    themeColor: account.themeColor
+    themeColor: account.themeColor,
+    goalName: account.goalName,
+    goalAmount: account.goalAmount ? toMoney(account.goalAmount) : null
   };
 }
 
