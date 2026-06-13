@@ -4,6 +4,8 @@ export type Account = {
   avatarUrl: string;
   currentBalance: number;
   themeColor: string;
+  profileColor: string;
+  profilePattern: string;
   goalName: string | null;
   goalAmount: number | null;
 };

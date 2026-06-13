@@ -8,6 +8,8 @@ export function serializeAccount(account: Account) {
     avatarUrl: account.avatarUrl,
     currentBalance: toMoney(account.currentBalance),
     themeColor: account.themeColor,
+    profileColor: account.profileColor,
+    profilePattern: account.profilePattern,
     goalName: account.goalName,
     goalAmount: account.goalAmount ? toMoney(account.goalAmount) : null
   };

@@ -1,8 +1,8 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowDownCircle, ArrowUpCircle, Camera, Target, Trophy, X } from "lucide-react";
-import { updateAccountGoal } from "@/app/actions";
+import { ChangeEvent, useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { ArrowDownCircle, ArrowUpCircle, Camera, Palette, Target, Trophy, X } from "lucide-react";
+import { updateAccountGoal, updateAccountProfileStyle } from "@/app/actions";
 import { Account } from "@/components/types";
 import { formatMoney } from "@/lib/money";
 
@@ -59,18 +59,23 @@ export default function BalanceCard({
   const isWithdrawal = animation?.type === "Withdrawal";
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [savedProfileColor, setSavedProfileColor] = useState(account.profileColor || panel);
+  const [savedProfilePattern, setSavedProfilePattern] = useState(account.profilePattern || "soft");
   const [savedGoalName, setSavedGoalName] = useState(account.goalName);
   const [savedGoalAmount, setSavedGoalAmount] = useState(account.goalAmount);
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showStyleModal, setShowStyleModal] = useState(false);
   const [goalNameInput, setGoalNameInput] = useState(account.goalName || "");
   const [goalAmountInput, setGoalAmountInput] = useState(account.goalAmount ? String(account.goalAmount) : "");
 
   useEffect(() => {
+    setSavedProfileColor(account.profileColor || panel);
+    setSavedProfilePattern(account.profilePattern || "soft");
     setSavedGoalName(account.goalName);
     setSavedGoalAmount(account.goalAmount);
     setGoalNameInput(account.goalName || "");
     setGoalAmountInput(account.goalAmount ? String(account.goalAmount) : "");
-  }, [account.goalAmount, account.goalName]);
+  }, [account.goalAmount, account.goalName, account.profileColor, account.profilePattern, panel]);
 
   const goalAmount = savedGoalAmount ?? 0;
   const progressPercentage = goalAmount > 0 ? Math.min(100, (account.currentBalance / goalAmount) * 100) : 0;
@@ -102,9 +107,18 @@ export default function BalanceCard({
     setShowGoalModal(false);
   }
 
+  async function handleSaveProfileStyle(profileColor: string, profilePattern: string) {
+    setSavedProfileColor(profileColor);
+    setSavedProfilePattern(profilePattern);
+    await updateAccountProfileStyle(account.id, profileColor, profilePattern);
+    setShowStyleModal(false);
+  }
+
+  const patternStyle = getPatternStyle(savedProfileColor, savedProfilePattern);
+
   return (
     <>
-      <section className={`relative overflow-hidden rounded-[8px] ${panel} p-5 shadow-lift`}>
+      <section className="relative overflow-hidden rounded-[8px] p-5 shadow-lift" style={patternStyle}>
         <div
           className="absolute -right-12 -top-14 h-40 w-40 rounded-full opacity-20"
           style={{ backgroundColor: account.themeColor }}
@@ -192,6 +206,14 @@ export default function BalanceCard({
           >
             {hasGoal ? "Change goal" : "Set goal"}
           </button>
+          <button
+            type="button"
+            onClick={() => setShowStyleModal(true)}
+            className="ml-4 mt-3 inline-flex items-center gap-1 text-sm font-black text-ink/55 underline decoration-dotted underline-offset-4 transition hover:text-ink"
+          >
+            <Palette size={14} />
+            Style card
+          </button>
         </div>
 
         {showQuickActions && onQuickAdd && (
@@ -248,6 +270,100 @@ export default function BalanceCard({
           </form>
         </div>
       )}
+
+      {showStyleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/55 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[8px] bg-white p-5 shadow-lift">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-black">Card style</h2>
+              <button type="button" onClick={() => setShowStyleModal(false)} className="grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="mb-3 text-sm font-bold text-ink/55">Pick a color and pattern for {account.name}&apos;s vault.</p>
+            <div className="grid grid-cols-5 gap-2">
+              {profileColors.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setSavedProfileColor(color)}
+                  className={`h-11 rounded-[8px] border-2 ${savedProfileColor === color ? "border-ink" : "border-white"}`}
+                  style={{ backgroundColor: color }}
+                  aria-label={`Choose ${color}`}
+                />
+              ))}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {profilePatterns.map((pattern) => (
+                <button
+                  key={pattern.value}
+                  type="button"
+                  onClick={() => setSavedProfilePattern(pattern.value)}
+                  className={`rounded-[8px] border-2 px-3 py-2 text-sm font-black capitalize ${
+                    savedProfilePattern === pattern.value ? "border-ink bg-ink text-white" : "border-ink/10 bg-white"
+                  }`}
+                >
+                  {pattern.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSaveProfileStyle(savedProfileColor, savedProfilePattern)}
+              className="mt-5 h-12 w-full rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5"
+            >
+              Save style
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
+}
+
+const profileColors = ["#DCEBFF", "#ECE4FF", "#D9FBEA", "#FFF0BE", "#FFE3DD"];
+
+const profilePatterns = [
+  { value: "soft", label: "Soft" },
+  { value: "dots", label: "Dots" },
+  { value: "stars", label: "Stars" },
+  { value: "stripes", label: "Stripes" },
+  { value: "grid", label: "Grid" }
+];
+
+function getPatternStyle(color: string, pattern: string): CSSProperties {
+  const overlay = "rgba(255,255,255,0.52)";
+
+  if (pattern === "dots") {
+    return {
+      backgroundColor: color,
+      backgroundImage: `radial-gradient(circle, ${overlay} 2px, transparent 2px)`,
+      backgroundSize: "18px 18px"
+    };
+  }
+
+  if (pattern === "stars") {
+    return {
+      backgroundColor: color,
+      backgroundImage: `radial-gradient(circle at 30% 30%, ${overlay} 0 2px, transparent 3px), radial-gradient(circle at 70% 70%, ${overlay} 0 2px, transparent 3px)`,
+      backgroundSize: "28px 28px"
+    };
+  }
+
+  if (pattern === "stripes") {
+    return {
+      backgroundColor: color,
+      backgroundImage: `repeating-linear-gradient(135deg, transparent 0 12px, ${overlay} 12px 20px)`
+    };
+  }
+
+  if (pattern === "grid") {
+    return {
+      backgroundColor: color,
+      backgroundImage: `linear-gradient(${overlay} 1px, transparent 1px), linear-gradient(90deg, ${overlay} 1px, transparent 1px)`,
+      backgroundSize: "22px 22px"
+    };
+  }
+
+  return { backgroundColor: color };
 }

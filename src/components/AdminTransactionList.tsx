@@ -1,8 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Pencil, Save, Trash2, X } from "lucide-react";
-import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { Transaction } from "@/components/types";
 import { formatMoney } from "@/lib/money";
 
@@ -18,6 +17,13 @@ export default function AdminTransactionList({
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const allSelected = useMemo(
+    () => transactions.length > 0 && selectedIds.length === transactions.length,
+    [selectedIds.length, transactions.length]
+  );
 
   function startEdit(transaction: Transaction) {
     setMessage("");
@@ -27,13 +33,33 @@ export default function AdminTransactionList({
     setReason(transaction.reason ?? "");
   }
 
+  function toggleSelected(transactionId: string) {
+    setSelectedIds((current) =>
+      current.includes(transactionId) ? current.filter((id) => id !== transactionId) : [...current, transactionId]
+    );
+  }
+
+  function toggleAll() {
+    setSelectedIds(allSelected ? [] : transactions.map((transaction) => transaction.id));
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editingId) return;
 
     setMessage("");
     try {
-      await updateTransaction(editingId, { type, amount: Number(amount), reason });
+      const response = await fetch(`/api/transactions/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, amount: Number(amount), reason })
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Could not update transaction.");
+      }
+
       setEditingId(null);
       await onChanged();
     } catch (error) {
@@ -46,18 +72,77 @@ export default function AdminTransactionList({
 
     setMessage("");
     try {
-      await deleteTransaction(transactionId);
+      const response = await fetch(`/api/transactions/${transactionId}`, { method: "DELETE" });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Could not delete transaction.");
+      }
+
+      setSelectedIds((current) => current.filter((id) => id !== transactionId));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not delete transaction.");
     }
   }
 
+  async function handleBulkDelete() {
+    if (selectedIds.length === 0) {
+      setMessage("Select at least one transaction.");
+      return;
+    }
+
+    if (!window.confirm(`Delete ${selectedIds.length} selected transaction${selectedIds.length === 1 ? "" : "s"}?`)) {
+      return;
+    }
+
+    setMessage("");
+    setIsDeleting(true);
+    try {
+      const response = await fetch("/api/transactions/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds })
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Could not delete selected transactions.");
+      }
+
+      setSelectedIds([]);
+      await onChanged();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not delete selected transactions.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   return (
     <section className="rounded-[8px] bg-white p-5 shadow-lift">
-      <div className="mb-4">
-        <h2 className="text-xl font-black">Manage activity</h2>
-        <p className="text-sm font-bold text-ink/55">Edit or delete past entries. Balances recalculate automatically.</p>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-black">Manage activity</h2>
+          <p className="text-sm font-bold text-ink/55">Edit or delete entries. Balances recalculate automatically.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="h-10 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink transition hover:bg-ink/10"
+          >
+            {allSelected ? "Clear all" : "Select all"}
+          </button>
+          <button
+            type="button"
+            onClick={handleBulkDelete}
+            disabled={selectedIds.length === 0 || isDeleting}
+            className="h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Delete selected ({selectedIds.length})
+          </button>
+        </div>
       </div>
       {message && <p className="mb-3 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{message}</p>}
       <div className="max-h-[680px] space-y-3 overflow-y-auto pr-1">
@@ -105,6 +190,13 @@ export default function AdminTransactionList({
                 </form>
               ) : (
                 <div className="flex flex-wrap items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(transaction.id)}
+                    onChange={() => toggleSelected(transaction.id)}
+                    className="h-5 w-5 accent-mint"
+                    aria-label={`Select ${transaction.reason || "transaction"}`}
+                  />
                   <div
                     className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
                       isDeposit ? "bg-mint/15 text-mint" : "bg-coral/15 text-coral"

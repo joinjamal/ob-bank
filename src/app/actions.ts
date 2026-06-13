@@ -76,6 +76,24 @@ export async function updateAccountGoal(accountId: string, goalName: string | nu
   revalidatePath("/admin");
 }
 
+export async function updateAccountProfileStyle(accountId: string, profileColor: string, profilePattern: string) {
+  const safeColor = /^#[0-9A-Fa-f]{6}$/.test(profileColor) ? profileColor : "#DCEBFF";
+  const safePattern = ["soft", "dots", "stars", "stripes", "grid"].includes(profilePattern)
+    ? profilePattern
+    : "soft";
+
+  await prisma.account.update({
+    where: { id: accountId },
+    data: {
+      profileColor: safeColor,
+      profilePattern: safePattern
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
 export async function updateTransaction(
   transactionId: string,
   payload: { type: "Deposit" | "Withdrawal"; amount: number; reason?: string }
@@ -105,7 +123,7 @@ export async function updateTransaction(
       data: { type, amount, reason }
     });
 
-    await recalculateAccountBalance(tx, existing.accountId);
+    await recalculateAccountBalance(tx, existing.accountId, { allowNegative: true });
   });
 
   await snapshotLedger();
@@ -127,7 +145,7 @@ export async function deleteTransaction(transactionId: string) {
     }
 
     await tx.transaction.delete({ where: { id: transactionId } });
-    await recalculateAccountBalance(tx, existing.accountId);
+    await recalculateAccountBalance(tx, existing.accountId, { allowNegative: true });
   });
 
   await snapshotLedger();

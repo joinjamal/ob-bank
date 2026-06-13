@@ -7,13 +7,17 @@ const accounts = [
     name: "Basil",
     avatarUrl: "https://api.dicebear.com/9.x/adventurer/svg?seed=BasilGamer&radius=50&backgroundColor=dceaff",
     currentBalance: 125,
-    themeColor: "#2F7DF6"
+    themeColor: "#2F7DF6",
+    profileColor: "#DCEBFF",
+    profilePattern: "stars"
   },
   {
     name: "Osama",
     avatarUrl: "https://api.dicebear.com/9.x/adventurer/svg?seed=OsamaSkater&radius=50&backgroundColor=ece4ff",
     currentBalance: 98.5,
-    themeColor: "#8E5CF7"
+    themeColor: "#8E5CF7",
+    profileColor: "#ECE4FF",
+    profilePattern: "dots"
   }
 ];
 
