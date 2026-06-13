@@ -6,6 +6,7 @@ import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
 import BalanceCard from "@/components/BalanceCard";
+import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import TrendChart from "@/components/TrendChart";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
@@ -154,6 +155,7 @@ export default function Dashboard() {
                 />
               ))}
             </div>
+            <KidProgressPanel accounts={sortedAccounts} transactions={transactions} />
             <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
               <TrendChart data={ledger} accounts={sortedAccounts} />
               <ActivityFeed transactions={transactions} compact />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
+import AdminSummaryCards from "@/components/AdminSummaryCards";
 import AdminTransactionList from "@/components/AdminTransactionList";
 import BalanceCard from "@/components/BalanceCard";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
@@ -123,6 +124,7 @@ export default function AdminPanel() {
         ) : (
           <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
             <div className="space-y-5">
+              <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
               <div className="grid gap-5 md:grid-cols-2">
                 {sortedAccounts.map((account) => (
                   <BalanceCard

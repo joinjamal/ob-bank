@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ArrowDownCircle, ArrowUpCircle, X } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, X } from "lucide-react";
 import { Account } from "@/components/types";
 
 type Props = {
@@ -20,6 +20,10 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
   const isDeposit = type === "Deposit";
   const title = isDeposit ? "Add to savings" : "Record spending";
   const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
+  const amountChips = isDeposit ? [5, 10, 25, 50, 100] : [5, 10, 20, 50, 100];
+  const reasonChips = isDeposit
+    ? ["Allowance", "Gift", "Chores", "Saved cash"]
+    : ["Game", "Snack", "Book", "Fun day"];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,6 +80,25 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
               className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 text-lg font-black outline-none transition focus:border-mint"
             />
           </label>
+          <div className="flex flex-wrap gap-2">
+            {amountChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                disabled={isSaving}
+                onClick={() => setAmount(String(chip))}
+                className={`h-9 rounded-[8px] px-3 text-sm font-black transition hover:-translate-y-0.5 ${
+                  amount === String(chip)
+                    ? isDeposit
+                      ? "bg-mint text-white"
+                      : "bg-coral text-white"
+                    : "bg-ink/5 text-ink/65 hover:bg-ink/10"
+                }`}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
 
           <label className="block">
             <span className="mb-2 block text-sm font-black text-ink/70">Reason</span>
@@ -87,6 +110,22 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
               className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 font-bold outline-none transition focus:border-mint"
             />
           </label>
+          <div className="flex flex-wrap gap-2">
+            {reasonChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                disabled={isSaving}
+                onClick={() => setReason(chip)}
+                className={`inline-flex h-9 items-center gap-1 rounded-[8px] px-3 text-sm font-black transition hover:-translate-y-0.5 ${
+                  reason === chip ? "bg-ink text-white" : "bg-ink/5 text-ink/65 hover:bg-ink/10"
+                }`}
+              >
+                <Sparkles size={13} />
+                {chip}
+              </button>
+            ))}
+          </div>
 
           <button
             disabled={isSaving}

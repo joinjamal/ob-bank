@@ -1,7 +1,17 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { ArrowDownCircle, ArrowUpCircle, Pencil, Save, Trash2, X } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Download,
+  Filter,
+  Pencil,
+  Save,
+  Search,
+  Trash2,
+  X
+} from "lucide-react";
 import { Transaction } from "@/components/types";
 import { formatMoney } from "@/lib/money";
 
@@ -19,10 +29,46 @@ export default function AdminTransactionList({
   const [message, setMessage] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [query, setQuery] = useState("");
+  const [kidFilter, setKidFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+
+  const kidNames = useMemo(
+    () => Array.from(new Set(transactions.map((transaction) => transaction.accountName))).sort(),
+    [transactions]
+  );
+
+  const filteredTransactions = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - 7);
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return transactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date);
+      const matchesQuery =
+        !normalizedQuery ||
+        transaction.reason?.toLowerCase().includes(normalizedQuery) ||
+        transaction.accountName.toLowerCase().includes(normalizedQuery) ||
+        String(transaction.amount).includes(normalizedQuery);
+      const matchesKid = kidFilter === "all" || transaction.accountName === kidFilter;
+      const matchesType = typeFilter === "all" || transaction.type === typeFilter;
+      const matchesDate =
+        dateFilter === "all" ||
+        (dateFilter === "week" && transactionDate >= startOfWeek) ||
+        (dateFilter === "month" && transactionDate >= startOfMonth);
+
+      return matchesQuery && matchesKid && matchesType && matchesDate;
+    });
+  }, [dateFilter, kidFilter, query, transactions, typeFilter]);
 
   const allSelected = useMemo(
-    () => transactions.length > 0 && selectedIds.length === transactions.length,
-    [selectedIds.length, transactions.length]
+    () =>
+      filteredTransactions.length > 0 &&
+      filteredTransactions.every((transaction) => selectedIds.includes(transaction.id)),
+    [filteredTransactions, selectedIds]
   );
 
   function startEdit(transaction: Transaction) {
@@ -40,7 +86,41 @@ export default function AdminTransactionList({
   }
 
   function toggleAll() {
-    setSelectedIds(allSelected ? [] : transactions.map((transaction) => transaction.id));
+    const filteredIds = filteredTransactions.map((transaction) => transaction.id);
+    setSelectedIds((current) =>
+      allSelected
+        ? current.filter((id) => !filteredIds.includes(id))
+        : Array.from(new Set([...current, ...filteredIds]))
+    );
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setKidFilter("all");
+    setTypeFilter("all");
+    setDateFilter("all");
+  }
+
+  function exportCsv() {
+    const headers = ["kid", "date", "type", "amount", "reason"];
+    const rows = filteredTransactions.map((transaction) =>
+      [
+        transaction.accountName,
+        new Date(transaction.date).toISOString().slice(0, 10),
+        transaction.type,
+        transaction.amount,
+        transaction.reason ?? ""
+      ]
+        .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+        .join(",")
+    );
+    const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ob-bank-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
@@ -92,7 +172,11 @@ export default function AdminTransactionList({
       return;
     }
 
-    if (!window.confirm(`Delete ${selectedIds.length} selected transaction${selectedIds.length === 1 ? "" : "s"}?`)) {
+    if (
+      !window.confirm(
+        `Delete ${selectedIds.length} selected transaction${selectedIds.length === 1 ? "" : "s"} and recalculate balances?`
+      )
+    ) {
       return;
     }
 
@@ -130,9 +214,19 @@ export default function AdminTransactionList({
           <button
             type="button"
             onClick={toggleAll}
+            disabled={filteredTransactions.length === 0}
             className="h-10 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink transition hover:bg-ink/10"
           >
-            {allSelected ? "Clear all" : "Select all"}
+            {allSelected ? "Clear filtered" : "Select filtered"}
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={filteredTransactions.length === 0}
+            className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink transition hover:bg-ink/10 disabled:opacity-50"
+          >
+            <Download size={16} />
+            Export CSV
           </button>
           <button
             type="button"
@@ -144,9 +238,66 @@ export default function AdminTransactionList({
           </button>
         </div>
       </div>
+      <div className="mb-4 grid gap-2 lg:grid-cols-[1fr_140px_140px_140px_auto]">
+        <label className="relative block">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search reason, kid, or amount"
+            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white pl-9 pr-3 font-bold outline-none focus:border-mint"
+          />
+        </label>
+        <select
+          value={kidFilter}
+          onChange={(event) => setKidFilter(event.target.value)}
+          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+        >
+          <option value="all">All kids</option>
+          {kidNames.map((kidName) => (
+            <option key={kidName} value={kidName}>
+              {kidName}
+            </option>
+          ))}
+        </select>
+        <select
+          value={typeFilter}
+          onChange={(event) => setTypeFilter(event.target.value)}
+          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+        >
+          <option value="all">All types</option>
+          <option value="Deposit">Deposits</option>
+          <option value="Withdrawal">Withdrawals</option>
+        </select>
+        <select
+          value={dateFilter}
+          onChange={(event) => setDateFilter(event.target.value)}
+          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+        >
+          <option value="all">All dates</option>
+          <option value="week">Last 7 days</option>
+          <option value="month">This month</option>
+        </select>
+        <button
+          type="button"
+          onClick={clearFilters}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5"
+        >
+          <Filter size={16} />
+          Clear
+        </button>
+      </div>
+      <p className="mb-3 text-sm font-bold text-ink/50">
+        Showing {filteredTransactions.length} of {transactions.length} entries.
+      </p>
       {message && <p className="mb-3 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{message}</p>}
       <div className="max-h-[680px] space-y-3 overflow-y-auto pr-1">
-        {transactions.map((transaction) => {
+        {filteredTransactions.length === 0 ? (
+          <p className="rounded-[8px] bg-ink/5 p-4 text-sm font-bold text-ink/55">
+            No entries match those filters.
+          </p>
+        ) : (
+          filteredTransactions.map((transaction) => {
           const isDeposit = transaction.type === "Deposit";
           const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
           const isEditing = editingId === transaction.id;
@@ -234,7 +385,8 @@ export default function AdminTransactionList({
               )}
             </article>
           );
-        })}
+        })
+        )}
       </div>
     </section>
   );

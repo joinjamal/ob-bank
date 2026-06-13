@@ -4,6 +4,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { format } from "date-fns";
 import { TrendingUp, Trophy } from "lucide-react";
 import { Account, LedgerPoint } from "@/components/types";
+import { getTrailMomentum } from "@/lib/insights";
 import { formatMoney } from "@/lib/money";
 
 function getChange(data: LedgerPoint[], key: "basilBalance" | "osamaBalance") {
@@ -66,6 +67,7 @@ export default function TrendChart({ data, accounts }: { data: LedgerPoint[]; ac
   const latest = data[data.length - 1];
   const basilChange = getChange(data, "basilBalance");
   const osamaChange = getChange(data, "osamaBalance");
+  const momentum = getTrailMomentum(data);
   const leader =
     latest && latest.basilBalance !== latest.osamaBalance
       ? latest.basilBalance > latest.osamaBalance
@@ -99,6 +101,24 @@ export default function TrendChart({ data, accounts }: { data: LedgerPoint[]; ac
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <TrailBadge name="Basil" color={basilLine} balance={latest.basilBalance} change={basilChange} />
             <TrailBadge name="Osama" color={osamaLine} balance={latest.osamaBalance} change={osamaChange} />
+          </div>
+        )}
+        {latest && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[8px] bg-white/70 px-4 py-3 text-sm font-black text-ink/65 shadow-sm">
+              Basil&apos;s recent climb:{" "}
+              <span className={momentum.basil >= 0 ? "text-mint" : "text-coral"}>
+                {momentum.basil >= 0 ? "+" : "-"}
+                {formatMoney(Math.abs(momentum.basil))}
+              </span>
+            </div>
+            <div className="rounded-[8px] bg-white/70 px-4 py-3 text-sm font-black text-ink/65 shadow-sm">
+              Osama&apos;s recent climb:{" "}
+              <span className={momentum.osama >= 0 ? "text-mint" : "text-coral"}>
+                {momentum.osama >= 0 ? "+" : "-"}
+                {formatMoney(Math.abs(momentum.osama))}
+              </span>
+            </div>
           </div>
         )}
       </div>

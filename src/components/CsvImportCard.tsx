@@ -51,13 +51,16 @@ export default function CsvImportCard({ onImported }: { onImported: () => Promis
       <div className="mb-4">
         <h2 className="text-xl font-black">Legacy CSV import</h2>
         <p className="text-sm font-bold text-ink/55">Headers: kid,date,type,amount,reason</p>
+        <p className="mt-1 text-xs font-bold text-ink/45">
+          Type accepts Deposit or Withdrawal. Use positive amounts, even for withdrawals.
+        </p>
       </div>
       <input type="file" accept=".csv,text/csv" onChange={handleFileChange} className="mb-3 block w-full text-sm font-bold" />
       <textarea
         value={csv}
         onChange={(event) => setCsv(event.target.value)}
         rows={7}
-        placeholder="kid,date,type,amount,reason&#10;Basil,2026-06-12,Deposit,25,Weekly allowance"
+        placeholder="kid,date,type,amount,reason&#10;Basil,2026-06-12,Deposit,25,Weekly allowance&#10;Osama,13/06/2026,Withdrawal,15,Book"
         className="w-full resize-y rounded-[8px] border-2 border-ink/10 bg-white p-3 font-mono text-sm outline-none transition focus:border-mint"
       />
       {message && <p className="mt-3 rounded-[8px] bg-ink/5 px-3 py-2 text-sm font-bold text-ink/65">{message}</p>}
