@@ -6,6 +6,7 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
 import AdminTransactionList from "@/components/AdminTransactionList";
 import BalanceCard from "@/components/BalanceCard";
+import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import CsvImportCard from "@/components/CsvImportCard";
 import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
@@ -134,6 +135,7 @@ export default function AdminPanel() {
               <AdminTransactionList transactions={transactions} onChanged={loadData} />
             </div>
             <aside className="space-y-5">
+              <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
               <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
               <CsvImportCard onImported={loadData} />
             </aside>
