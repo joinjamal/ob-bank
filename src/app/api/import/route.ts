@@ -1,6 +1,9 @@
 import { TransactionType } from "@prisma/client";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Papa from "papaparse";
+import { adminCookieName, isValidAdminSession } from "@/lib/adminAuth";
+import { recalculateAccountBalance } from "@/lib/balances";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 
@@ -15,6 +18,13 @@ type CsvRow = {
 };
 
 export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(adminCookieName())?.value;
+
+  if (!isValidAdminSession(session)) {
+    return NextResponse.json({ message: "Admin access is required." }, { status: 401 });
+  }
+
   const csv = await request.text();
   const parsed = Papa.parse<CsvRow>(csv, {
     header: true,
@@ -49,14 +59,8 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const delta = type === TransactionType.Deposit ? amount : -amount;
-
-    await prisma.$transaction([
-      prisma.account.update({
-        where: { id: account.id },
-        data: { currentBalance: { increment: delta } }
-      }),
-      prisma.transaction.create({
+    await prisma.$transaction(async (tx) => {
+      await tx.transaction.create({
         data: {
           account: { connect: { id: account.id } },
           date: row.date ? new Date(row.date) : new Date(),
@@ -64,8 +68,10 @@ export async function POST(request: Request) {
           amount,
           reason
         }
-      })
-    ]);
+      });
+
+      await recalculateAccountBalance(tx, account.id);
+    });
 
     imported += 1;
   }

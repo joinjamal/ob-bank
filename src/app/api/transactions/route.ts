@@ -1,5 +1,8 @@
 import { TransactionType } from "@prisma/client";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { adminCookieName, isValidAdminSession } from "@/lib/adminAuth";
+import { recalculateAccountBalance } from "@/lib/balances";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 import { serializeTransaction } from "@/lib/serializers";
@@ -7,8 +10,7 @@ import { serializeTransaction } from "@/lib/serializers";
 export async function GET() {
   const transactions = await prisma.transaction.findMany({
     include: { account: true },
-    orderBy: { date: "desc" },
-    take: 30
+    orderBy: { date: "desc" }
   });
 
   return NextResponse.json(transactions.map(serializeTransaction));
@@ -21,6 +23,12 @@ export async function POST(request: Request) {
     const type = body.type === "Withdrawal" ? TransactionType.Withdrawal : TransactionType.Deposit;
     const amount = Number(body.amount);
     const reason = String(body.reason ?? "").trim();
+    const cookieStore = await cookies();
+    const session = cookieStore.get(adminCookieName())?.value;
+
+    if (!isValidAdminSession(session)) {
+      return NextResponse.json({ message: "Admin access is required." }, { status: 401 });
+    }
 
     if (!accountId || !Number.isFinite(amount) || amount <= 0) {
       return NextResponse.json(
@@ -36,19 +44,7 @@ export async function POST(request: Request) {
         throw new Error("Account not found.");
       }
 
-      const delta = type === TransactionType.Deposit ? amount : -amount;
-      const newBalance = Number(account.currentBalance) + delta;
-
-      if (newBalance < 0) {
-        throw new Error("Withdrawal cannot make the balance negative.");
-      }
-
-      await tx.account.update({
-        where: { id: accountId },
-        data: { currentBalance: newBalance }
-      });
-
-      return tx.transaction.create({
+      const transaction = await tx.transaction.create({
         data: {
           account: { connect: { id: accountId } },
           type,
@@ -58,6 +54,10 @@ export async function POST(request: Request) {
         },
         include: { account: true }
       });
+
+      await recalculateAccountBalance(tx, accountId);
+
+      return transaction;
     });
 
     await snapshotLedger();

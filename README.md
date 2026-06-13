@@ -10,6 +10,7 @@ OB Bank is a full-stack digital allowance bank for Basil and Osama. It uses a ho
 - Recharts for analytics
 - Papa Parse CSV import endpoint
 - In-browser Web Audio sounds for deposits and withdrawals
+- Password-protected parent admin route at `/admin`
 
 ## Supabase
 
@@ -28,6 +29,8 @@ For Vercel/serverless deployments with Prisma, set these environment variables:
 DATABASE_URL="postgres://postgres.qpjblmdlglqewxqwhfpi:[YOUR-DATABASE-PASSWORD]@[YOUR-POOLER-HOST]:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgres://postgres.qpjblmdlglqewxqwhfpi:[YOUR-DATABASE-PASSWORD]@[YOUR-POOLER-HOST]:5432/postgres"
 NEXT_PUBLIC_SUPABASE_URL="https://qpjblmdlglqewxqwhfpi.supabase.co"
+ADMIN_PASSWORD="choose-a-strong-parent-password"
+ADMIN_SESSION_SECRET="choose-a-long-random-session-secret"
 ```
 
 Use the Supabase dashboard Connect panel to copy the exact pooler host and insert the database password.
@@ -40,6 +43,21 @@ Use the Supabase dashboard Connect panel to copy the exact pooler host and inser
 4. Deploy.
 
 `postinstall` runs `prisma generate`, so Vercel has the Prisma client during build.
+
+## Avatar Uploads
+
+Kid avatars are clickable on `/`. Uploaded images are resized in the browser and saved as base64 data URLs in `accounts.avatar_url`. This keeps the two-kid app simple and avoids Supabase Storage policies. If you later prefer Supabase Storage, create a public bucket named `avatars`, upload images there, and store the public URL in the same `avatar_url` field.
+
+## Parent Admin
+
+Visit `/admin` and sign in with `ADMIN_PASSWORD`. Parent tools live there:
+
+- Add deposits or withdrawals
+- Import legacy CSV rows
+- Edit transaction type, amount, and reason
+- Delete transactions
+
+Edits and deletes recalculate the affected kid's balance automatically.
 
 If you add new migrations later, run:
 

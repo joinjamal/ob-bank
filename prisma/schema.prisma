@@ -16,7 +16,7 @@ enum TransactionType {
 model Account {
   id             String        @id @default(uuid())
   name           String        @unique
-  avatarUrl      String        @map("avatar_url")
+  avatarUrl      String        @map("avatar_url") @db.Text
   currentBalance Decimal       @default(0) @map("current_balance") @db.Decimal(12, 2)
   themeColor     String        @default("#2F7DF6") @map("theme_color")
   createdAt      DateTime      @default(now()) @map("created_at")

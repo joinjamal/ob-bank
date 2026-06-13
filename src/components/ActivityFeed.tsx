@@ -5,20 +5,30 @@ import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { Transaction } from "@/components/types";
 import { formatMoney } from "@/lib/money";
 
-export default function ActivityFeed({ transactions }: { transactions: Transaction[] }) {
+export default function ActivityFeed({
+  transactions,
+  compact = false
+}: {
+  transactions: Transaction[];
+  compact?: boolean;
+}) {
+  const visibleTransactions = compact ? transactions.slice(0, 8) : transactions;
+
   return (
     <section className="rounded-[8px] bg-white p-5 shadow-lift">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-black">Recent activity</h2>
-          <p className="text-sm font-bold text-ink/55">The latest allowance story.</p>
+          <p className="text-sm font-bold text-ink/55">
+            {compact ? "A quick look at the latest money moves." : "The full allowance history."}
+          </p>
         </div>
       </div>
-      <div className="max-h-[430px] space-y-3 overflow-y-auto pr-1">
-        {transactions.length === 0 ? (
+      <div className={`${compact ? "max-h-[330px]" : "max-h-[560px]"} space-y-3 overflow-y-auto pr-1`}>
+        {visibleTransactions.length === 0 ? (
           <p className="rounded-[8px] bg-ink/5 p-4 text-sm font-bold text-ink/60">No transactions yet.</p>
         ) : (
-          transactions.map((transaction) => {
+          visibleTransactions.map((transaction) => {
             const isDeposit = transaction.type === "Deposit";
             const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
 
@@ -37,7 +47,7 @@ export default function ActivityFeed({ transactions }: { transactions: Transacti
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-black">{transaction.reason || "Quick balance update"}</p>
                   <p className="text-sm font-bold text-ink/50">
-                    {transaction.accountName} ·{" "}
+                    {transaction.accountName} -{" "}
                     {formatDistanceToNow(new Date(transaction.date), { addSuffix: true })}
                   </p>
                 </div>
