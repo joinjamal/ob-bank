@@ -1,7 +1,8 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { Lock } from "lucide-react";
+import Link from "next/link";
+import { Home, Lock, Shield } from "lucide-react";
 import { signInParent } from "@/app/actions";
 
 function SubmitButton() {
@@ -24,6 +25,22 @@ export default function ParentLoginForm() {
   return (
     <main className="grid min-h-screen place-items-center px-4 py-8">
       <form action={formAction} className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
+        <div className="mb-5 flex flex-wrap justify-end gap-2">
+          <Link
+            href="/"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+          >
+            <Home size={16} className="text-mint" />
+            Home
+          </Link>
+          <Link
+            href="/admin"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5"
+          >
+            <Shield size={16} className="text-mint" />
+            Super admin
+          </Link>
+        </div>
         <div className="mb-5">
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />

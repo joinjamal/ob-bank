@@ -308,20 +308,6 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
               <LogOut size={17} />
               Switch kid
             </button>
-            <Link
-              href="/parent"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
-            >
-              <UserRound size={17} className="text-mint" />
-              Parent
-            </Link>
-            <Link
-              href="/admin"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5"
-            >
-              <Shield size={17} className="text-mint" />
-              Super admin
-            </Link>
           </div>
         </header>
 
