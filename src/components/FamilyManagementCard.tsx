@@ -6,8 +6,9 @@ import { KeyRound, Trash2, UsersRound } from "lucide-react";
 export type FamilySummary = {
   id: string;
   name: string;
+  createdAt: string;
   parents: { id: string; familyId: string; name: string; email: string | null }[];
-  accounts: { id: string; name: string }[];
+  accounts: { id: string; name: string; currentBalance: number }[];
 };
 
 export default function FamilyManagementCard({

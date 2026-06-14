@@ -1,5 +1,6 @@
 export type Account = {
   id: string;
+  familyId: string | null;
   name: string;
   avatarUrl: string;
   currentBalance: number;

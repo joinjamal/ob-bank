@@ -51,7 +51,7 @@ export default function ParentLoginForm() {
             <Lock size={24} />
           </div>
           <h1 className="text-3xl font-black">Family portal</h1>
-          <p className="mt-2 font-bold text-ink/60">Sign in or create your family vault. Kids stay inside their own family.</p>
+          <p className="mt-2 font-bold text-ink/60">Sign in or create your family's allowance vault.</p>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-2 rounded-[8px] bg-ink/5 p-1">
@@ -79,7 +79,7 @@ export default function ParentLoginForm() {
           <input
             name="email"
             autoComplete="username"
-            placeholder="Jamal or parent@email.com"
+            placeholder="parent@email.com"
             className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
           />
             </label>
@@ -103,11 +103,11 @@ export default function ParentLoginForm() {
           <form action={registerAction}>
             <label className="block">
               <span className="mb-2 block text-sm font-black text-ink/70">Family name</span>
-              <input name="familyName" placeholder="Al Haq family" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <input name="familyName" placeholder="Your family name" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
             </label>
             <label className="mt-4 block">
               <span className="mb-2 block text-sm font-black text-ink/70">Parent name</span>
-              <input name="parentName" placeholder="Jamal" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <input name="parentName" placeholder="Parent name" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
             </label>
             <label className="mt-4 block">
               <span className="mb-2 block text-sm font-black text-ink/70">Email optional</span>

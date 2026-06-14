@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
-import AdminSummaryCards from "@/components/AdminSummaryCards";
+import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminTransactionList from "@/components/AdminTransactionList";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -174,7 +174,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
                 Updating admin data...
               </p>
             )}
-            <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} families={families} />
+            <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
             <AdminTransactionList
               transactions={transactions}
               onEdit={editTransaction}

@@ -4,6 +4,7 @@ import { toMoney } from "@/lib/money";
 export function serializeAccount(account: Account) {
   return {
     id: account.id,
+    familyId: account.familyId,
     name: account.name,
     avatarUrl: account.avatarUrl,
     currentBalance: toMoney(account.currentBalance),

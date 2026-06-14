@@ -1,5 +1,6 @@
 import { buildWealthTrailFromTransactions } from "@/lib/ledger";
 import { runDueAllowances, serializeRecurringAllowance } from "@/lib/allowances";
+import { toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount, serializeTransaction } from "@/lib/serializers";
 
@@ -20,13 +21,18 @@ export async function getFamilies() {
   return families.map((family) => ({
     id: family.id,
     name: family.name,
+    createdAt: family.createdAt.toISOString(),
     parents: family.parents.map((parent) => ({
       id: parent.id,
       familyId: parent.familyId,
       name: parent.name,
       email: parent.email
     })),
-    accounts: family.accounts.map(serializeAccount)
+    accounts: family.accounts.map((account) => ({
+      id: account.id,
+      name: account.name,
+      currentBalance: toMoney(account.currentBalance)
+    }))
   }));
 }
 
