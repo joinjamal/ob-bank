@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Copy, Send, ShieldCheck } from "lucide-react";
+import { Copy, Send, Share2, ShieldCheck } from "lucide-react";
 
 export default function FamilyAccessLinkCard({
   familyName,
@@ -26,6 +26,28 @@ export default function FamilyAccessLinkCard({
     }
   }
 
+  async function shareLink() {
+    setMessage("");
+
+    const shareData = {
+      title: "OB Bank kid link",
+      text: `Open ${familyName}'s OB Bank kid vault picker.`,
+      url: link
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        setMessage("Ready to open on the kid's device.");
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+
+    await copyLink();
+  }
+
   return (
     <section className="rounded-[8px] bg-white p-5 shadow-lift">
       <div className="mb-4 flex items-start gap-3">
@@ -44,14 +66,24 @@ export default function FamilyAccessLinkCard({
         <p className="break-all text-xs font-bold text-ink/55">{link}</p>
       </div>
 
-      <button
-        type="button"
-        onClick={copyLink}
-        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5"
-      >
-        <Copy size={17} />
-        Copy kid link
-      </button>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={shareLink}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5"
+        >
+          <Share2 size={17} />
+          Share to kid
+        </button>
+        <button
+          type="button"
+          onClick={copyLink}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5"
+        >
+          <Copy size={17} />
+          Copy link
+        </button>
+      </div>
 
       <p className="mt-3 flex items-start gap-2 text-xs font-bold text-ink/50">
         <ShieldCheck size={15} className="mt-0.5 shrink-0 text-mint" />
