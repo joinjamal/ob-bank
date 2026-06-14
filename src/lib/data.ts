@@ -3,6 +3,7 @@ import { runDueAllowances, serializeRecurringAllowance } from "@/lib/allowances"
 import { toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount, serializeTransaction } from "@/lib/serializers";
+import { signFamilySession } from "@/lib/parentAuth";
 
 export async function getAccounts() {
   const accounts = await prisma.account.findMany({ orderBy: { name: "asc" } });
@@ -230,7 +231,8 @@ export async function getParentData(parentId: string) {
       name: parent.name,
       email: parent.email,
       familyId: parent.familyId,
-      familyName: parent.family.name
+      familyName: parent.family.name,
+      familyAccessToken: signFamilySession(parent.familyId)
     },
     accounts: accounts.map(serializeAccount),
     transactions,

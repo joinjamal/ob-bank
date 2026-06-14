@@ -9,6 +9,7 @@ import AdminTransactionList from "@/components/AdminTransactionList";
 import AutomaticAllowanceCard from "@/components/AutomaticAllowanceCard";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
+import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
 import KidManagementCard from "@/components/KidManagementCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
@@ -21,6 +22,7 @@ type ParentData = {
     email: string | null;
     familyId: string;
     familyName: string;
+    familyAccessToken: string;
   };
   accounts: Account[];
   transactions: Transaction[];
@@ -149,6 +151,10 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             />
           </div>
           <aside className="space-y-5">
+            <FamilyAccessLinkCard
+              familyName={initialData.parent.familyName}
+              token={initialData.parent.familyAccessToken}
+            />
             <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
             <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
