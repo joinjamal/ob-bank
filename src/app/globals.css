@@ -215,6 +215,91 @@ select {
   animation: confetti-fall 820ms ease-out forwards;
 }
 
+.vault-open-card {
+  animation: vault-card-pop 280ms ease-out both;
+}
+
+.vault-door {
+  position: relative;
+  overflow: hidden;
+}
+
+.vault-door::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+}
+
+.vault-door::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0 35%, rgba(255, 255, 255, 0.16) 45%, transparent 58%);
+  animation: vault-shine 950ms ease-in-out infinite;
+}
+
+.vault-dial {
+  animation: vault-dial-turn 950ms cubic-bezier(0.2, 0.85, 0.25, 1) infinite;
+}
+
+.vault-light {
+  animation: vault-light 900ms ease-in-out infinite;
+}
+
+.vault-light:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.vault-light:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+@keyframes vault-card-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vault-dial-turn {
+  0% {
+    transform: rotate(-18deg) scale(0.98);
+  }
+  55% {
+    transform: rotate(24deg) scale(1.04);
+  }
+  100% {
+    transform: rotate(-18deg) scale(0.98);
+  }
+}
+
+@keyframes vault-shine {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes vault-light {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0) scale(0.92);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
 @keyframes confetti-fall {
   0% {
     opacity: 0;

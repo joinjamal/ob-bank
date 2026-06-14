@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
-import { BadgeDollarSign, KeyRound, LogOut, Shield, UserRound } from "lucide-react";
+import { BadgeDollarSign, KeyRound, LockKeyhole, LogOut, Shield, UserRound } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -17,7 +17,7 @@ import {
   createOptimisticTransaction,
   signedAmount
 } from "@/lib/optimisticMoney";
-import { playTransactionSound } from "@/lib/sounds";
+import { playTransactionSound, playVaultErrorSound, playVaultUnlockSound } from "@/lib/sounds";
 
 type KidLedgerPoint = {
   id: string;
@@ -36,6 +36,8 @@ type MoneyAnimation = {
   type: "Deposit" | "Withdrawal";
   id: number;
 } | null;
+
+const minimumVaultAnimationMs = 850;
 
 export default function KidPortal({ kids }: { kids: Account[] }) {
   const [selectedKidId, setSelectedKidId] = useState(kids[0]?.id ?? "");
@@ -82,30 +84,29 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
     }
 
     setIsLoggingIn(true);
-    const instantData = {
-      account: selectedKid,
-      transactions: [],
-      ledger: []
-    };
-    setKidData(instantData);
 
     try {
-      const response = await fetch("/api/kids/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountId: selectedKid.id, pin })
-      });
+      const [response] = await Promise.all([
+        fetch("/api/kids/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accountId: selectedKid.id, pin })
+        }),
+        new Promise((resolve) => window.setTimeout(resolve, minimumVaultAnimationMs))
+      ]);
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(body?.message ?? "Could not open your profile.");
       }
 
+      playVaultUnlockSound();
       setKidData(body);
       setPin("");
       void loadKidDetails(body.account.id);
     } catch (error) {
       setKidData(null);
+      playVaultErrorSound();
       setMessage(error instanceof Error ? error.message : "Could not open your profile.");
     } finally {
       setIsLoggingIn(false);
@@ -276,6 +277,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
             {message && <p className="mt-4 rounded-[8px] bg-coral/10 p-3 font-bold text-coral">{message}</p>}
           </section>
         </div>
+        {isLoggingIn && <VaultOpeningOverlay kidName={selectedKid?.name ?? "your vault"} />}
       </main>
     );
   }
@@ -365,6 +367,27 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
         />
       )}
     </main>
+  );
+}
+
+function VaultOpeningOverlay({ kidName }: { kidName: string }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm">
+      <div className="vault-open-card w-full max-w-sm rounded-[8px] bg-white p-6 text-center shadow-lift">
+        <div className="vault-door mx-auto mb-5 grid h-28 w-28 place-items-center rounded-[24px] bg-ink text-white shadow-lift">
+          <div className="vault-dial grid h-16 w-16 place-items-center rounded-full border-8 border-mint/70 bg-white/10">
+            <LockKeyhole size={28} className="text-mint" />
+          </div>
+        </div>
+        <p className="text-sm font-black uppercase text-mint">Checking PIN</p>
+        <h2 className="mt-1 text-2xl font-black text-ink">Opening {kidName}&apos;s vault</h2>
+        <div className="mt-5 flex justify-center gap-2">
+          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
+          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
+          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
+        </div>
+      </div>
+    </div>
   );
 }
 

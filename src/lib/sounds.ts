@@ -60,6 +60,46 @@ export function playTransactionSound(type: TransactionSound) {
   }
 }
 
+export function playVaultUnlockSound() {
+  if (typeof window === "undefined") return;
+
+  try {
+    const audioContext = getAudioContext();
+    const master = audioContext.createGain();
+    master.gain.value = 0.14;
+    master.connect(audioContext.destination);
+
+    const now = audioContext.currentTime;
+    playTone(audioContext, master, 220, now, 0.1, 0.45);
+    playTone(audioContext, master, 329.63, now + 0.09, 0.12, 0.5);
+    playTone(audioContext, master, 493.88, now + 0.2, 0.18, 0.55);
+    playTone(audioContext, master, 659.25, now + 0.32, 0.2, 0.45);
+
+    window.setTimeout(() => audioContext.close().catch(() => undefined), 850);
+  } catch {
+    // Login should never depend on audio support.
+  }
+}
+
+export function playVaultErrorSound() {
+  if (typeof window === "undefined") return;
+
+  try {
+    const audioContext = getAudioContext();
+    const master = audioContext.createGain();
+    master.gain.value = 0.12;
+    master.connect(audioContext.destination);
+
+    const now = audioContext.currentTime;
+    playTone(audioContext, master, 196, now, 0.15, 0.45);
+    playTone(audioContext, master, 146.83, now + 0.14, 0.2, 0.38);
+
+    window.setTimeout(() => audioContext.close().catch(() => undefined), 650);
+  } catch {
+    // Login should never depend on audio support.
+  }
+}
+
 declare global {
   interface Window {
     webkitAudioContext?: typeof AudioContext;
