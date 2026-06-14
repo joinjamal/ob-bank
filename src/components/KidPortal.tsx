@@ -11,7 +11,7 @@ import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
 import StandardCalculator from "@/components/StandardCalculator";
-import type { Account, KidLoginAccount, Transaction } from "@/components/types";
+import type { Account, Transaction } from "@/components/types";
 import {
   applyAccountDelta,
   createOptimisticTransaction,
@@ -37,7 +37,7 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
+export default function KidPortal({ kids }: { kids: Account[] }) {
   const [selectedKidId, setSelectedKidId] = useState(kids[0]?.id ?? "");
   const [pin, setPin] = useState("");
   const [kidData, setKidData] = useState<KidData | null>(null);
@@ -82,6 +82,13 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
     }
 
     setIsLoggingIn(true);
+    const instantData = {
+      account: selectedKid,
+      transactions: [],
+      ledger: []
+    };
+    setKidData(instantData);
+
     try {
       const response = await fetch("/api/kids/login", {
         method: "POST",
@@ -98,6 +105,7 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
       setPin("");
       void loadKidDetails(body.account.id);
     } catch (error) {
+      setKidData(null);
       setMessage(error instanceof Error ? error.message : "Could not open your profile.");
     } finally {
       setIsLoggingIn(false);
@@ -217,13 +225,13 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
                   }`}
                   style={{ backgroundColor: kid.profileColor }}
                 >
-                  <span
-                    className="mb-3 grid h-24 w-24 place-items-center rounded-full border-4 border-white text-4xl font-black text-white shadow-sm"
-                    style={{ backgroundColor: kid.themeColor }}
-                    aria-hidden="true"
-                  >
-                    {kid.name[0]}
-                  </span>
+                  <img
+                    src={kid.avatarUrl}
+                    alt={`${kid.name} avatar`}
+                    className="mb-3 h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm"
+                    loading="eager"
+                    decoding="async"
+                  />
                   <p className="text-2xl font-black text-ink">{kid.name}</p>
                 </button>
               ))}
@@ -305,6 +313,11 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
           {isLoadingDetails && (
             <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
               Loading activity in the background...
+            </p>
+          )}
+          {isLoggingIn && (
+            <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
+              Checking PIN...
             </p>
           )}
           <BalanceCard

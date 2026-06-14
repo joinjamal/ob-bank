@@ -10,15 +10,6 @@ export type Account = {
   goalAmount: number | null;
 };
 
-export type KidLoginAccount = {
-  id: string;
-  name: string;
-  avatarUrl: string;
-  themeColor: string;
-  profileColor: string;
-  profilePattern: string;
-};
-
 export type Transaction = {
   id: string;
   accountId: string;

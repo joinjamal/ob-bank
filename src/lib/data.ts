@@ -8,21 +8,8 @@ export async function getAccounts() {
 }
 
 export async function getKidLoginAccounts() {
-  const accounts = await prisma.account.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      themeColor: true,
-      profileColor: true,
-      profilePattern: true
-    }
-  });
-
-  return accounts.map((account) => ({
-    ...account,
-    avatarUrl: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(account.name)}`
-  }));
+  const accounts = await prisma.account.findMany({ orderBy: { name: "asc" } });
+  return accounts.map(serializeAccount);
 }
 
 export async function getTransactions(limit?: number) {
