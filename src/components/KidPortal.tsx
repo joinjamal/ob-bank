@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { BadgeDollarSign, KeyRound, LogOut, Shield } from "lucide-react";
+import { BadgeDollarSign, KeyRound, LogOut, Shield, UserRound } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -204,13 +204,22 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                 Choose your profile and enter your PIN.
               </p>
             </div>
-            <Link
-              href="/admin"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
-            >
-              <Shield size={17} className="text-mint" />
-              Parent
-            </Link>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Link
+                href="/parent"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+              >
+                <UserRound size={17} className="text-mint" />
+                Parent
+              </Link>
+              <Link
+                href="/admin"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5"
+              >
+                <Shield size={17} className="text-mint" />
+                Super admin
+              </Link>
+            </div>
           </header>
 
           <section className="rounded-[8px] bg-white p-5 shadow-lift">
@@ -298,11 +307,18 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
               Switch kid
             </button>
             <Link
-              href="/admin"
+              href="/parent"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
             >
-              <Shield size={17} className="text-mint" />
+              <UserRound size={17} className="text-mint" />
               Parent
+            </Link>
+            <Link
+              href="/admin"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5"
+            >
+              <Shield size={17} className="text-mint" />
+              Super admin
             </Link>
           </div>
         </header>
