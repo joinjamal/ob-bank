@@ -20,6 +20,18 @@ export type Transaction = {
   reason: string | null;
 };
 
+export type RecurringAllowance = {
+  id: string;
+  accountId: string;
+  accountName: string;
+  frequency: "Daily" | "Weekly" | "Monthly";
+  amount: number;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
+  nextRunAt: string;
+  active: boolean;
+};
+
 export type LedgerPoint = {
   id: string;
   date: string;

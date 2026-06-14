@@ -1,4 +1,5 @@
 import { buildWealthTrailFromTransactions } from "@/lib/ledger";
+import { runDueAllowances, serializeRecurringAllowance } from "@/lib/allowances";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount, serializeTransaction } from "@/lib/serializers";
 
@@ -124,13 +125,19 @@ export async function getKidDashboardData(accountId: string) {
     throw new Error("Kid account not found.");
   }
 
+  if (account.familyId) {
+    await runDueAllowances(account.familyId);
+  }
+
+  const refreshedAccount = await prisma.account.findUnique({ where: { id: accountId } });
+
   const [transactions, ledger] = await Promise.all([
     getKidTransactions(accountId),
     getKidLedger(accountId)
   ]);
 
   return {
-    account: serializeAccount(account),
+    account: serializeAccount(refreshedAccount ?? account),
     transactions,
     ledger
   };
@@ -167,9 +174,24 @@ export async function getParentData(parentId: string) {
     throw new Error("Parent account not found.");
   }
 
-  const [accounts, transactions] = await Promise.all([
+  await runDueAllowances(parent.familyId);
+
+  const [accounts, transactions, allowances] = await Promise.all([
     prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
-    getFamilyTransactions(parent.familyId)
+    getFamilyTransactions(parent.familyId),
+    prisma.recurringAllowance.findMany({
+      where: { account: { familyId: parent.familyId } },
+      include: {
+        account: {
+          select: {
+            id: true,
+            name: true,
+            familyId: true
+          }
+        }
+      },
+      orderBy: [{ active: "desc" }, { nextRunAt: "asc" }]
+    })
   ]);
 
   return {
@@ -182,6 +204,7 @@ export async function getParentData(parentId: string) {
     },
     accounts: accounts.map(serializeAccount),
     transactions,
+    allowances: allowances.map(serializeRecurringAllowance),
     ledger: []
   };
 }

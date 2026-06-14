@@ -6,12 +6,13 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutParent } from "@/app/actions";
 import AdminSummaryCards from "@/components/AdminSummaryCards";
 import AdminTransactionList from "@/components/AdminTransactionList";
+import AutomaticAllowanceCard from "@/components/AutomaticAllowanceCard";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
 import KidManagementCard from "@/components/KidManagementCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
-import type { Account, Transaction } from "@/components/types";
+import type { Account, RecurringAllowance, Transaction } from "@/components/types";
 
 type ParentData = {
   parent: {
@@ -23,11 +24,13 @@ type ParentData = {
   };
   accounts: Account[];
   transactions: Transaction[];
+  allowances: RecurringAllowance[];
 };
 
 export default function ParentPanel({ initialData }: { initialData: ParentData }) {
   const [accounts, setAccounts] = useState(initialData.accounts);
   const [transactions, setTransactions] = useState(initialData.transactions);
+  const [allowances, setAllowances] = useState(initialData.allowances);
   const [message, setMessage] = useState("");
 
   const sortedAccounts = useMemo(
@@ -44,6 +47,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
     }
     setAccounts(body.accounts);
     setTransactions(body.transactions);
+    setAllowances(body.allowances);
   }, []);
 
   async function saveTransaction(payload: {
@@ -145,6 +149,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             />
           </div>
           <aside className="space-y-5">
+            <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
             <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
             <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
