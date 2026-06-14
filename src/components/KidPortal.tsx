@@ -229,7 +229,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                   key={kid.id}
                   type="button"
                   onClick={() => setSelectedKidId(kid.id)}
-                  className={`rounded-[8px] border-4 p-4 text-left transition hover:-translate-y-1 ${
+                  className={`kid-color-surface rounded-[8px] border-4 p-4 text-left transition hover:-translate-y-1 ${
                     selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white"
                   }`}
                   style={{ backgroundColor: kid.profileColor }}

@@ -121,7 +121,7 @@ export default function BalanceCard({
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-[8px] p-5 shadow-lift" style={patternStyle}>
+      <section className="kid-color-surface relative overflow-hidden rounded-[8px] p-5 shadow-lift" style={patternStyle}>
         <div
           className="absolute -right-12 -top-14 h-40 w-40 rounded-full opacity-20"
           style={{ backgroundColor: account.themeColor }}
