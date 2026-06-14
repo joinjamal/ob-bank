@@ -5,14 +5,15 @@ export async function recalculateAccountBalance(
   accountId: string,
   options: { allowNegative?: boolean } = {}
 ) {
-  const transactions = await tx.transaction.findMany({
+  const totals = await tx.transaction.groupBy({
+    by: ["type"],
     where: { accountId },
-    select: { amount: true, type: true }
+    _sum: { amount: true }
   });
 
-  const currentBalance = transactions.reduce((total, transaction) => {
-    const amount = Number(transaction.amount);
-    return transaction.type === TransactionType.Deposit ? total + amount : total - amount;
+  const currentBalance = totals.reduce((total, row) => {
+    const amount = Number(row._sum.amount ?? 0);
+    return row.type === TransactionType.Deposit ? total + amount : total - amount;
   }, 0);
 
   if (currentBalance < 0 && !options.allowNegative) {

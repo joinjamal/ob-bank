@@ -19,12 +19,18 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-export default function AdminPanel() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [, setLedger] = useState<LedgerPoint[]>([]);
+type AdminData = {
+  accounts: Account[];
+  transactions: Transaction[];
+  ledger: LedgerPoint[];
+};
+
+export default function AdminPanel({ initialData }: { initialData: AdminData }) {
+  const [accounts, setAccounts] = useState<Account[]>(initialData.accounts);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
+  const [, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const animationTimer = useRef<number | null>(null);
 
@@ -38,26 +44,27 @@ export default function AdminPanel() {
 
   const loadData = useCallback(async () => {
     setError("");
-    const [accountResponse, transactionResponse, ledgerResponse] = await Promise.all([
-      fetch("/api/accounts", { cache: "no-store" }),
-      fetch("/api/transactions", { cache: "no-store" }),
-      fetch("/api/ledger", { cache: "no-store" })
-    ]);
+    setIsRefreshing(true);
+    try {
+      const [accountResponse, transactionResponse, ledgerResponse] = await Promise.all([
+        fetch("/api/accounts", { cache: "no-store" }),
+        fetch("/api/transactions", { cache: "no-store" }),
+        fetch("/api/ledger", { cache: "no-store" })
+      ]);
 
-    if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok) {
-      throw new Error("Could not load admin data.");
+      if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok) {
+        throw new Error("Could not load admin data.");
+      }
+
+      setAccounts(await accountResponse.json());
+      setTransactions(await transactionResponse.json());
+      setLedger(await ledgerResponse.json());
+    } finally {
+      setIsRefreshing(false);
     }
-
-    setAccounts(await accountResponse.json());
-    setTransactions(await transactionResponse.json());
-    setLedger(await ledgerResponse.json());
   }, []);
 
   useEffect(() => {
-    loadData()
-      .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong."))
-      .finally(() => setIsLoading(false));
-
     return () => {
       if (animationTimer.current) {
         window.clearTimeout(animationTimer.current);
@@ -117,32 +124,31 @@ export default function AdminPanel() {
 
         {error && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{error}</p>}
 
-        {isLoading ? (
-          <div className="grid min-h-[50vh] place-items-center rounded-[8px] bg-white/80 p-8 text-xl font-black shadow-lift">
-            Loading admin tools...
-          </div>
-        ) : (
-          <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
-            <div className="space-y-5">
-              <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
-              <div className="grid gap-5 md:grid-cols-2">
-                {sortedAccounts.map((account) => (
-                  <BalanceCard
-                    key={account.id}
-                    account={account}
-                    animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
-                  />
-                ))}
-              </div>
-              <AdminTransactionList transactions={transactions} onChanged={loadData} />
+        <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
+          <div className="space-y-5">
+            {isRefreshing && (
+              <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
+                Updating admin data...
+              </p>
+            )}
+            <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
+            <div className="grid gap-5 md:grid-cols-2">
+              {sortedAccounts.map((account) => (
+                <BalanceCard
+                  key={account.id}
+                  account={account}
+                  animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
+                />
+              ))}
             </div>
-            <aside className="space-y-5">
-              <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
-              <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
-              <CsvImportCard onImported={loadData} />
-            </aside>
+            <AdminTransactionList transactions={transactions} onChanged={loadData} />
           </div>
-        )}
+          <aside className="space-y-5">
+            <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
+            <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
+            <CsvImportCard onImported={loadData} />
+          </aside>
+        </div>
       </div>
     </main>
   );

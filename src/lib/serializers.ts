@@ -17,15 +17,13 @@ export function serializeAccount(account: Account) {
 
 export function serializeTransaction(
   transaction: Transaction & {
-    account: Pick<Account, "id" | "name" | "avatarUrl" | "themeColor">;
+    account: Pick<Account, "id" | "name" | "themeColor">;
   }
 ) {
   return {
     id: transaction.id,
     accountId: transaction.accountId,
     accountName: transaction.account.name,
-    accountAvatarUrl: transaction.account.avatarUrl,
-    accountThemeColor: transaction.account.themeColor,
     date: transaction.date.toISOString(),
     type: transaction.type,
     amount: toMoney(transaction.amount),

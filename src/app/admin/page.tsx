@@ -2,6 +2,9 @@ import { cookies } from "next/headers";
 import AdminLoginForm from "@/components/AdminLoginForm";
 import AdminPanel from "@/components/AdminPanel";
 import { adminCookieName, isAdminConfigured, isValidAdminSession } from "@/lib/adminAuth";
+import { getAdminData } from "@/lib/data";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   if (!isAdminConfigured()) {
@@ -25,5 +28,7 @@ export default async function AdminPage() {
     return <AdminLoginForm />;
   }
 
-  return <AdminPanel />;
+  const initialData = await getAdminData();
+
+  return <AdminPanel initialData={initialData} />;
 }

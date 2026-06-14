@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { serializeAccount } from "@/lib/serializers";
+import { getAccounts } from "@/lib/data";
 
 export async function GET() {
-  const accounts = await prisma.account.findMany({ orderBy: { name: "asc" } });
-  return NextResponse.json(accounts.map(serializeAccount));
+  return NextResponse.json(await getAccounts());
 }

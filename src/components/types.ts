@@ -14,8 +14,6 @@ export type Transaction = {
   id: string;
   accountId: string;
   accountName: string;
-  accountAvatarUrl: string;
-  accountThemeColor: string;
   date: string;
   type: "Deposit" | "Withdrawal";
   amount: number;

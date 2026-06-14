@@ -18,11 +18,17 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-export default function Dashboard() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [ledger, setLedger] = useState<LedgerPoint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+type DashboardData = {
+  accounts: Account[];
+  transactions: Transaction[];
+  ledger: LedgerPoint[];
+};
+
+export default function Dashboard({ initialData }: { initialData: DashboardData }) {
+  const [accounts, setAccounts] = useState<Account[]>(initialData.accounts);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
+  const [ledger, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [activeKidModal, setActiveKidModal] = useState<{
@@ -43,26 +49,27 @@ export default function Dashboard() {
 
   const loadData = useCallback(async () => {
     setError("");
-    const [accountResponse, transactionResponse, ledgerResponse] = await Promise.all([
-      fetch("/api/accounts", { cache: "no-store" }),
-      fetch("/api/transactions", { cache: "no-store" }),
-      fetch("/api/ledger", { cache: "no-store" })
-    ]);
+    setIsRefreshing(true);
+    try {
+      const [accountResponse, transactionResponse, ledgerResponse] = await Promise.all([
+        fetch("/api/accounts", { cache: "no-store" }),
+        fetch("/api/transactions?limit=80", { cache: "no-store" }),
+        fetch("/api/ledger", { cache: "no-store" })
+      ]);
 
-    if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok) {
-      throw new Error("Could not load OB Bank data.");
+      if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok) {
+        throw new Error("Could not load OB Bank data.");
+      }
+
+      setAccounts(await accountResponse.json());
+      setTransactions(await transactionResponse.json());
+      setLedger(await ledgerResponse.json());
+    } finally {
+      setIsRefreshing(false);
     }
-
-    setAccounts(await accountResponse.json());
-    setTransactions(await transactionResponse.json());
-    setLedger(await ledgerResponse.json());
   }, []);
 
   useEffect(() => {
-    loadData()
-      .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong."))
-      .finally(() => setIsLoading(false));
-
     return () => {
       if (animationTimer.current) {
         window.clearTimeout(animationTimer.current);
@@ -136,32 +143,31 @@ export default function Dashboard() {
 
         {error && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{error}</p>}
 
-        {isLoading ? (
-          <div className="grid min-h-[50vh] place-items-center rounded-[8px] bg-white/80 p-8 text-xl font-black shadow-lift">
-            Loading OB Bank...
+        <div className="space-y-5">
+          {isRefreshing && (
+            <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
+              Updating OB Bank...
+            </p>
+          )}
+          <div className="grid gap-5 md:grid-cols-2">
+            {sortedAccounts.map((account) => (
+              <BalanceCard
+                key={account.id}
+                account={account}
+                animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
+                showQuickActions
+                onAvatarUpload={handleAvatarUpload}
+                onProfileStyleChange={handleProfileStyleChange}
+                onQuickAdd={(accountId, type) => setActiveKidModal({ accountId, type })}
+              />
+            ))}
           </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="grid gap-5 md:grid-cols-2">
-              {sortedAccounts.map((account) => (
-                <BalanceCard
-                  key={account.id}
-                  account={account}
-                  animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
-                  showQuickActions
-                  onAvatarUpload={handleAvatarUpload}
-                  onProfileStyleChange={handleProfileStyleChange}
-                  onQuickAdd={(accountId, type) => setActiveKidModal({ accountId, type })}
-                />
-              ))}
-            </div>
-            <KidProgressPanel accounts={sortedAccounts} transactions={transactions} />
-            <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
-              <TrendChart data={ledger} accounts={sortedAccounts} />
-              <ActivityFeed transactions={transactions} compact />
-            </div>
+          <KidProgressPanel accounts={sortedAccounts} transactions={transactions} />
+          <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+            <TrendChart data={ledger} accounts={sortedAccounts} />
+            <ActivityFeed transactions={transactions} compact />
           </div>
-        )}
+        </div>
       </div>
 
       {activeAccount && activeKidModal && (

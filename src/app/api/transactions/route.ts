@@ -1,17 +1,16 @@
 import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { recalculateAccountBalance } from "@/lib/balances";
+import { getTransactions } from "@/lib/data";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 import { serializeTransaction } from "@/lib/serializers";
 
-export async function GET() {
-  const transactions = await prisma.transaction.findMany({
-    include: { account: true },
-    orderBy: { date: "desc" }
-  });
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const limit = Number(searchParams.get("limit"));
 
-  return NextResponse.json(transactions.map(serializeTransaction));
+  return NextResponse.json(await getTransactions(Number.isFinite(limit) && limit > 0 ? limit : undefined));
 }
 
 export async function POST(request: Request) {
@@ -44,7 +43,15 @@ export async function POST(request: Request) {
           reason,
           date: new Date()
         },
-        include: { account: true }
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              themeColor: true
+            }
+          }
+        }
       });
 
       await recalculateAccountBalance(tx, accountId);
