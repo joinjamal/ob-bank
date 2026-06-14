@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getKidDashboardData } from "@/lib/data";
 import { defaultKidPin, hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
 import { prisma } from "@/lib/prisma";
+import { serializeAccount } from "@/lib/serializers";
 
 export async function POST(request: Request) {
   try {
@@ -13,10 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Choose a kid and enter a 4 digit PIN." }, { status: 400 });
     }
 
-    const account = await prisma.account.findUnique({
-      where: { id: accountId },
-      select: { id: true, pinHash: true }
-    });
+    const account = await prisma.account.findUnique({ where: { id: accountId } });
 
     if (!account) {
       return NextResponse.json({ message: "Kid account not found." }, { status: 404 });
@@ -28,14 +25,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "That PIN did not match." }, { status: 401 });
     }
 
-    if (!account.pinHash) {
-      await prisma.account.update({
-        where: { id: accountId },
-        data: { pinHash: hashKidPin(defaultKidPin) }
-      });
-    }
-
-    return NextResponse.json(await getKidDashboardData(accountId));
+    return NextResponse.json({
+      account: serializeAccount(account),
+      transactions: [],
+      ledger: []
+    });
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : "Could not sign in." },

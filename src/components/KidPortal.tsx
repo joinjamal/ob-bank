@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { BadgeDollarSign, KeyRound, LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
@@ -45,12 +45,33 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [message, setMessage] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const animationTimer = useRef<number | null>(null);
 
   const selectedKid = useMemo(
     () => kids.find((kid) => kid.id === selectedKidId) ?? kids[0],
     [kids, selectedKidId]
   );
+
+  const loadKidDetails = useCallback(async (accountId: string) => {
+    setIsLoadingDetails(true);
+    try {
+      const response = await fetch(`/api/kids/dashboard?accountId=${encodeURIComponent(accountId)}`, {
+        cache: "no-store"
+      });
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(body?.message ?? "Could not load activity.");
+      }
+
+      setKidData((current) => (current?.account.id === accountId ? body : current));
+    } catch {
+      // Keep the vault open even if the chart/activity refresh is slow.
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  }, []);
 
   async function handleLogin() {
     setMessage("");
@@ -75,6 +96,7 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
 
       setKidData(body);
       setPin("");
+      void loadKidDetails(body.account.id);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not open your profile.");
     } finally {
@@ -278,6 +300,11 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
 
         <div className="space-y-5">
+          {isLoadingDetails && (
+            <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
+              Loading activity in the background...
+            </p>
+          )}
           <BalanceCard
             account={kidData.account}
             animation={moneyAnimation?.accountId === kidData.account.id ? moneyAnimation : null}
