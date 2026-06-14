@@ -28,8 +28,8 @@ export default function ParentLoginForm() {
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />
           </div>
-          <h1 className="text-3xl font-black">Parent portal</h1>
-          <p className="mt-2 font-bold text-ink/60">Jamal can sign in here to manage Basil and Osama.</p>
+          <h1 className="text-3xl font-black">Jamal family portal</h1>
+          <p className="mt-2 font-bold text-ink/60">Jamal can sign in here to manage only Basil and Osama.</p>
         </div>
         <label className="block">
           <span className="mb-2 block text-sm font-black text-ink/70">Parent name or email</span>

@@ -110,10 +110,10 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
               Kid dashboard
             </Link>
             <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">
-              {initialData.parent.name}&apos;s parent portal
+              {initialData.parent.name}&apos;s family portal
             </h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
-              Managing {initialData.parent.familyName}.
+              Parent controls for {initialData.parent.familyName}. This view only shows this family&apos;s kids and activity.
             </p>
           </div>
           <form action={signOutParent}>

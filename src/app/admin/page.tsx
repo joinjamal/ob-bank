@@ -15,7 +15,7 @@ export default async function AdminPage() {
           <h1 className="text-3xl font-black">Admin password needed</h1>
           <p className="mt-2 font-bold text-ink/60">
             Set <code className="rounded bg-ink/5 px-2 py-1">ADMIN_PASSWORD</code> in Vercel environment variables
-            before using parent admin.
+            before using the super admin console.
           </p>
         </section>
       </main>

@@ -232,9 +232,9 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
               <ArrowLeft size={17} className="text-mint" />
               Kid dashboard
             </Link>
-            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">Parent admin</h1>
+            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">Super admin</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
-              Add allowance moves, import old rows, and correct transaction history.
+              Control families, parent logins, kids, imports, and full transaction history.
             </p>
           </div>
           <form action={signOutAdmin}>

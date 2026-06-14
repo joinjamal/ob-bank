@@ -13,7 +13,7 @@ function SubmitButton() {
       className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
     >
       <Lock size={18} />
-      {pending ? "Checking..." : "Enter admin"}
+      {pending ? "Checking..." : "Enter super admin"}
     </button>
   );
 }
@@ -28,8 +28,8 @@ export default function AdminLoginForm() {
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />
           </div>
-          <h1 className="text-3xl font-black">Parent admin</h1>
-          <p className="mt-2 font-bold text-ink/60">Enter the parent password to manage OB Bank.</p>
+          <h1 className="text-3xl font-black">Super admin</h1>
+          <p className="mt-2 font-bold text-ink/60">Enter the site admin password to manage every family.</p>
         </div>
         <label className="block">
           <span className="mb-2 block text-sm font-black text-ink/70">Password</span>
