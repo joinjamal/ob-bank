@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,12 +9,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-rounded">
-        {children}
-        <div className="fixed bottom-4 right-4 z-[60]">
-          <ThemeToggle compact />
-        </div>
-      </body>
+      <body className="font-rounded">{children}</body>
     </html>
   );
 }

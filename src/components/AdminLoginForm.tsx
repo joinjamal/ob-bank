@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { Lock } from "lucide-react";
 import { signInAdmin } from "@/app/actions";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -24,6 +25,9 @@ export default function AdminLoginForm() {
   return (
     <main className="super-admin-shell grid min-h-screen place-items-center px-4 py-8">
       <form action={formAction} className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
+        <div className="mb-5 flex justify-end">
+          <ThemeToggle compact />
+        </div>
         <div className="mb-5">
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />

@@ -35,7 +35,9 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Light mode" : "Dark mode"}
     >
-      {isDark ? <Sun size={17} className="text-mint" /> : <Moon size={17} className="text-mint" />}
+      <span className="theme-toggle-track" aria-hidden="true">
+        <span className="theme-toggle-knob">{isDark ? <Sun size={12} /> : <Moon size={12} />}</span>
+      </span>
       {!compact && <span>{isDark ? "Light" : "Dark"}</span>}
     </button>
   );

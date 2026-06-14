@@ -11,6 +11,7 @@ import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import CsvImportCard from "@/components/CsvImportCard";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
 import KidManagementCard from "@/components/KidManagementCard";
+import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
 import {
@@ -237,12 +238,15 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
               Control families, parent logins, kids, imports, and full transaction history.
             </p>
           </div>
-          <form action={signOutAdmin}>
-            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
-              <LogOut size={17} />
-              Sign out
-            </button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            <ThemeToggle compact />
+            <form action={signOutAdmin}>
+              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
+                <LogOut size={17} />
+                Sign out
+              </button>
+            </form>
+          </div>
         </header>
 
         {error && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{error}</p>}

@@ -11,6 +11,7 @@ import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
 import StandardCalculator from "@/components/StandardCalculator";
+import ThemeToggle from "@/components/ThemeToggle";
 import type { Account, Transaction } from "@/components/types";
 import {
   applyAccountDelta,
@@ -194,7 +195,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
     return (
       <main className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <header className="mb-6 flex items-end justify-between gap-4">
+          <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
                 <BadgeDollarSign size={17} className="text-mint" />
@@ -205,21 +206,22 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                 Choose your profile and enter your PIN.
               </p>
             </div>
-            <div className="flex flex-wrap justify-end gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
               <Link
                 href="/parent"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
               >
                 <UserRound size={17} className="text-mint" />
                 Parent
               </Link>
               <Link
                 href="/admin"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
               >
                 <Shield size={17} className="text-mint" />
-                Super admin
+                Admin
               </Link>
+              <ThemeToggle compact />
             </div>
           </header>
 
@@ -296,7 +298,8 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
               Save, spend carefully, and beat your best score.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <ThemeToggle compact />
             <KidPinSettings account={kidData.account} variant="button" />
             <button
               type="button"

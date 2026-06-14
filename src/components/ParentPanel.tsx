@@ -9,6 +9,7 @@ import AdminTransactionList from "@/components/AdminTransactionList";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
 import KidManagementCard from "@/components/KidManagementCard";
+import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
 import type { Account, Transaction } from "@/components/types";
 
@@ -116,12 +117,15 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
               Parent controls for {initialData.parent.familyName}. This view only shows this family&apos;s kids and activity.
             </p>
           </div>
-          <form action={signOutParent}>
-            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
-              <LogOut size={17} />
-              Sign out
-            </button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            <ThemeToggle compact />
+            <form action={signOutParent}>
+              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
+                <LogOut size={17} />
+                Sign out
+              </button>
+            </form>
+          </div>
         </header>
 
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
