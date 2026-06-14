@@ -117,7 +117,10 @@ export default function BalanceCard({
     setShowStyleModal(false);
   }
 
-  const patternStyle = getPatternStyle(savedProfileColor, savedProfilePattern);
+  const patternStyle = {
+    ...getPatternStyle(savedProfileColor, savedProfilePattern),
+    "--kid-theme-color": account.themeColor
+  } as CSSProperties;
 
   return (
     <>

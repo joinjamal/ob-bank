@@ -102,30 +102,59 @@ html.dark .kid-color-surface .text-ink\/60,
 html.dark .kid-color-surface .text-ink\/55,
 html.dark .kid-color-surface .text-ink\/50,
 html.dark .kid-color-surface .text-ink\/45 {
-  color: #172033 !important;
+  color: rgba(244, 247, 251, 0.94) !important;
+}
+
+html.dark .kid-color-surface {
+  background-color: color-mix(in srgb, var(--kid-theme-color, #3dcc91) 18%, #101827) !important;
+  background-image:
+    radial-gradient(
+      circle at 88% 8%,
+      color-mix(in srgb, var(--kid-theme-color, #3dcc91) 22%, transparent),
+      transparent 18rem
+    ) !important;
 }
 
 html.dark .kid-color-surface .bg-white,
 html.dark .kid-color-surface .bg-white\/80,
 html.dark .kid-color-surface .bg-white\/85 {
-  background-color: rgba(255, 255, 255, 0.84) !important;
-  color: #172033 !important;
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  color: #f4f7fb !important;
 }
 
 html.dark .kid-color-surface .bg-ink\/5,
 html.dark .kid-color-surface .bg-ink\/10 {
-  background-color: rgba(23, 32, 51, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark .kid-color-surface .bg-ink {
-  background-color: #172033 !important;
-  color: #ffffff !important;
+  background-color: #f4f7fb !important;
+  color: #101827 !important;
 }
 
 html.dark .kid-color-surface .border-ink,
 html.dark .kid-color-surface .border-ink\/5,
 html.dark .kid-color-surface .border-ink\/10 {
-  border-color: rgba(23, 32, 51, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark .night-dim-surface {
+  background: linear-gradient(135deg, rgba(20, 31, 50, 0.96), rgba(31, 41, 62, 0.92)) !important;
+  color: #f4f7fb !important;
+}
+
+html.dark .night-dim-surface .text-ink,
+html.dark .night-dim-surface .text-ink\/70,
+html.dark .night-dim-surface .text-ink\/60,
+html.dark .night-dim-surface .text-ink\/55 {
+  color: rgba(244, 247, 251, 0.94) !important;
+}
+
+html.dark .night-dim-surface .bg-white,
+html.dark .night-dim-surface .bg-white\/80,
+html.dark .night-dim-surface .bg-white\/85 {
+  background-color: rgba(15, 23, 42, 0.7) !important;
+  color: #f4f7fb !important;
 }
 
 .super-admin-shell .bg-white,

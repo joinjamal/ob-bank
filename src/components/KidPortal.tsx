@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { BadgeDollarSign, KeyRound, LogOut, Shield, UserRound } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
@@ -232,7 +232,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                   className={`kid-color-surface rounded-[8px] border-4 p-4 text-left transition hover:-translate-y-1 ${
                     selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white"
                   }`}
-                  style={{ backgroundColor: kid.profileColor }}
+                  style={{ backgroundColor: kid.profileColor, "--kid-theme-color": kid.themeColor } as CSSProperties}
                 >
                   <img
                     src={kid.avatarUrl}

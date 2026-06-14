@@ -32,7 +32,7 @@ export default function StandardCalculator() {
 
   return (
     <section className="overflow-hidden rounded-[8px] bg-white shadow-lift">
-      <div className="bg-[#FFF0BE] p-5">
+      <div className="night-dim-surface bg-[#FFF0BE] p-5">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-black text-ink shadow-sm">
           <Calculator size={16} className="text-[#E6A400]" />
           Calculator

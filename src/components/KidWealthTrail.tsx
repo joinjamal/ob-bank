@@ -29,7 +29,10 @@ export default function KidWealthTrail({
 
   return (
     <section className="overflow-hidden rounded-[8px] bg-white shadow-lift">
-      <div className="p-5" style={{ backgroundColor: account.profileColor }}>
+      <div
+        className="kid-color-surface p-5"
+        style={{ backgroundColor: account.profileColor, "--kid-theme-color": account.themeColor } as React.CSSProperties}
+      >
         <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-black text-ink shadow-sm">
           <TrendingUp size={16} className="text-mint" />
           My wealth trail
