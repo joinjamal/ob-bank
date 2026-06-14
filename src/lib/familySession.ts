@@ -2,13 +2,17 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { kidCookieName, readKidSession } from "@/lib/kidSession";
-import { familyCookieName, parentCookieName, readFamilySession, readParentSession } from "@/lib/parentAuth";
+import { familyCookieName, parentCookieName, readFamilySession, readParentSession, readParentSessionToken } from "@/lib/parentAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function readDeviceFamilyId() {
   const cookieStore = await cookies();
 
-  const parentId = readParentSession(cookieStore.get(parentCookieName())?.value);
+  const parentCookie = cookieStore.get(parentCookieName())?.value;
+  const tokenParent = await readParentSessionToken(parentCookie);
+  if (tokenParent) return tokenParent.familyId;
+
+  const parentId = readParentSession(parentCookie);
   if (parentId) {
     const parent = await prisma.parent.findUnique({
       where: { id: parentId },

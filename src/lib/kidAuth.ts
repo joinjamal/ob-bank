@@ -1,9 +1,13 @@
-import { hashPassword } from "@/lib/passwords";
+import { hashSecret, verifySecret } from "@/lib/passwords";
 
 export const defaultKidPin = "0000";
 
 export function hashKidPin(pin: string) {
-  return hashPassword(pin);
+  return hashSecret(pin);
+}
+
+export function verifyKidPin(pin: string, stored: string) {
+  return verifySecret(pin, stored);
 }
 
 export function isValidPinFormat(pin: string) {

@@ -1,0 +1,91 @@
+"use client";
+
+import { useState } from "react";
+import { Download, MailCheck, ShieldCheck } from "lucide-react";
+import { createParentEmailVerificationLink } from "@/app/actions";
+import type { Transaction } from "@/components/types";
+
+export default function ParentSecurityCard({
+  email,
+  emailVerifiedAt,
+  transactions
+}: {
+  email: string | null;
+  emailVerifiedAt: string | null;
+  transactions: Transaction[];
+}) {
+  const [message, setMessage] = useState("");
+  const [verificationLink, setVerificationLink] = useState("");
+
+  async function createVerificationLink() {
+    setMessage("");
+    try {
+      const path = await createParentEmailVerificationLink();
+      const url = `${window.location.origin}${path}`;
+      setVerificationLink(url);
+      await navigator.clipboard.writeText(url).catch(() => null);
+      setMessage("Verification link created and copied.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not create verification link.");
+    }
+  }
+
+  function exportCsv() {
+    const header = "kid,date,type,amount,reason";
+    const rows = transactions.map((transaction) =>
+      [
+        transaction.accountName,
+        new Date(transaction.date).toISOString().slice(0, 10),
+        transaction.type,
+        transaction.amount,
+        transaction.reason ?? ""
+      ]
+        .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+        .join(",")
+    );
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ob-bank-family-export.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mint/15 text-mint">
+          <ShieldCheck size={21} />
+        </div>
+        <div>
+          <h2 className="text-xl font-black">Account safety</h2>
+          <p className="text-sm font-bold text-ink/55">Verify access and keep a copy of the family ledger.</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <button
+          type="button"
+          onClick={createVerificationLink}
+          disabled={!email || Boolean(emailVerifiedAt)}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+        >
+          <MailCheck size={17} />
+          {emailVerifiedAt ? "Email verified" : "Create email verification link"}
+        </button>
+        <button
+          type="button"
+          onClick={exportCsv}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5"
+        >
+          <Download size={17} />
+          Export family CSV
+        </button>
+      </div>
+
+      {verificationLink && <p className="mt-3 break-all rounded-[8px] bg-ink/5 p-3 text-xs font-bold text-ink/55">{verificationLink}</p>}
+      {message && <p className="mt-3 rounded-[8px] bg-ink/5 px-3 py-2 text-sm font-bold text-ink/65">{message}</p>}
+    </section>
+  );
+}

@@ -66,6 +66,7 @@ model Family {
   updatedAt DateTime  @updatedAt @map("updated_at")
   parents   Parent[]
   accounts  Account[]
+  accessLinks FamilyAccessLink[]
 
   @@map("families")
 }
@@ -77,11 +78,84 @@ model Parent {
   name         String
   email        String?  @unique
   passwordHash String   @map("password_hash")
+  emailVerifiedAt DateTime? @map("email_verified_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  sessions      ParentSession[]
+  passwordResets ParentPasswordReset[]
+  emailVerifications ParentEmailVerification[]
 
   @@index([familyId])
   @@map("parents")
+}
+
+model ParentSession {
+  id        String   @id @default(uuid())
+  parentId  String   @map("parent_id")
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([parentId])
+  @@index([expiresAt])
+  @@map("parent_sessions")
+}
+
+model ParentPasswordReset {
+  id        String   @id @default(uuid())
+  parentId  String   @map("parent_id")
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([parentId])
+  @@index([expiresAt])
+  @@map("parent_password_resets")
+}
+
+model ParentEmailVerification {
+  id        String   @id @default(uuid())
+  parentId  String   @map("parent_id")
+  parent    Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([parentId])
+  @@index([expiresAt])
+  @@map("parent_email_verifications")
+}
+
+model FamilyAccessLink {
+  id        String   @id @default(uuid())
+  familyId  String   @map("family_id")
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  label     String   @default("Kid device link")
+  active    Boolean  @default(true)
+  expiresAt DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([familyId])
+  @@index([active])
+  @@map("family_access_links")
+}
+
+model KidPinAttempt {
+  id        String   @id @default(uuid())
+  accountId String   @map("account_id")
+  familyId  String   @map("family_id")
+  success   Boolean
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([accountId, createdAt])
+  @@index([familyId, createdAt])
+  @@map("kid_pin_attempts")
 }
 
 model Transaction {

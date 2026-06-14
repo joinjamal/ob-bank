@@ -1,12 +1,19 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { parentCookieName, readParentSession } from "@/lib/parentAuth";
+import { parentCookieName, readParentSession, readParentSessionToken } from "@/lib/parentAuth";
 import { prisma } from "@/lib/prisma";
 
 export async function requireParentApi() {
   const cookieStore = await cookies();
-  const parentId = readParentSession(cookieStore.get(parentCookieName())?.value);
+  const cookieValue = cookieStore.get(parentCookieName())?.value;
+  const tokenParent = await readParentSessionToken(cookieValue);
+
+  if (tokenParent) {
+    return tokenParent;
+  }
+
+  const parentId = readParentSession(cookieValue);
 
   if (!parentId) {
     throw new Error("Parent access is required.");

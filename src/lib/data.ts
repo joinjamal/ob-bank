@@ -1,9 +1,9 @@
 import { buildWealthTrailFromTransactions } from "@/lib/ledger";
 import { runDueAllowances, serializeRecurringAllowance } from "@/lib/allowances";
+import { ensureFamilyAccessLink } from "@/lib/familyAccessLinks";
 import { toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount, serializeTransaction } from "@/lib/serializers";
-import { signFamilySession } from "@/lib/parentAuth";
 
 export async function getAccounts() {
   const accounts = await prisma.account.findMany({ orderBy: { name: "asc" } });
@@ -206,6 +206,7 @@ export async function getParentData(parentId: string) {
   }
 
   await runDueAllowances(parent.familyId);
+  const familyAccess = await ensureFamilyAccessLink(parent.familyId);
 
   const [accounts, transactions, allowances] = await Promise.all([
     prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
@@ -230,9 +231,11 @@ export async function getParentData(parentId: string) {
       id: parent.id,
       name: parent.name,
       email: parent.email,
+      emailVerifiedAt: parent.emailVerifiedAt?.toISOString() ?? null,
       familyId: parent.familyId,
       familyName: parent.family.name,
-      familyAccessToken: signFamilySession(parent.familyId)
+      familyAccessToken: familyAccess.token,
+      familyAccessLinkId: familyAccess.link.id
     },
     accounts: accounts.map(serializeAccount),
     transactions,

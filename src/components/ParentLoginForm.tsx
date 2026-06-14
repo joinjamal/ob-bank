@@ -98,6 +98,9 @@ export default function ParentLoginForm() {
             </label>
             {!loginState.ok && <p className="mt-4 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{loginState.message}</p>}
             <SubmitButton />
+            <Link href="/reset-password" className="mt-4 inline-flex font-black text-mint">
+              Forgot password?
+            </Link>
           </form>
         ) : (
           <form action={registerAction}>
@@ -128,6 +131,10 @@ export default function ParentLoginForm() {
             </button>
           </form>
         )}
+        <div className="mt-5 flex flex-wrap gap-3 text-sm font-black text-ink/45">
+          <Link href="/terms" className="hover:text-mint">Terms</Link>
+          <Link href="/privacy" className="hover:text-mint">Privacy</Link>
+        </div>
       </section>
     </main>
   );

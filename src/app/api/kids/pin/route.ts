@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
+import { hashKidPin, isValidPinFormat, verifyKidPin } from "@/lib/kidAuth";
 import { kidCookieName, readKidSession } from "@/lib/kidSession";
 import { prisma } from "@/lib/prisma";
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       select: { pinHash: true, familyId: true }
     });
 
-    if (!account || account.familyId !== kidSession.familyId || hashKidPin(currentPin) !== account.pinHash) {
+    if (!account || account.familyId !== kidSession.familyId || !verifyKidPin(currentPin, account.pinHash)) {
       return NextResponse.json({ message: "Current PIN did not match." }, { status: 401 });
     }
 

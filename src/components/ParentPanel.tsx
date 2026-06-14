@@ -11,6 +11,8 @@ import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
 import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
 import KidManagementCard from "@/components/KidManagementCard";
+import ParentOnboardingCard from "@/components/ParentOnboardingCard";
+import ParentSecurityCard from "@/components/ParentSecurityCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
 import type { Account, RecurringAllowance, Transaction } from "@/components/types";
@@ -20,9 +22,11 @@ type ParentData = {
     id: string;
     name: string;
     email: string | null;
+    emailVerifiedAt: string | null;
     familyId: string;
     familyName: string;
     familyAccessToken: string;
+    familyAccessLinkId: string;
   };
   accounts: Account[];
   transactions: Transaction[];
@@ -151,11 +155,17 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             />
           </div>
           <aside className="space-y-5">
+            <ParentOnboardingCard accounts={sortedAccounts} allowances={allowances} />
             <FamilyAccessLinkCard
               familyName={initialData.parent.familyName}
               token={initialData.parent.familyAccessToken}
             />
             <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
+            <ParentSecurityCard
+              email={initialData.parent.email}
+              emailVerifiedAt={initialData.parent.emailVerifiedAt}
+              transactions={transactions}
+            />
             <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
             <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
