@@ -27,7 +27,6 @@ model Account {
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   transactions   Transaction[]
-  gameScores     GameScore[]
 
   @@map("accounts")
 }
@@ -54,17 +53,4 @@ model HistoricalLedger {
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("historical_ledgers")
-}
-
-model GameScore {
-  id        String   @id @default(uuid())
-  accountId String   @map("account_id")
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  mode      String   @default("solo")
-  score     Int
-  coins     Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([accountId, score])
-  @@map("game_scores")
 }

@@ -9,6 +9,7 @@ import AdminTransactionList from "@/components/AdminTransactionList";
 import BalanceCard from "@/components/BalanceCard";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import CsvImportCard from "@/components/CsvImportCard";
+import KidManagementCard from "@/components/KidManagementCard";
 import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
 import {
@@ -265,6 +266,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
             />
           </div>
           <aside className="space-y-5">
+            <KidManagementCard accounts={sortedAccounts} onChanged={loadData} />
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
             <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
             <CsvImportCard onImported={loadData} />

@@ -48,22 +48,6 @@ select {
   animation: confetti-fall 820ms ease-out forwards;
 }
 
-.money-tile:not(:disabled):active {
-  animation: money-tile-press 180ms ease-out both;
-}
-
-@keyframes money-tile-press {
-  0% {
-    transform: scale(1);
-  }
-  55% {
-    transform: scale(0.94) rotate(-1deg);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 @keyframes confetti-fall {
   0% {
     opacity: 0;

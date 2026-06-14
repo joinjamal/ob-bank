@@ -85,31 +85,6 @@ export async function getKidLedger(accountId: string) {
   return Array.from(daily.values());
 }
 
-export async function getGameScores(accountId?: string) {
-  const scores = await prisma.gameScore.findMany({
-    where: accountId ? { accountId } : undefined,
-    include: {
-      account: {
-        select: {
-          name: true
-        }
-      }
-    },
-    orderBy: [{ score: "desc" }, { createdAt: "desc" }],
-    take: 10
-  });
-
-  return scores.map((score) => ({
-    id: score.id,
-    accountId: score.accountId,
-    accountName: score.account.name,
-    mode: score.mode,
-    score: score.score,
-    coins: score.coins,
-    createdAt: score.createdAt.toISOString()
-  }));
-}
-
 export async function getKidDashboardData(accountId: string) {
   const account = await prisma.account.findUnique({ where: { id: accountId } });
 
@@ -117,17 +92,15 @@ export async function getKidDashboardData(accountId: string) {
     throw new Error("Kid account not found.");
   }
 
-  const [transactions, ledger, scores] = await Promise.all([
+  const [transactions, ledger] = await Promise.all([
     getKidTransactions(accountId),
-    getKidLedger(accountId),
-    getGameScores()
+    getKidLedger(accountId)
   ]);
 
   return {
     account: serializeAccount(account),
     transactions,
-    ledger,
-    scores
+    ledger
   };
 }
 

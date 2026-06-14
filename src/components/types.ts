@@ -35,13 +35,3 @@ export type LedgerPoint = {
   basilBalance: number;
   osamaBalance: number;
 };
-
-export type GameScore = {
-  id: string;
-  accountId: string;
-  accountName: string;
-  mode: string;
-  score: number;
-  coins: number;
-  createdAt: string;
-};

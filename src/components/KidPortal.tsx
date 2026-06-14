@@ -11,8 +11,7 @@ import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
 import StandardCalculator from "@/components/StandardCalculator";
-import VaultRunnerGame from "@/components/VaultRunnerGame";
-import type { Account, GameScore, KidLoginAccount, Transaction } from "@/components/types";
+import type { Account, KidLoginAccount, Transaction } from "@/components/types";
 import {
   applyAccountDelta,
   createOptimisticTransaction,
@@ -30,7 +29,6 @@ type KidData = {
   account: Account;
   transactions: Transaction[];
   ledger: KidLedgerPoint[];
-  scores: GameScore[];
 };
 
 type MoneyAnimation = {
@@ -294,11 +292,8 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
             <ActivityFeed transactions={kidData.transactions} compact />
           </div>
           <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-            <VaultRunnerGame account={kidData.account} allKids={kids} initialScores={kidData.scores} />
-            <div className="space-y-5">
-              <StandardCalculator />
-              <KidPinSettings account={kidData.account} />
-            </div>
+            <StandardCalculator />
+            <KidPinSettings account={kidData.account} />
           </div>
         </div>
       </div>
