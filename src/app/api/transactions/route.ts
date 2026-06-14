@@ -1,12 +1,24 @@
 import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { requireAdminApi } from "@/lib/adminApi";
 import { getTransactions } from "@/lib/data";
+import { kidCookieName, readKidSession } from "@/lib/kidSession";
 import { prisma } from "@/lib/prisma";
 import { serializeTransaction } from "@/lib/serializers";
 
 export const preferredRegion = "hnd1";
 
 export async function GET(request: Request) {
+  try {
+    await requireAdminApi();
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : "Admin access is required." },
+      { status: 401 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const limit = Number(searchParams.get("limit"));
 
@@ -28,8 +40,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const cookieStore = await cookies();
+    const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);
+
+    if (!kidSession || kidSession.accountId !== accountId) {
+      return NextResponse.json({ message: "Open the vault with your PIN first." }, { status: 401 });
+    }
+
     const transaction = await prisma.$transaction(async (tx) => {
-      const account = await tx.account.findUnique({ where: { id: accountId } });
+      const account = await tx.account.findFirst({ where: { id: accountId, familyId: kidSession.familyId } });
 
       if (!account) {
         throw new Error("Account not found.");

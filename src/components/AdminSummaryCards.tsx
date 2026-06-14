@@ -2,18 +2,28 @@
 
 import { ArrowDownCircle, ArrowUpCircle, BadgeDollarSign, ListChecks, TrendingUp } from "lucide-react";
 import type { Account, Transaction } from "@/components/types";
+import type { FamilySummary } from "@/components/FamilyManagementCard";
 import { buildAdminSummary } from "@/lib/insights";
 import { formatMoney } from "@/lib/money";
 
 export default function AdminSummaryCards({
   accounts,
-  transactions
+  transactions,
+  families = []
 }: {
   accounts: Account[];
   transactions: Transaction[];
+  families?: FamilySummary[];
 }) {
   const summary = buildAdminSummary(accounts, transactions);
   const cards = [
+    {
+      label: "Families",
+      value: String(families.length),
+      detail: `${families.reduce((total, family) => total + family.parents.length, 0)} parent profiles`,
+      icon: <ListChecks size={20} />,
+      tone: "text-mint bg-mint/12"
+    },
     {
       label: "Total in OB Bank",
       value: formatMoney(summary.totalBalance),

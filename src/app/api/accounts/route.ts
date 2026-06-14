@@ -8,7 +8,15 @@ import { serializeAccount } from "@/lib/serializers";
 export const preferredRegion = "hnd1";
 
 export async function GET() {
-  return NextResponse.json(await getAccounts());
+  try {
+    await requireAdminApi();
+    return NextResponse.json(await getAccounts());
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : "Admin access is required." },
+      { status: 401 }
+    );
+  }
 }
 
 const profileColors = ["#DCEBFF", "#ECE4FF", "#D9FBEA", "#FFF0BE", "#FFE3DD"];

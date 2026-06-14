@@ -35,6 +35,30 @@ export async function getKidLoginAccounts() {
   return accounts.map(serializeAccount);
 }
 
+export async function getFamilyKidLoginAccounts(familyId: string) {
+  const accounts = await prisma.account.findMany({
+    where: { familyId },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      avatarUrl: true,
+      themeColor: true,
+      profileColor: true,
+      profilePattern: true
+    }
+  });
+  return accounts;
+}
+
+export async function getFamilyName(familyId: string) {
+  const family = await prisma.family.findUnique({
+    where: { id: familyId },
+    select: { name: true }
+  });
+  return family?.name ?? "your family";
+}
+
 export async function getTransactions(limit?: number) {
   const transactions = await prisma.transaction.findMany({
     include: {

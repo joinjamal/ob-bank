@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "OB Bank",
-  description: "A cheerful allowance bank for Basil and Osama."
+  description: "A cheerful allowance bank for families."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

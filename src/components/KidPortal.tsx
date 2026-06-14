@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
-import { BadgeDollarSign, KeyRound, LockKeyhole, LogOut, Shield, UserRound } from "lucide-react";
+import { BadgeDollarSign, KeyRound, LockKeyhole, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -12,7 +12,7 @@ import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
 import StandardCalculator from "@/components/StandardCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
-import type { Account, Transaction } from "@/components/types";
+import type { Account, KidPickerAccount, Transaction } from "@/components/types";
 import {
   applyAccountDelta,
   createOptimisticTransaction,
@@ -40,10 +40,19 @@ type MoneyAnimation = {
 
 const minimumVaultAnimationMs = 850;
 
-export default function KidPortal({ kids }: { kids: Account[] }) {
+export default function KidPortal({
+  kids,
+  familyName,
+  initialKidData = null
+}: {
+  kids: KidPickerAccount[];
+  familyName: string;
+  initialKidData?: KidData | null;
+}) {
   const [selectedKidId, setSelectedKidId] = useState(kids[0]?.id ?? "");
   const [pin, setPin] = useState("");
-  const [kidData, setKidData] = useState<KidData | null>(null);
+  const [rememberKid, setRememberKid] = useState(true);
+  const [kidData, setKidData] = useState<KidData | null>(initialKidData);
   const [activeMove, setActiveMove] = useState<"Deposit" | "Withdrawal" | null>(null);
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [message, setMessage] = useState("");
@@ -91,7 +100,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
         fetch("/api/kids/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accountId: selectedKid.id, pin })
+          body: JSON.stringify({ accountId: selectedKid.id, pin, remember: rememberKid })
         }),
         new Promise((resolve) => window.setTimeout(resolve, minimumVaultAnimationMs))
       ]);
@@ -203,10 +212,10 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
               </div>
               <h1 className="text-4xl font-black text-ink sm:text-6xl">OB Bank</h1>
               <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
-                Choose your profile and enter your PIN.
+                {familyName}: choose your name and enter your PIN.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
               <Link
                 href="/parent"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
@@ -214,18 +223,26 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                 <UserRound size={17} className="text-mint" />
                 Parent
               </Link>
-              <Link
-                href="/admin"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
-              >
-                <Shield size={17} className="text-mint" />
-                Admin
-              </Link>
               <ThemeToggle compact />
             </div>
           </header>
 
           <section className="rounded-[8px] bg-white p-5 shadow-lift">
+            {kids.length === 0 ? (
+              <div className="rounded-[8px] bg-mint/10 p-5">
+                <h2 className="text-2xl font-black text-ink">No kid vaults yet</h2>
+                <p className="mt-2 font-bold text-ink/60">
+                  Ask a parent to add the kids from the parent portal first.
+                </p>
+                <Link
+                  href="/parent"
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-[8px] bg-mint px-4 font-black text-white"
+                >
+                  Go to parent portal
+                </Link>
+              </div>
+            ) : (
+              <>
             <div className="grid gap-4 sm:grid-cols-2">
               {kids.map((kid) => (
                 <button
@@ -267,6 +284,15 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                   />
                 </div>
               </label>
+              <label className="flex items-center gap-3 self-end rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/70 sm:col-span-2">
+                <input
+                  checked={rememberKid}
+                  onChange={(event) => setRememberKid(event.target.checked)}
+                  type="checkbox"
+                  className="h-5 w-5 accent-mint"
+                />
+                Remember me on this device
+              </label>
               <button
                 type="button"
                 onClick={handleLogin}
@@ -276,6 +302,8 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
                 {isLoggingIn ? "Opening..." : "Open vault"}
               </button>
             </div>
+              </>
+            )}
             {message && <p className="mt-4 rounded-[8px] bg-coral/10 p-3 font-bold text-coral">{message}</p>}
           </section>
         </div>
@@ -304,6 +332,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
             <button
               type="button"
               onClick={() => {
+                void fetch("/api/kids/logout", { method: "POST" });
                 setKidData(null);
                 setMessage("");
               }}

@@ -11,10 +11,11 @@ import {
   signAdminSession
 } from "@/lib/adminAuth";
 import { recalculateAccountBalance } from "@/lib/balances";
+import { kidCookieName, readKidSession } from "@/lib/kidSession";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/passwords";
-import { parentCookieName, signParentSession } from "@/lib/parentAuth";
+import { familyCookieName, parentCookieName, readParentSession, signFamilySession, signParentSession } from "@/lib/parentAuth";
 
 export async function signInAdmin(_prevState: { ok: boolean; message: string }, formData: FormData) {
   const password = String(formData.get("password") ?? "");
@@ -50,7 +51,36 @@ async function assertAdmin() {
   }
 }
 
+async function assertCanUpdateAccount(accountId: string) {
+  const cookieStore = await cookies();
+  const adminSession = cookieStore.get(adminCookieName())?.value;
+  if (isValidAdminSession(adminSession)) return;
+
+  const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);
+  if (kidSession?.accountId === accountId) return;
+
+  const signedParentId = readParentSession(cookieStore.get(parentCookieName())?.value);
+  if (!signedParentId) {
+    throw new Error("Access is required.");
+  }
+
+  const account = await prisma.account.findUnique({
+    where: { id: accountId },
+    select: { familyId: true }
+  });
+  const parent = await prisma.parent.findUnique({
+    where: { id: signedParentId },
+    select: { familyId: true }
+  });
+
+  if (!account || !parent || account.familyId !== parent.familyId) {
+    throw new Error("Access is required.");
+  }
+}
+
 export async function updateAccountAvatar(accountId: string, avatarUrl: string) {
+  await assertCanUpdateAccount(accountId);
+
   if (!avatarUrl.startsWith("data:image/")) {
     throw new Error("Please choose an image file.");
   }
@@ -69,6 +99,8 @@ export async function updateAccountAvatar(accountId: string, avatarUrl: string) 
 }
 
 export async function updateAccountGoal(accountId: string, goalName: string | null, goalAmount: number | null) {
+  await assertCanUpdateAccount(accountId);
+
   await prisma.account.update({
     where: { id: accountId },
     data: { goalName, goalAmount }
@@ -81,6 +113,8 @@ export async function updateAccountGoal(accountId: string, goalName: string | nu
 export async function signInParent(_prevState: { ok: boolean; message: string }, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const keepSignedIn = String(formData.get("remember") ?? "") === "on";
+  const redirectTo = String(formData.get("redirectTo") ?? "/parent");
 
   const parent = await prisma.parent.findFirst({
     where: {
@@ -93,24 +127,92 @@ export async function signInParent(_prevState: { ok: boolean; message: string },
   }
 
   const cookieStore = await cookies();
+  const maxAge = keepSignedIn ? 60 * 60 * 24 * 90 : 60 * 60 * 12;
   cookieStore.set(parentCookieName(), signParentSession(parent.id), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 12
+    maxAge
+  });
+  cookieStore.set(familyCookieName(), signFamilySession(parent.familyId), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 180
   });
 
-  redirect("/parent");
+  redirect(redirectTo === "/" ? "/" : "/parent");
 }
 
 export async function signOutParent() {
   const cookieStore = await cookies();
   cookieStore.delete(parentCookieName());
+  cookieStore.delete(familyCookieName());
+  cookieStore.delete(kidCookieName());
+  redirect("/parent");
+}
+
+export async function registerParentFamily(_prevState: { ok: boolean; message: string }, formData: FormData) {
+  const familyName = String(formData.get("familyName") ?? "").trim();
+  const parentName = String(formData.get("parentName") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase() || null;
+  const password = String(formData.get("password") ?? "");
+  const keepSignedIn = String(formData.get("remember") ?? "") === "on";
+
+  if (!familyName || familyName.length > 48 || !parentName || parentName.length > 48) {
+    return { ok: false, message: "Enter a family name and parent name." };
+  }
+
+  if (password.length < 6) {
+    return { ok: false, message: "Use at least 6 characters for the parent password." };
+  }
+
+  try {
+    const parent = await prisma.$transaction(async (tx) => {
+      const family = await tx.family.create({ data: { name: familyName } });
+      return tx.parent.create({
+        data: {
+          familyId: family.id,
+          name: parentName,
+          email,
+          passwordHash: hashPassword(password)
+        }
+      });
+    });
+
+    const cookieStore = await cookies();
+    const maxAge = keepSignedIn ? 60 * 60 * 24 * 90 : 60 * 60 * 12;
+    cookieStore.set(parentCookieName(), signParentSession(parent.id), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge
+    });
+    cookieStore.set(familyCookieName(), signFamilySession(parent.familyId), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 180
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error && error.message.includes("Unique constraint")
+        ? "That email is already registered."
+        : "Could not create the family."
+    };
+  }
+
   redirect("/parent");
 }
 
 export async function updateAccountProfileStyle(accountId: string, profileColor: string, profilePattern: string) {
+  await assertCanUpdateAccount(accountId);
+
   const safeColor = /^#[0-9A-Fa-f]{6}$/.test(profileColor) ? profileColor : "#DCEBFF";
   const safePattern = ["soft", "dots", "stars", "stripes", "grid"].includes(profilePattern)
     ? profilePattern

@@ -10,6 +10,8 @@ export type Account = {
   goalAmount: number | null;
 };
 
+export type KidPickerAccount = Pick<Account, "id" | "name" | "avatarUrl" | "themeColor" | "profileColor" | "profilePattern">;
+
 export type Transaction = {
   id: string;
   accountId: string;

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getKidDashboardData } from "@/lib/data";
+import { kidCookieName, readKidSession } from "@/lib/kidSession";
 
 export const preferredRegion = "hnd1";
 
@@ -10,6 +12,13 @@ export async function GET(request: Request) {
 
     if (!accountId) {
       return NextResponse.json({ message: "Missing kid account." }, { status: 400 });
+    }
+
+    const cookieStore = await cookies();
+    const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);
+
+    if (!kidSession || kidSession.accountId !== accountId) {
+      return NextResponse.json({ message: "Open the vault with your PIN first." }, { status: 401 });
     }
 
     return NextResponse.json(await getKidDashboardData(accountId));

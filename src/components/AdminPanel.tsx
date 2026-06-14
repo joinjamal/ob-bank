@@ -1,33 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
 import AdminSummaryCards from "@/components/AdminSummaryCards";
 import AdminTransactionList from "@/components/AdminTransactionList";
-import BalanceCard from "@/components/BalanceCard";
-import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
-import CsvImportCard from "@/components/CsvImportCard";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
-import KidManagementCard from "@/components/KidManagementCard";
 import ThemeToggle from "@/components/ThemeToggle";
-import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
-import {
-  applyAccountDelta,
-  createOptimisticTransaction,
-  replacementDelta,
-  signedAmount,
-  transactionDelta
-} from "@/lib/optimisticMoney";
-import { playTransactionSound } from "@/lib/sounds";
-
-type MoneyAnimation = {
-  accountId: string;
-  type: "Deposit" | "Withdrawal";
-  id: number;
-} | null;
+import { applyAccountDelta, replacementDelta, transactionDelta } from "@/lib/optimisticMoney";
 
 type AdminData = {
   accounts: Account[];
@@ -41,10 +23,8 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
   const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
   const [, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
   const [families, setFamilies] = useState<FamilySummary[]>(initialData.families);
-  const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const animationTimer = useRef<number | null>(null);
 
   const sortedAccounts = useMemo(
     () =>
@@ -77,70 +57,6 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
       setIsRefreshing(false);
     }
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (animationTimer.current) {
-        window.clearTimeout(animationTimer.current);
-      }
-    };
-  }, [loadData]);
-
-  function triggerMoneyAnimation(accountId: string, type: "Deposit" | "Withdrawal") {
-    playTransactionSound(type);
-
-    if (animationTimer.current) {
-      window.clearTimeout(animationTimer.current);
-    }
-
-    setMoneyAnimation({ accountId, type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
-  }
-
-  async function saveTransaction(payload: {
-    accountId: string;
-    type: "Deposit" | "Withdrawal";
-    amount: number;
-    reason?: string;
-  }) {
-    const account = accounts.find((item) => item.id === payload.accountId);
-    if (!account) return;
-
-    const optimisticId = `admin-${Date.now()}`;
-    const optimisticTransaction = createOptimisticTransaction(payload, account, optimisticId);
-    const delta = signedAmount(payload.type, payload.amount);
-    const previousAccounts = accounts;
-    const previousTransactions = transactions;
-
-    setError("");
-    setAccounts(applyAccountDelta(previousAccounts, payload.accountId, delta));
-    setTransactions((current) => [optimisticTransaction, ...current]);
-    triggerMoneyAnimation(payload.accountId, payload.type);
-
-    fetch("/api/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-      .then(async (response) => {
-        const body = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(body?.message ?? "Could not save the transaction.");
-        }
-
-        if (body?.transaction) {
-          setTransactions((current) =>
-            current.map((transaction) => (transaction.id === optimisticId ? body.transaction : transaction))
-          );
-        }
-      })
-      .catch((err) => {
-        setAccounts(previousAccounts);
-        setTransactions(previousTransactions);
-        setError(err instanceof Error ? err.message : "Could not save the transaction.");
-      });
-  }
 
   async function editTransaction(transactionId: string, payload: { type: "Deposit" | "Withdrawal"; amount: number; reason: string }) {
     const previous = transactions.find((transaction) => transaction.id === transactionId);
@@ -235,7 +151,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
             </Link>
             <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">Super admin</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
-              Control families, parent logins, kids, imports, and full transaction history.
+              Monitor families, parent access, platform balances, and full transaction history.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -258,16 +174,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
                 Updating admin data...
               </p>
             )}
-            <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
-            <div className="grid gap-5 md:grid-cols-2">
-              {sortedAccounts.map((account) => (
-                <BalanceCard
-                  key={account.id}
-                  account={account}
-                  animation={moneyAnimation?.accountId === account.id ? moneyAnimation : null}
-                />
-              ))}
-            </div>
+            <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} families={families} />
             <AdminTransactionList
               transactions={transactions}
               onEdit={editTransaction}
@@ -276,10 +183,6 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
           </div>
           <aside className="space-y-5">
             <FamilyManagementCard families={families} onChanged={loadData} />
-            <KidManagementCard accounts={sortedAccounts} onChanged={loadData} />
-            <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
-            <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
-            <CsvImportCard onImported={loadData} />
           </aside>
         </div>
       </div>
