@@ -4,8 +4,8 @@ import { toMoney } from "@/lib/money";
 export async function snapshotLedger(date = new Date()) {
   const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const [basil, osama] = await Promise.all([
-    prisma.account.findUnique({ where: { name: "Basil" } }),
-    prisma.account.findUnique({ where: { name: "Osama" } })
+    prisma.account.findFirst({ where: { name: "Basil" }, orderBy: { createdAt: "asc" } }),
+    prisma.account.findFirst({ where: { name: "Osama" }, orderBy: { createdAt: "asc" } })
   ]);
 
   return prisma.historicalLedger.upsert({
@@ -59,8 +59,8 @@ export async function buildWealthTrailFromTransactions() {
 
   if (dailyBalances.size === 0) {
     const [basil, osama] = await Promise.all([
-      prisma.account.findUnique({ where: { name: "Basil" } }),
-      prisma.account.findUnique({ where: { name: "Osama" } })
+      prisma.account.findFirst({ where: { name: "Basil" }, orderBy: { createdAt: "asc" } }),
+      prisma.account.findFirst({ where: { name: "Osama" }, orderBy: { createdAt: "asc" } })
     ]);
     const today = new Date();
     const day = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 12));

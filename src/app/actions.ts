@@ -13,6 +13,8 @@ import {
 import { recalculateAccountBalance } from "@/lib/balances";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/lib/passwords";
+import { parentCookieName, signParentSession } from "@/lib/parentAuth";
 
 export async function signInAdmin(_prevState: { ok: boolean; message: string }, formData: FormData) {
   const password = String(formData.get("password") ?? "");
@@ -74,6 +76,38 @@ export async function updateAccountGoal(accountId: string, goalName: string | nu
 
   revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function signInParent(_prevState: { ok: boolean; message: string }, formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  const parent = await prisma.parent.findFirst({
+    where: {
+      OR: [{ email }, { name: { equals: email, mode: "insensitive" } }]
+    }
+  });
+
+  if (!parent || parent.passwordHash !== hashPassword(password)) {
+    return { ok: false, message: "That parent login did not match." };
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(parentCookieName(), signParentSession(parent.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 12
+  });
+
+  redirect("/parent");
+}
+
+export async function signOutParent() {
+  const cookieStore = await cookies();
+  cookieStore.delete(parentCookieName());
+  redirect("/parent");
 }
 
 export async function updateAccountProfileStyle(accountId: string, profileColor: string, profilePattern: string) {

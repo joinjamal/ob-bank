@@ -7,6 +7,28 @@ export async function getAccounts() {
   return accounts.map(serializeAccount);
 }
 
+export async function getFamilies() {
+  const families = await prisma.family.findMany({
+    include: {
+      parents: { orderBy: { name: "asc" } },
+      accounts: { orderBy: { name: "asc" } }
+    },
+    orderBy: { name: "asc" }
+  });
+
+  return families.map((family) => ({
+    id: family.id,
+    name: family.name,
+    parents: family.parents.map((parent) => ({
+      id: parent.id,
+      familyId: parent.familyId,
+      name: parent.name,
+      email: parent.email
+    })),
+    accounts: family.accounts.map(serializeAccount)
+  }));
+}
+
 export async function getKidLoginAccounts() {
   const accounts = await prisma.account.findMany({ orderBy: { name: "asc" } });
   return accounts.map(serializeAccount);
@@ -14,6 +36,25 @@ export async function getKidLoginAccounts() {
 
 export async function getTransactions(limit?: number) {
   const transactions = await prisma.transaction.findMany({
+    include: {
+      account: {
+        select: {
+          id: true,
+          name: true,
+          themeColor: true
+        }
+      }
+    },
+    orderBy: { date: "desc" },
+    take: limit
+  });
+
+  return transactions.map(serializeTransaction);
+}
+
+export async function getFamilyTransactions(familyId: string, limit?: number) {
+  const transactions = await prisma.transaction.findMany({
+    where: { account: { familyId } },
     include: {
       account: {
         select: {
@@ -106,11 +147,41 @@ export async function getDashboardData() {
 }
 
 export async function getAdminData() {
-  const [accounts, transactions, ledger] = await Promise.all([
+  const [accounts, transactions, ledger, families] = await Promise.all([
     getAccounts(),
     getTransactions(),
-    buildWealthTrailFromTransactions()
+    buildWealthTrailFromTransactions(),
+    getFamilies()
   ]);
 
-  return { accounts, transactions, ledger };
+  return { accounts, transactions, ledger, families };
+}
+
+export async function getParentData(parentId: string) {
+  const parent = await prisma.parent.findUnique({
+    where: { id: parentId },
+    include: { family: true }
+  });
+
+  if (!parent) {
+    throw new Error("Parent account not found.");
+  }
+
+  const [accounts, transactions] = await Promise.all([
+    prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
+    getFamilyTransactions(parent.familyId)
+  ]);
+
+  return {
+    parent: {
+      id: parent.id,
+      name: parent.name,
+      email: parent.email,
+      familyId: parent.familyId,
+      familyName: parent.family.name
+    },
+    accounts: accounts.map(serializeAccount),
+    transactions,
+    ledger: []
+  };
 }

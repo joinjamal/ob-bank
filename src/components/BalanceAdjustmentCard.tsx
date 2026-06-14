@@ -7,10 +7,12 @@ import { formatMoney } from "@/lib/money";
 
 export default function BalanceAdjustmentCard({
   accounts,
-  onAdjusted
+  onAdjusted,
+  apiBase = "/api/transactions"
 }: {
   accounts: Account[];
   onAdjusted: () => Promise<void>;
+  apiBase?: string;
 }) {
   const [accountId, setAccountId] = useState("");
   const [targetBalance, setTargetBalance] = useState("");
@@ -55,7 +57,7 @@ export default function BalanceAdjustmentCard({
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/transactions", {
+      const response = await fetch(apiBase, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

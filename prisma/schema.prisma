@@ -15,7 +15,9 @@ enum TransactionType {
 
 model Account {
   id             String        @id @default(uuid())
-  name           String        @unique
+  familyId       String?       @map("family_id")
+  family         Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  name           String
   avatarUrl      String        @map("avatar_url") @db.Text
   currentBalance Decimal       @default(0) @map("current_balance") @db.Decimal(12, 2)
   themeColor     String        @default("#2F7DF6") @map("theme_color")
@@ -28,7 +30,33 @@ model Account {
   updatedAt      DateTime      @updatedAt @map("updated_at")
   transactions   Transaction[]
 
+  @@index([familyId])
   @@map("accounts")
+}
+
+model Family {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  parents   Parent[]
+  accounts  Account[]
+
+  @@map("families")
+}
+
+model Parent {
+  id           String   @id @default(uuid())
+  familyId     String   @map("family_id")
+  family       Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  name         String
+  email        String?  @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@map("parents")
 }
 
 model Transaction {

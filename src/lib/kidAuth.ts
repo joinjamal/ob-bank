@@ -1,9 +1,9 @@
-import { createHash } from "crypto";
+import { hashPassword } from "@/lib/passwords";
 
 export const defaultKidPin = "0000";
 
 export function hashKidPin(pin: string) {
-  return createHash("sha256").update(pin).digest("hex");
+  return hashPassword(pin);
 }
 
 export function isValidPinFormat(pin: string) {

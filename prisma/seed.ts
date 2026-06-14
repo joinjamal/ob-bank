@@ -1,6 +1,8 @@
 import { PrismaClient, TransactionType } from "@prisma/client";
+import { createHash } from "crypto";
 
 const prisma = new PrismaClient();
+const hashPassword = (value: string) => createHash("sha256").update(value).digest("hex");
 
 const accounts = [
   {
@@ -25,9 +27,21 @@ async function main() {
   await prisma.transaction.deleteMany();
   await prisma.historicalLedger.deleteMany();
   await prisma.account.deleteMany();
+  await prisma.parent.deleteMany();
+  await prisma.family.deleteMany();
+
+  const family = await prisma.family.create({ data: { name: "Jamal Family" } });
+  await prisma.parent.create({
+    data: {
+      familyId: family.id,
+      name: "Jamal",
+      email: "jamal@obbank.local",
+      passwordHash: hashPassword("password")
+    }
+  });
 
   const [basil, osama] = await Promise.all(
-    accounts.map((account) => prisma.account.create({ data: account }))
+    accounts.map((account) => prisma.account.create({ data: { ...account, familyId: family.id } }))
   );
 
   await prisma.transaction.createMany({

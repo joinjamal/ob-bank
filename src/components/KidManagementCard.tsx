@@ -6,10 +6,12 @@ import type { Account } from "@/components/types";
 
 export default function KidManagementCard({
   accounts,
-  onChanged
+  onChanged,
+  apiBase = "/api/accounts"
 }: {
   accounts: Account[];
   onChanged: () => Promise<void>;
+  apiBase?: string;
 }) {
   const [name, setName] = useState("");
   const [initialPin, setInitialPin] = useState("0000");
@@ -26,7 +28,7 @@ export default function KidManagementCard({
     setIsSaving(true);
 
     try {
-      const response = await fetch("/api/accounts", {
+      const response = await fetch(apiBase, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, pin: initialPin })
@@ -56,7 +58,7 @@ export default function KidManagementCard({
     setIsSaving(true);
 
     try {
-      const response = await fetch(`/api/accounts/${selectedResetAccount.id}`, {
+      const response = await fetch(`${apiBase}/${selectedResetAccount.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin: resetPin })
@@ -83,7 +85,7 @@ export default function KidManagementCard({
     setIsSaving(true);
 
     try {
-      const response = await fetch(`/api/accounts/${account.id}`, { method: "DELETE" });
+      const response = await fetch(`${apiBase}/${account.id}`, { method: "DELETE" });
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {

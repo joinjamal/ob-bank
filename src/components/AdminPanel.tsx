@@ -9,6 +9,7 @@ import AdminTransactionList from "@/components/AdminTransactionList";
 import BalanceCard from "@/components/BalanceCard";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import CsvImportCard from "@/components/CsvImportCard";
+import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
 import KidManagementCard from "@/components/KidManagementCard";
 import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
@@ -31,12 +32,14 @@ type AdminData = {
   accounts: Account[];
   transactions: Transaction[];
   ledger: LedgerPoint[];
+  families: FamilySummary[];
 };
 
 export default function AdminPanel({ initialData }: { initialData: AdminData }) {
   const [accounts, setAccounts] = useState<Account[]>(initialData.accounts);
   const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
   const [, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
+  const [families, setFamilies] = useState<FamilySummary[]>(initialData.families);
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -54,19 +57,21 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
     setError("");
     setIsRefreshing(true);
     try {
-      const [accountResponse, transactionResponse, ledgerResponse] = await Promise.all([
+      const [accountResponse, transactionResponse, ledgerResponse, familyResponse] = await Promise.all([
         fetch("/api/accounts", { cache: "no-store" }),
         fetch("/api/transactions", { cache: "no-store" }),
-        fetch("/api/ledger", { cache: "no-store" })
+        fetch("/api/ledger", { cache: "no-store" }),
+        fetch("/api/families", { cache: "no-store" })
       ]);
 
-      if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok) {
+      if (!accountResponse.ok || !transactionResponse.ok || !ledgerResponse.ok || !familyResponse.ok) {
         throw new Error("Could not load admin data.");
       }
 
       setAccounts(await accountResponse.json());
       setTransactions(await transactionResponse.json());
       setLedger(await ledgerResponse.json());
+      setFamilies(await familyResponse.json());
     } finally {
       setIsRefreshing(false);
     }
@@ -266,6 +271,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
             />
           </div>
           <aside className="space-y-5">
+            <FamilyManagementCard families={families} onChanged={loadData} />
             <KidManagementCard accounts={sortedAccounts} onChanged={loadData} />
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />
             <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
