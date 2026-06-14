@@ -10,7 +10,7 @@ export const preferredRegion = "hnd1";
 export default async function AdminPage() {
   if (!isAdminConfigured()) {
     return (
-      <main className="grid min-h-screen place-items-center px-4 py-8">
+      <main className="super-admin-shell grid min-h-screen place-items-center px-4 py-8">
         <section className="w-full max-w-lg rounded-[8px] bg-white p-6 shadow-lift">
           <h1 className="text-3xl font-black">Admin password needed</h1>
           <p className="mt-2 font-bold text-ink/60">
