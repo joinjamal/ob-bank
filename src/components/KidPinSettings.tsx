@@ -1,10 +1,17 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound, X } from "lucide-react";
 import type { Account } from "@/components/types";
 
-export default function KidPinSettings({ account }: { account: Account }) {
+export default function KidPinSettings({
+  account,
+  variant = "card"
+}: {
+  account: Account;
+  variant?: "card" | "button";
+}) {
+  const [isOpen, setIsOpen] = useState(variant === "card");
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [message, setMessage] = useState("");
@@ -35,6 +42,9 @@ export default function KidPinSettings({ account }: { account: Account }) {
       setCurrentPin("");
       setNewPin("");
       setMessage("PIN updated.");
+      if (variant === "button") {
+        window.setTimeout(() => setIsOpen(false), 650);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update PIN.");
     } finally {
@@ -42,14 +52,26 @@ export default function KidPinSettings({ account }: { account: Account }) {
     }
   }
 
-  return (
+  const form = (
     <form onSubmit={handleSubmit} className="rounded-[8px] bg-white p-5 shadow-lift">
-      <div className="mb-4">
-        <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-ink/10 text-ink">
-          <KeyRound size={20} />
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-ink/10 text-ink">
+            <KeyRound size={20} />
+          </div>
+          <h2 className="text-xl font-black">My PIN</h2>
+          <p className="text-sm font-bold text-ink/55">Change your secret numbers whenever you need to.</p>
         </div>
-        <h2 className="text-xl font-black">My PIN</h2>
-        <p className="text-sm font-bold text-ink/55">First PIN is 0000. Change it to your own secret numbers.</p>
+        {variant === "button" && (
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink"
+            aria-label="Close PIN settings"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label>
@@ -82,4 +104,29 @@ export default function KidPinSettings({ account }: { account: Account }) {
       </button>
     </form>
   );
+
+  if (variant === "button") {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => {
+            setMessage("");
+            setIsOpen(true);
+          }}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+        >
+          <KeyRound size={20} />
+          Change PIN
+        </button>
+        {isOpen && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-ink/55 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md">{form}</div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return form;
 }

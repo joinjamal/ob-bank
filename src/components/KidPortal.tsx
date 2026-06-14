@@ -297,6 +297,7 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
             </p>
           </div>
           <div className="flex gap-2">
+            <KidPinSettings account={kidData.account} variant="button" />
             <button
               type="button"
               onClick={() => {
@@ -339,7 +340,6 @@ export default function KidPortal({ kids }: { kids: Account[] }) {
           </div>
           <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
             <StandardCalculator />
-            <KidPinSettings account={kidData.account} />
           </div>
         </div>
       </div>
