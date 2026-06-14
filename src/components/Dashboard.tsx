@@ -10,6 +10,12 @@ import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import TrendChart from "@/components/TrendChart";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
+import {
+  applyAccountDelta,
+  applyTodayLedgerDelta,
+  createOptimisticTransaction,
+  signedAmount
+} from "@/lib/optimisticMoney";
 import { playTransactionSound } from "@/lib/sounds";
 
 type MoneyAnimation = {
@@ -90,32 +96,64 @@ export default function Dashboard({ initialData }: { initialData: DashboardData 
     );
   }
 
+  function triggerMoneyAnimation(accountId: string, type: "Deposit" | "Withdrawal") {
+    playTransactionSound(type);
+
+    if (animationTimer.current) {
+      window.clearTimeout(animationTimer.current);
+    }
+
+    setMoneyAnimation({ accountId, type, id: Date.now() });
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+  }
+
   async function saveKidTransaction(payload: {
     accountId: string;
     type: "Deposit" | "Withdrawal";
     amount: number;
     reason: string;
   }) {
-    const response = await fetch("/api/transactions", {
+    const account = accounts.find((item) => item.id === payload.accountId);
+    if (!account) return;
+
+    const optimisticId = `kid-${Date.now()}`;
+    const optimisticTransaction = createOptimisticTransaction(payload, account, optimisticId);
+    const delta = signedAmount(payload.type, payload.amount);
+    const previousAccounts = accounts;
+    const previousTransactions = transactions;
+    const previousLedger = ledger;
+    const nextAccounts = applyAccountDelta(previousAccounts, payload.accountId, delta);
+
+    setError("");
+    setAccounts(nextAccounts);
+    setTransactions((current) => [optimisticTransaction, ...current].slice(0, 80));
+    setLedger((current) => applyTodayLedgerDelta(current, account.name, delta, nextAccounts));
+    triggerMoneyAnimation(payload.accountId, payload.type);
+
+    fetch("/api/transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    });
+    })
+      .then(async (response) => {
+        const body = await response.json().catch(() => null);
 
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      throw new Error(body?.message ?? "Could not save the transaction.");
-    }
+        if (!response.ok) {
+          throw new Error(body?.message ?? "Could not save the transaction.");
+        }
 
-    await loadData();
-    playTransactionSound(payload.type);
-
-    if (animationTimer.current) {
-      window.clearTimeout(animationTimer.current);
-    }
-
-    setMoneyAnimation({ accountId: payload.accountId, type: payload.type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+        if (body?.transaction) {
+          setTransactions((current) =>
+            current.map((transaction) => (transaction.id === optimisticId ? body.transaction : transaction))
+          );
+        }
+      })
+      .catch((err) => {
+        setAccounts(previousAccounts);
+        setTransactions(previousTransactions);
+        setLedger(previousLedger);
+        setError(err instanceof Error ? err.message : "Could not save the transaction.");
+      });
   }
 
   return (

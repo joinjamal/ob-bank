@@ -1,8 +1,6 @@
 import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { recalculateAccountBalance } from "@/lib/balances";
 import { getTransactions } from "@/lib/data";
-import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 import { serializeTransaction } from "@/lib/serializers";
 
@@ -35,6 +33,12 @@ export async function POST(request: Request) {
         throw new Error("Account not found.");
       }
 
+      const delta = type === TransactionType.Deposit ? amount : -amount;
+
+      if (Number(account.currentBalance) + delta < 0) {
+        throw new Error("This change would make the balance negative.");
+      }
+
       const transaction = await tx.transaction.create({
         data: {
           account: { connect: { id: accountId } },
@@ -54,14 +58,19 @@ export async function POST(request: Request) {
         }
       });
 
-      await recalculateAccountBalance(tx, accountId);
+      await tx.account.update({
+        where: { id: accountId },
+        data: {
+          currentBalance: {
+            increment: delta
+          }
+        }
+      });
 
       return transaction;
     });
 
-    await snapshotLedger();
-
-    return NextResponse.json(serializeTransaction(transaction), { status: 201 });
+    return NextResponse.json({ transaction: serializeTransaction(transaction) }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : "Could not save the transaction." },

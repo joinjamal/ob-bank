@@ -36,18 +36,13 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
     }
 
     setIsSaving(true);
-    try {
-      await onSave({
-        accountId: account.id,
-        type,
-        amount: parsedAmount,
-        reason: reason.trim() || (isDeposit ? "Saved money" : "Spent money")
-      });
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setIsSaving(false);
-    }
+    onClose();
+    void onSave({
+      accountId: account.id,
+      type,
+      amount: parsedAmount,
+      reason: reason.trim() || (isDeposit ? "Saved money" : "Spent money")
+    });
   }
 
   return (

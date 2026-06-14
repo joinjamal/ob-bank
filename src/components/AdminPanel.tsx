@@ -11,6 +11,13 @@ import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import CsvImportCard from "@/components/CsvImportCard";
 import TransactionForm from "@/components/TransactionForm";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
+import {
+  applyAccountDelta,
+  createOptimisticTransaction,
+  replacementDelta,
+  signedAmount,
+  transactionDelta
+} from "@/lib/optimisticMoney";
 import { playTransactionSound } from "@/lib/sounds";
 
 type MoneyAnimation = {
@@ -72,32 +79,142 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
     };
   }, [loadData]);
 
+  function triggerMoneyAnimation(accountId: string, type: "Deposit" | "Withdrawal") {
+    playTransactionSound(type);
+
+    if (animationTimer.current) {
+      window.clearTimeout(animationTimer.current);
+    }
+
+    setMoneyAnimation({ accountId, type, id: Date.now() });
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+  }
+
   async function saveTransaction(payload: {
     accountId: string;
     type: "Deposit" | "Withdrawal";
     amount: number;
     reason?: string;
   }) {
-    const response = await fetch("/api/transactions", {
+    const account = accounts.find((item) => item.id === payload.accountId);
+    if (!account) return;
+
+    const optimisticId = `admin-${Date.now()}`;
+    const optimisticTransaction = createOptimisticTransaction(payload, account, optimisticId);
+    const delta = signedAmount(payload.type, payload.amount);
+    const previousAccounts = accounts;
+    const previousTransactions = transactions;
+
+    setError("");
+    setAccounts(applyAccountDelta(previousAccounts, payload.accountId, delta));
+    setTransactions((current) => [optimisticTransaction, ...current]);
+    triggerMoneyAnimation(payload.accountId, payload.type);
+
+    fetch("/api/transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    });
+    })
+      .then(async (response) => {
+        const body = await response.json().catch(() => null);
 
-    if (!response.ok) {
+        if (!response.ok) {
+          throw new Error(body?.message ?? "Could not save the transaction.");
+        }
+
+        if (body?.transaction) {
+          setTransactions((current) =>
+            current.map((transaction) => (transaction.id === optimisticId ? body.transaction : transaction))
+          );
+        }
+      })
+      .catch((err) => {
+        setAccounts(previousAccounts);
+        setTransactions(previousTransactions);
+        setError(err instanceof Error ? err.message : "Could not save the transaction.");
+      });
+  }
+
+  async function editTransaction(transactionId: string, payload: { type: "Deposit" | "Withdrawal"; amount: number; reason: string }) {
+    const previous = transactions.find((transaction) => transaction.id === transactionId);
+    if (!previous) return;
+
+    const nextTransaction: Transaction = {
+      ...previous,
+      type: payload.type,
+      amount: payload.amount,
+      reason: payload.reason.trim() || null
+    };
+    const delta = replacementDelta(previous, nextTransaction);
+    const previousAccounts = accounts;
+    const previousTransactions = transactions;
+
+    setError("");
+    setAccounts(applyAccountDelta(previousAccounts, previous.accountId, delta));
+    setTransactions((current) =>
+      current.map((transaction) => (transaction.id === transactionId ? nextTransaction : transaction))
+    );
+
+    fetch(`/api/transactions/${transactionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(async (response) => {
       const body = await response.json().catch(() => null);
-      throw new Error(body?.message ?? "Could not save the transaction.");
-    }
 
-    await loadData();
-    playTransactionSound(payload.type);
+      if (!response.ok) {
+        setAccounts(previousAccounts);
+        setTransactions(previousTransactions);
+        throw new Error(body?.message ?? "Could not update transaction.");
+      }
+    }).catch((err) => {
+      setError(err instanceof Error ? err.message : "Could not update transaction.");
+    });
+  }
 
-    if (animationTimer.current) {
-      window.clearTimeout(animationTimer.current);
-    }
+  async function deleteTransactions(items: Transaction[]) {
+    if (items.length === 0) return;
 
-    setMoneyAnimation({ accountId: payload.accountId, type: payload.type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+    const previousAccounts = accounts;
+    const previousTransactions = transactions;
+    const accountDeltas = items.reduce<Record<string, number>>((deltas, transaction) => {
+      deltas[transaction.accountId] = (deltas[transaction.accountId] ?? 0) - transactionDelta(transaction);
+      return deltas;
+    }, {});
+
+    setError("");
+    setAccounts((current) =>
+      Object.entries(accountDeltas).reduce(
+        (nextAccounts, [accountId, delta]) => applyAccountDelta(nextAccounts, accountId, delta),
+        current
+      )
+    );
+    setTransactions((current) => current.filter((transaction) => !items.some((item) => item.id === transaction.id)));
+
+    const endpoint =
+      items.length === 1 ? `/api/transactions/${items[0].id}` : "/api/transactions/bulk-delete";
+    const options =
+      items.length === 1
+        ? { method: "DELETE" }
+        : {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: items.map((item) => item.id) })
+          };
+
+    fetch(endpoint, options)
+      .then(async (response) => {
+        const body = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          setAccounts(previousAccounts);
+          setTransactions(previousTransactions);
+          throw new Error(body?.message ?? "Could not delete transaction.");
+        }
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Could not delete transaction.");
+      });
   }
 
   return (
@@ -141,7 +258,11 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
                 />
               ))}
             </div>
-            <AdminTransactionList transactions={transactions} onChanged={loadData} />
+            <AdminTransactionList
+              transactions={transactions}
+              onEdit={editTransaction}
+              onDelete={deleteTransactions}
+            />
           </div>
           <aside className="space-y-5">
             <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} />

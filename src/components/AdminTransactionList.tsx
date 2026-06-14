@@ -17,10 +17,12 @@ import { formatMoney } from "@/lib/money";
 
 export default function AdminTransactionList({
   transactions,
-  onChanged
+  onEdit,
+  onDelete
 }: {
   transactions: Transaction[];
-  onChanged: () => Promise<void>;
+  onEdit: (transactionId: string, payload: { type: "Deposit" | "Withdrawal"; amount: number; reason: string }) => Promise<void>;
+  onDelete: (transactions: Transaction[]) => Promise<void>;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [type, setType] = useState<"Deposit" | "Withdrawal">("Deposit");
@@ -129,38 +131,20 @@ export default function AdminTransactionList({
 
     setMessage("");
     try {
-      const response = await fetch(`/api/transactions/${editingId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, amount: Number(amount), reason })
-      });
-      const body = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(body?.message ?? "Could not update transaction.");
-      }
-
+      await onEdit(editingId, { type, amount: Number(amount), reason });
       setEditingId(null);
-      await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update transaction.");
     }
   }
 
-  async function handleDelete(transactionId: string) {
+  async function handleDelete(transaction: Transaction) {
     if (!window.confirm("Delete this transaction and recalculate the balance?")) return;
 
     setMessage("");
     try {
-      const response = await fetch(`/api/transactions/${transactionId}`, { method: "DELETE" });
-      const body = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(body?.message ?? "Could not delete transaction.");
-      }
-
-      setSelectedIds((current) => current.filter((id) => id !== transactionId));
-      await onChanged();
+      await onDelete([transaction]);
+      setSelectedIds((current) => current.filter((id) => id !== transaction.id));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not delete transaction.");
     }
@@ -183,19 +167,8 @@ export default function AdminTransactionList({
     setMessage("");
     setIsDeleting(true);
     try {
-      const response = await fetch("/api/transactions/bulk-delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds })
-      });
-      const body = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(body?.message ?? "Could not delete selected transactions.");
-      }
-
+      await onDelete(transactions.filter((transaction) => selectedIds.includes(transaction.id)));
       setSelectedIds([]);
-      await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not delete selected transactions.");
     } finally {
@@ -375,7 +348,7 @@ export default function AdminTransactionList({
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(transaction.id)}
+                      onClick={() => handleDelete(transaction)}
                       className="grid h-10 w-10 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white"
                     >
                       <Trash2 size={17} />

@@ -1,7 +1,6 @@
+import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
-import { recalculateAccountBalance } from "@/lib/balances";
-import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -17,20 +16,31 @@ export async function POST(request: Request) {
     await prisma.$transaction(async (tx) => {
       const transactions = await tx.transaction.findMany({
         where: { id: { in: ids } },
-        select: { accountId: true }
+        select: { accountId: true, amount: true, type: true }
       });
-      const accountIds = Array.from(new Set(transactions.map((transaction) => transaction.accountId)));
+      const deltas = transactions.reduce<Record<string, number>>((totals, transaction) => {
+        const reversal =
+          transaction.type === TransactionType.Deposit ? -Number(transaction.amount) : Number(transaction.amount);
+        totals[transaction.accountId] = (totals[transaction.accountId] ?? 0) + reversal;
+        return totals;
+      }, {});
 
       await tx.transaction.deleteMany({
         where: { id: { in: ids } }
       });
 
-      for (const accountId of accountIds) {
-        await recalculateAccountBalance(tx, accountId, { allowNegative: true });
+      for (const [accountId, delta] of Object.entries(deltas)) {
+        await tx.account.update({
+          where: { id: accountId },
+          data: {
+            currentBalance: {
+              increment: delta
+            }
+          }
+        });
       }
     });
 
-    await snapshotLedger();
     return NextResponse.json({ ok: true, deleted: ids.length });
   } catch (error) {
     return NextResponse.json(

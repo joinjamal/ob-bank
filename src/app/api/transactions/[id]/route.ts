@@ -1,8 +1,6 @@
 import { TransactionType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
-import { recalculateAccountBalance } from "@/lib/balances";
-import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 
 type Context = {
@@ -25,22 +23,32 @@ export async function PATCH(request: Request, context: Context) {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.transaction.findUnique({
         where: { id },
-        select: { accountId: true }
+        select: { accountId: true, amount: true, type: true }
       });
 
       if (!existing) {
         throw new Error("Transaction not found.");
       }
 
+      const oldSignedAmount = existing.type === TransactionType.Deposit ? Number(existing.amount) : -Number(existing.amount);
+      const newSignedAmount = type === TransactionType.Deposit ? amount : -amount;
+      const delta = newSignedAmount - oldSignedAmount;
+
       await tx.transaction.update({
         where: { id },
         data: { type, amount, reason }
       });
 
-      await recalculateAccountBalance(tx, existing.accountId, { allowNegative: true });
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: {
+          currentBalance: {
+            increment: delta
+          }
+        }
+      });
     });
 
-    await snapshotLedger();
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(
@@ -58,7 +66,7 @@ export async function DELETE(_request: Request, context: Context) {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.transaction.findUnique({
         where: { id },
-        select: { accountId: true }
+        select: { accountId: true, amount: true, type: true }
       });
 
       if (!existing) {
@@ -66,10 +74,16 @@ export async function DELETE(_request: Request, context: Context) {
       }
 
       await tx.transaction.delete({ where: { id } });
-      await recalculateAccountBalance(tx, existing.accountId, { allowNegative: true });
+      await tx.account.update({
+        where: { id: existing.accountId },
+        data: {
+          currentBalance: {
+            increment: existing.type === TransactionType.Deposit ? -Number(existing.amount) : Number(existing.amount)
+          }
+        }
+      });
     });
 
-    await snapshotLedger();
     return NextResponse.json({ ok: true });
   } catch (error) {
     return NextResponse.json(
