@@ -10,6 +10,15 @@ export type Account = {
   goalAmount: number | null;
 };
 
+export type KidLoginAccount = {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  themeColor: string;
+  profileColor: string;
+  profilePattern: string;
+};
+
 export type Transaction = {
   id: string;
   accountId: string;
@@ -25,4 +34,14 @@ export type LedgerPoint = {
   date: string;
   basilBalance: number;
   osamaBalance: number;
+};
+
+export type GameScore = {
+  id: string;
+  accountId: string;
+  accountName: string;
+  mode: string;
+  score: number;
+  coins: number;
+  createdAt: string;
 };

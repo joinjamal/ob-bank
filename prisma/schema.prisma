@@ -23,9 +23,11 @@ model Account {
   profilePattern String        @default("soft") @map("profile_pattern")
   goalName       String?       @map("goal_name")
   goalAmount     Decimal?      @map("goal_amount") @db.Decimal(12, 2)
+  pinHash        String        @default("9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0") @map("pin_hash")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   transactions   Transaction[]
+  gameScores     GameScore[]
 
   @@map("accounts")
 }
@@ -52,4 +54,17 @@ model HistoricalLedger {
   createdAt    DateTime @default(now()) @map("created_at")
 
   @@map("historical_ledgers")
+}
+
+model GameScore {
+  id        String   @id @default(uuid())
+  accountId String   @map("account_id")
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  mode      String   @default("solo")
+  score     Int
+  coins     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([accountId, score])
+  @@map("game_scores")
 }

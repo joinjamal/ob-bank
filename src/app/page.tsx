@@ -1,10 +1,10 @@
-import Dashboard from "@/components/Dashboard";
-import { getDashboardData } from "@/lib/data";
+import KidPortal from "@/components/KidPortal";
+import { getKidLoginAccounts } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const initialData = await getDashboardData();
+  const kids = await getKidLoginAccounts();
 
-  return <Dashboard initialData={initialData} />;
+  return <KidPortal kids={kids} />;
 }
