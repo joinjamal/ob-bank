@@ -4,6 +4,8 @@ import { hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount } from "@/lib/serializers";
 
+export const preferredRegion = "hnd1";
+
 type Context = {
   params: Promise<{ id: string }>;
 };

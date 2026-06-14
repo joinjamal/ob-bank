@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getKidDashboardData } from "@/lib/data";
 
+export const preferredRegion = "hnd1";
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);

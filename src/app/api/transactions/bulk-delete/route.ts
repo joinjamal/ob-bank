@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
 import { prisma } from "@/lib/prisma";
 
+export const preferredRegion = "hnd1";
+
 export async function POST(request: Request) {
   try {
     await requireAdminApi();

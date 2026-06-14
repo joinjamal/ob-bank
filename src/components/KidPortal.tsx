@@ -217,11 +217,13 @@ export default function KidPortal({ kids }: { kids: KidLoginAccount[] }) {
                   }`}
                   style={{ backgroundColor: kid.profileColor }}
                 >
-                  <img
-                    src={kid.avatarUrl}
-                    alt={`${kid.name} avatar`}
-                    className="mb-3 h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm"
-                  />
+                  <span
+                    className="mb-3 grid h-24 w-24 place-items-center rounded-full border-4 border-white text-4xl font-black text-white shadow-sm"
+                    style={{ backgroundColor: kid.themeColor }}
+                    aria-hidden="true"
+                  >
+                    {kid.name[0]}
+                  </span>
                   <p className="text-2xl font-black text-ink">{kid.name}</p>
                 </button>
               ))}

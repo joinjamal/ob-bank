@@ -5,6 +5,8 @@ import { defaultKidPin, hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount } from "@/lib/serializers";
 
+export const preferredRegion = "hnd1";
+
 export async function GET() {
   return NextResponse.json(await getAccounts());
 }

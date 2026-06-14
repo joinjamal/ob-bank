@@ -3,6 +3,8 @@ import { defaultKidPin, hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount } from "@/lib/serializers";
 
+export const preferredRegion = "hnd1";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

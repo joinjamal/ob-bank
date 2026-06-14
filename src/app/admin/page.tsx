@@ -5,6 +5,7 @@ import { adminCookieName, isAdminConfigured, isValidAdminSession } from "@/lib/a
 import { getAdminData } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
+export const preferredRegion = "hnd1";
 
 export default async function AdminPage() {
   if (!isAdminConfigured()) {

@@ -4,6 +4,8 @@ import { getTransactions } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { serializeTransaction } from "@/lib/serializers";
 
+export const preferredRegion = "hnd1";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const limit = Number(searchParams.get("limit"));

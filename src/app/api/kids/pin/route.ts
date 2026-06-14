@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { hashKidPin, isValidPinFormat } from "@/lib/kidAuth";
 import { prisma } from "@/lib/prisma";
 
+export const preferredRegion = "hnd1";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
 import { prisma } from "@/lib/prisma";
 
+export const preferredRegion = "hnd1";
+
 type Context = {
   params: Promise<{ id: string }>;
 };

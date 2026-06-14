@@ -7,6 +7,8 @@ import { recalculateAccountBalance } from "@/lib/balances";
 import { snapshotLedger } from "@/lib/ledger";
 import { prisma } from "@/lib/prisma";
 
+export const preferredRegion = "hnd1";
+
 type CsvRow = {
   account?: string;
   name?: string;
