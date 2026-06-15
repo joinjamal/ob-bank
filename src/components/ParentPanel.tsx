@@ -152,9 +152,9 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid min-w-0 gap-5 md:grid-cols-2">
               {sortedAccounts.map((account) => (
                 <BalanceCard key={account.id} account={account} />
               ))}
@@ -165,7 +165,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
               onDelete={deleteTransactions}
             />
           </div>
-          <aside className="space-y-3">
+          <aside className="min-w-0 space-y-3">
             <ToolFrame title="Money tools" description="Add allowance moves or set a balance directly.">
               <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
               <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />

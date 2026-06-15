@@ -124,24 +124,24 @@ export default function BalanceCard({
 
   return (
     <>
-      <section className="kid-color-surface relative overflow-hidden rounded-[8px] p-5 shadow-lift" style={patternStyle}>
+      <section className="kid-color-surface relative max-w-full overflow-hidden rounded-[8px] p-4 shadow-lift sm:p-5" style={patternStyle}>
         <div
           className="absolute -right-12 -top-14 h-40 w-40 rounded-full opacity-20"
           style={{ backgroundColor: account.themeColor }}
         />
-        <div className="relative flex items-start justify-between gap-4">
+        <div className="relative grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-sm font-extrabold">
+            <div className="mb-3 inline-flex max-w-full items-center gap-2 truncate rounded-full bg-white/80 px-3 py-1 text-sm font-extrabold">
               <Trophy size={15} style={{ color: account.themeColor }} />
-              {account.name}&apos;s vault
+              <span className="truncate">{account.name}&apos;s vault</span>
             </div>
             <p className="text-sm font-bold text-ink/60">Current balance</p>
-            <p className="mt-1 text-4xl font-black tracking-normal sm:text-5xl">
+            <p className="mt-1 break-words text-3xl font-black tracking-normal sm:text-5xl">
               {formatMoney(account.currentBalance)}
             </p>
           </div>
 
-          <div className="relative h-24 w-24 shrink-0">
+          <div className="relative h-16 w-16 shrink-0 sm:h-24 sm:w-24">
             {animation && (
               <div key={`burst-${animation.id}`} className="pointer-events-none absolute inset-0 z-10">
                 {isDeposit ? (
@@ -165,7 +165,7 @@ export default function BalanceCard({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={!onAvatarUpload || isUploading}
-              className={`group relative h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-white shadow-md transition hover:scale-105 disabled:cursor-default ${
+              className={`group relative h-14 w-14 overflow-hidden rounded-full border-4 border-white bg-white shadow-md transition hover:scale-105 disabled:cursor-default sm:h-20 sm:w-20 ${
                 isDeposit ? "avatar-deposit" : ""
               } ${isWithdrawal ? "avatar-withdrawal" : ""}`}
               aria-label={`Change ${account.name}'s photo`}
@@ -181,12 +181,12 @@ export default function BalanceCard({
           </div>
         </div>
 
-        <div className="relative mt-5 rounded-[8px] bg-white/80 p-4 shadow-sm">
+        <div className="relative mt-5 min-w-0 rounded-[8px] bg-white/80 p-4 shadow-sm">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="inline-flex items-center gap-2 text-sm font-black text-ink/70">
-                <Target size={16} className="text-mint" />
-                {hasGoal ? savedGoalName : "Choose a saving goal"}
+              <p className="flex min-w-0 items-center gap-2 text-sm font-black text-ink/70">
+                <Target size={16} className="shrink-0 text-mint" />
+                <span className="min-w-0 truncate">{hasGoal ? savedGoalName : "Choose a saving goal"}</span>
               </p>
               <p className="mt-1 text-sm font-bold text-ink/50">
                 {hasGoal ? `${formatMoney(remaining)} left to go` : "Pick something worth saving for."}
@@ -215,7 +215,7 @@ export default function BalanceCard({
           <button
             type="button"
             onClick={() => setShowStyleModal(true)}
-            className="ml-4 mt-3 inline-flex items-center gap-1 text-sm font-black text-ink/55 underline decoration-dotted underline-offset-4 transition hover:text-ink"
+            className="mt-3 inline-flex items-center gap-1 text-sm font-black text-ink/55 underline decoration-dotted underline-offset-4 transition hover:text-ink sm:ml-4"
           >
             <Palette size={14} />
             Style card

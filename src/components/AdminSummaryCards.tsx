@@ -61,13 +61,13 @@ export default function AdminSummaryCards({
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
-        <article key={card.label} className="rounded-[8px] bg-white p-4 shadow-lift">
+        <article key={card.label} className="min-w-0 rounded-[8px] bg-white p-4 shadow-lift">
           <div className={`mb-3 grid h-10 w-10 place-items-center rounded-full ${card.tone}`}>{card.icon}</div>
           <p className="text-xs font-black uppercase text-ink/45">{card.label}</p>
-          <p className="mt-1 text-2xl font-black text-ink">{card.value}</p>
-          <p className="mt-1 inline-flex items-center gap-1 text-sm font-bold text-ink/55">
-            <ListChecks size={14} />
-            {card.detail}
+          <p className="mt-1 break-words text-2xl font-black text-ink">{card.value}</p>
+          <p className="mt-1 flex min-w-0 items-start gap-1 text-sm font-bold text-ink/55">
+            <ListChecks size={14} className="mt-0.5 shrink-0" />
+            <span className="min-w-0 break-words">{card.detail}</span>
           </p>
         </article>
       ))}
