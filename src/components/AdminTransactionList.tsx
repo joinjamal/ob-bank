@@ -205,13 +205,15 @@ export default function AdminTransactionList({
             type="button"
             onClick={handleBulkDelete}
             disabled={selectedIds.length === 0 || isDeleting}
-            className="col-span-2 h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1"
+            className={`col-span-2 h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1 ${
+              selectedIds.length === 0 ? "hidden sm:block" : ""
+            }`}
           >
             Delete selected ({selectedIds.length})
           </button>
         </div>
       </div>
-      <div className="mb-4 grid gap-2 lg:grid-cols-[1fr_140px_140px_140px_auto]">
+      <div className="mb-3">
         <label className="relative block">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
@@ -221,45 +223,57 @@ export default function AdminTransactionList({
             className="h-10 w-full rounded-[8px] border-2 border-ink/10 bg-white pl-9 pr-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
           />
         </label>
-        <select
-          value={kidFilter}
-          onChange={(event) => setKidFilter(event.target.value)}
-          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
-        >
-          <option value="all">All kids</option>
-          {kidNames.map((kidName) => (
-            <option key={kidName} value={kidName}>
-              {kidName}
-            </option>
-          ))}
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(event) => setTypeFilter(event.target.value)}
-          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
-        >
-          <option value="all">All types</option>
-          <option value="Deposit">Deposits</option>
-          <option value="Withdrawal">Withdrawals</option>
-        </select>
-        <select
-          value={dateFilter}
-          onChange={(event) => setDateFilter(event.target.value)}
-          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
-        >
-          <option value="all">All dates</option>
-          <option value="week">Last 7 days</option>
-          <option value="month">This month</option>
-        </select>
-        <button
-          type="button"
-          onClick={clearFilters}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5 sm:h-11"
-        >
-          <Filter size={16} />
-          Clear
-        </button>
       </div>
+      <details className="mb-4 rounded-[8px] bg-ink/5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-black text-ink">
+          <span className="inline-flex items-center gap-2">
+            <Filter size={15} />
+            Filters
+          </span>
+          <span className="text-xs text-ink/45">
+            {[kidFilter, typeFilter, dateFilter].filter((value) => value !== "all").length || "None"}
+          </span>
+        </summary>
+        <div className="grid gap-2 border-t border-ink/5 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+          <select
+            value={kidFilter}
+            onChange={(event) => setKidFilter(event.target.value)}
+            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+          >
+            <option value="all">All kids</option>
+            {kidNames.map((kidName) => (
+              <option key={kidName} value={kidName}>
+                {kidName}
+              </option>
+            ))}
+          </select>
+          <select
+            value={typeFilter}
+            onChange={(event) => setTypeFilter(event.target.value)}
+            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+          >
+            <option value="all">All types</option>
+            <option value="Deposit">Deposits</option>
+            <option value="Withdrawal">Withdrawals</option>
+          </select>
+          <select
+            value={dateFilter}
+            onChange={(event) => setDateFilter(event.target.value)}
+            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+          >
+            <option value="all">All dates</option>
+            <option value="week">Last 7 days</option>
+            <option value="month">This month</option>
+          </select>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5"
+          >
+            Clear
+          </button>
+        </div>
+      </details>
       <p className="mb-3 text-sm font-bold text-ink/50">
         Showing {filteredTransactions.length} of {transactions.length} entries.
       </p>
@@ -313,12 +327,12 @@ export default function AdminTransactionList({
                   </div>
                 </form>
               ) : (
-                <div className="grid grid-cols-[auto_auto] gap-3 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:items-center">
+                <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto]">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(transaction.id)}
                     onChange={() => toggleSelected(transaction.id)}
-                    className="mt-3 h-5 w-5 accent-mint sm:mt-0"
+                    className="h-5 w-5 accent-mint"
                     aria-label={`Select ${transaction.reason || "transaction"}`}
                   />
                   <div
@@ -328,21 +342,21 @@ export default function AdminTransactionList({
                   >
                     <Icon size={22} />
                   </div>
-                  <div className="col-span-2 min-w-0 sm:col-span-1">
-                    <p className="break-words font-black leading-tight">{transaction.reason || "Quick balance update"}</p>
+                  <div className="min-w-0">
+                    <p className="truncate font-black leading-tight">{transaction.reason || "Quick balance update"}</p>
                     <p className="text-sm font-bold text-ink/50">
                       {transaction.accountName} - {new Date(transaction.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <p className={`col-span-2 rounded-[8px] px-3 py-2 text-right text-xl font-black sm:col-span-1 sm:bg-transparent sm:p-0 sm:text-lg ${isDeposit ? "bg-mint/10 text-mint" : "bg-coral/10 text-coral"}`}>
+                  <p className={`col-span-2 ml-8 text-lg font-black sm:col-span-1 sm:ml-0 sm:text-right ${isDeposit ? "text-mint" : "text-coral"}`}>
                     {isDeposit ? "+" : "-"}
                     {formatMoney(transaction.amount)}
                   </p>
-                  <div className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-1 sm:flex">
+                  <div className="col-span-1 col-start-3 row-start-2 flex justify-end gap-2 sm:col-span-1 sm:col-start-auto sm:row-start-auto">
                     <button
                       type="button"
                       onClick={() => startEdit(transaction)}
-                      className="grid h-10 place-items-center rounded-[8px] bg-ink/10 text-ink transition hover:bg-mint hover:text-white sm:w-10"
+                      className="grid h-9 w-9 place-items-center rounded-[8px] bg-ink/10 text-ink transition hover:bg-mint hover:text-white sm:h-10 sm:w-10"
                       aria-label="Edit transaction"
                     >
                       <Pencil size={17} />
@@ -350,7 +364,7 @@ export default function AdminTransactionList({
                     <button
                       type="button"
                       onClick={() => handleDelete(transaction)}
-                      className="grid h-10 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white sm:w-10"
+                      className="grid h-9 w-9 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white sm:h-10 sm:w-10"
                       aria-label="Delete transaction"
                     >
                       <Trash2 size={17} />
