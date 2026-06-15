@@ -25,9 +25,9 @@ export default function ToolFrame({
         onClick={() => setIsOpen((current) => !current)}
         aria-expanded={isOpen}
         aria-controls={contentId}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left"
+        className="flex w-full items-center gap-4 p-4 text-start"
       >
-        <span className="min-w-0">
+        <span className="min-w-0 flex-1">
           <span className="block text-lg font-black text-ink">{title}</span>
           {description && <span className="mt-1 block text-sm font-bold text-ink/55">{description}</span>}
         </span>

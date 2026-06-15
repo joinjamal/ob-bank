@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, Baby, LogOut } from "lucide-react";
 import { signOutParent } from "@/app/actions";
 import AdminSummaryCards from "@/components/AdminSummaryCards";
 import AdminTransactionList from "@/components/AdminTransactionList";
@@ -14,6 +14,7 @@ import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
 import FamilyParentsCard, { type FamilyParent } from "@/components/FamilyParentsCard";
 import KidManagementCard from "@/components/KidManagementCard";
 import LanguageToggle from "@/components/LanguageToggle";
+import ParentChildWizard from "@/components/ParentChildWizard";
 import ParentOnboardingCard from "@/components/ParentOnboardingCard";
 import ParentSecurityCard from "@/components/ParentSecurityCard";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -46,6 +47,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
   const [allowances, setAllowances] = useState(initialData.allowances);
   const [familyParents, setFamilyParents] = useState(initialData.familyParents);
   const [message, setMessage] = useState("");
+  const [isChildWizardOpen, setIsChildWizardOpen] = useState(initialData.accounts.length === 0);
 
   const sortedAccounts = useMemo(
     () => [...accounts].sort((a, b) => a.name.localeCompare(b.name)),
@@ -137,6 +139,14 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             </p>
           </div>
           <div className="app-actions">
+            <button
+              type="button"
+              onClick={() => setIsChildWizardOpen(true)}
+              className="action-button action-mint w-full sm:w-auto"
+            >
+              <Baby size={17} />
+              {t("childWizard.launch")}
+            </button>
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutParent}>
@@ -194,6 +204,11 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
           </aside>
         </div>
       </div>
+      <ParentChildWizard
+        open={isChildWizardOpen}
+        onClose={() => setIsChildWizardOpen(false)}
+        onCreated={loadData}
+      />
     </main>
   );
 }
