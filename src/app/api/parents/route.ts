@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
-import { hashPassword } from "@/lib/passwords";
+import { hashSecret } from "@/lib/passwords";
 import { prisma } from "@/lib/prisma";
 
 export const preferredRegion = "hnd1";
@@ -12,10 +12,10 @@ export async function POST(request: Request) {
     const familyId = String(body.familyId ?? "");
     const name = String(body.name ?? "").trim();
     const email = String(body.email ?? "").trim().toLowerCase() || null;
-    const password = String(body.password ?? "password");
+    const password = String(body.password ?? "");
 
-    if (!familyId || !name || name.length > 48 || password.length < 4) {
-      return NextResponse.json({ message: "Choose a family, name, and password." }, { status: 400 });
+    if (!familyId || !name || name.length > 48 || password.length < 6) {
+      return NextResponse.json({ message: "Choose a family, name, and password of at least 6 characters." }, { status: 400 });
     }
 
     const parent = await prisma.parent.create({
@@ -23,14 +23,15 @@ export async function POST(request: Request) {
         family: { connect: { id: familyId } },
         name,
         email,
-        passwordHash: hashPassword(password)
+        passwordHash: hashSecret(password)
       }
     });
 
     return NextResponse.json({ id: parent.id, familyId: parent.familyId, name: parent.name, email: parent.email }, { status: 201 });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not create parent.";
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : "Could not create parent." },
+      { message: message.includes("Unique constraint") ? "That email is already registered." : message },
       { status: 400 }
     );
   }

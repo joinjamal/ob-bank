@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, Trash2, UsersRound } from "lucide-react";
+import { KeyRound, Plus, Trash2, UsersRound } from "lucide-react";
 
 export type FamilySummary = {
   id: string;
@@ -19,8 +19,36 @@ export default function FamilyManagementCard({
   onChanged: () => Promise<void>;
 }) {
   const [resetPassword, setResetPassword] = useState("password");
+  const [activeFamilyId, setActiveFamilyId] = useState("");
+  const [parentName, setParentName] = useState("");
+  const [parentEmail, setParentEmail] = useState("");
+  const [parentPassword, setParentPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  async function addParent(familyId: string, familyName: string) {
+    setMessage("");
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/parents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ familyId, name: parentName, email: parentEmail, password: parentPassword })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? "Could not add parent.");
+      setParentName("");
+      setParentEmail("");
+      setParentPassword("");
+      setActiveFamilyId("");
+      setMessage(`Added parent to ${familyName}.`);
+      await onChanged();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not add parent.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   async function resetParent(parentId: string, parentName: string) {
     setMessage("");
@@ -143,6 +171,66 @@ export default function FamilyManagementCard({
                 </div>
               ))}
             </div>
+
+            {activeFamilyId === family.id ? (
+              <div className="mt-3 rounded-[8px] bg-ink/5 p-3">
+                <p className="mb-3 text-sm font-black text-ink">Add parent to {family.name}</p>
+                <div className="grid gap-2">
+                  <input
+                    value={parentName}
+                    onChange={(event) => setParentName(event.target.value)}
+                    placeholder="Parent name"
+                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                  />
+                  <input
+                    value={parentEmail}
+                    onChange={(event) => setParentEmail(event.target.value)}
+                    type="email"
+                    placeholder="Email optional"
+                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                  />
+                  <input
+                    value={parentPassword}
+                    onChange={(event) => setParentPassword(event.target.value)}
+                    type="password"
+                    placeholder="Password"
+                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                  />
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => addParent(family.id, family.name)}
+                    disabled={isSaving}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-mint px-3 text-sm font-black text-white disabled:opacity-60"
+                  >
+                    <Plus size={16} />
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFamilyId("")}
+                    className="h-10 rounded-[8px] bg-white px-3 text-sm font-black text-ink"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveFamilyId(family.id);
+                  setParentName("");
+                  setParentEmail("");
+                  setParentPassword("");
+                }}
+                className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white"
+              >
+                <Plus size={16} />
+                Add parent
+              </button>
+            )}
           </div>
         ))}
       </div>

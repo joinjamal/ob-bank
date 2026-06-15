@@ -110,9 +110,6 @@ export default function ParentLoginForm() {
             </label>
             {!loginState.ok && <p className="mt-4 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{loginState.message}</p>}
             <SubmitButton />
-            <Link href="/reset-password" className="mt-4 inline-flex font-black text-mint">
-              {t("auth.forgot")}
-            </Link>
           </form>
         ) : (
           <form action={registerAction}>

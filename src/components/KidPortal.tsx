@@ -11,6 +11,7 @@ import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
 import LanguageToggle from "@/components/LanguageToggle";
+import SessionLoadingOverlay from "@/components/SessionLoadingOverlay";
 import StandardCalculator from "@/components/StandardCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
 import ToolFrame from "@/components/ToolFrame";
@@ -62,6 +63,7 @@ export default function KidPortal({
   const [message, setMessage] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const animationTimer = useRef<number | null>(null);
 
   const selectedKid = useMemo(
@@ -338,9 +340,12 @@ export default function KidPortal({
             <button
               type="button"
               onClick={() => {
-                void fetch("/api/kids/logout", { method: "POST" });
-                setKidData(null);
-                setMessage("");
+                setIsSigningOut(true);
+                fetch("/api/kids/logout", { method: "POST" }).finally(() => {
+                  setKidData(null);
+                  setMessage("");
+                  setIsSigningOut(false);
+                });
               }}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
             >
@@ -389,6 +394,9 @@ export default function KidPortal({
           onClose={() => setActiveMove(null)}
           onSave={saveKidTransaction}
         />
+      )}
+      {isSigningOut && (
+        <SessionLoadingOverlay title="Switching kid" message="Closing this vault and returning to the profile picker." />
       )}
     </main>
   );

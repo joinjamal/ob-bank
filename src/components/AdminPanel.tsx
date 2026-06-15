@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
 import AdminTransactionList from "@/components/AdminTransactionList";
+import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
 import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -175,6 +176,7 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutAdmin}>
+              <AuthLoadingOverlay title="Signing out" message="Closing the super admin console." tone="admin" />
               <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto sm:px-4 sm:text-base">
                 <LogOut size={17} />
                 {t("admin.signOut")}

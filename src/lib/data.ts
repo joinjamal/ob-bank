@@ -198,7 +198,13 @@ export async function getAdminData() {
 export async function getParentData(parentId: string) {
   const parent = await prisma.parent.findUnique({
     where: { id: parentId },
-    include: { family: true }
+    include: {
+      family: {
+        include: {
+          parents: { orderBy: { name: "asc" } }
+        }
+      }
+    }
   });
 
   if (!parent) {
@@ -237,6 +243,12 @@ export async function getParentData(parentId: string) {
       familyAccessToken: familyAccess.token,
       familyAccessLinkId: familyAccess.link.id
     },
+    familyParents: parent.family.parents.map((familyParent) => ({
+      id: familyParent.id,
+      familyId: familyParent.familyId,
+      name: familyParent.name,
+      email: familyParent.email
+    })),
     accounts: accounts.map(serializeAccount),
     transactions,
     allowances: allowances.map(serializeRecurringAllowance),

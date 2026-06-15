@@ -253,16 +253,8 @@ canvas {
   max-width: 100%;
 }
 
-summary::-webkit-details-marker {
-  display: none;
-}
-
-.tool-frame[open] .tool-frame-icon {
+.tool-frame.is-open .tool-frame-icon {
   transform: rotate(180deg);
-}
-
-.tool-frame > summary {
-  -webkit-tap-highlight-color: transparent;
 }
 
 .coin-pop {

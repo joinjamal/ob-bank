@@ -7,9 +7,11 @@ import { signOutParent } from "@/app/actions";
 import AdminSummaryCards from "@/components/AdminSummaryCards";
 import AdminTransactionList from "@/components/AdminTransactionList";
 import AutomaticAllowanceCard from "@/components/AutomaticAllowanceCard";
+import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
 import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
 import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
+import FamilyParentsCard, { type FamilyParent } from "@/components/FamilyParentsCard";
 import KidManagementCard from "@/components/KidManagementCard";
 import LanguageToggle from "@/components/LanguageToggle";
 import ParentOnboardingCard from "@/components/ParentOnboardingCard";
@@ -34,6 +36,7 @@ type ParentData = {
   accounts: Account[];
   transactions: Transaction[];
   allowances: RecurringAllowance[];
+  familyParents: FamilyParent[];
 };
 
 export default function ParentPanel({ initialData }: { initialData: ParentData }) {
@@ -41,6 +44,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
   const [accounts, setAccounts] = useState(initialData.accounts);
   const [transactions, setTransactions] = useState(initialData.transactions);
   const [allowances, setAllowances] = useState(initialData.allowances);
+  const [familyParents, setFamilyParents] = useState(initialData.familyParents);
   const [message, setMessage] = useState("");
 
   const sortedAccounts = useMemo(
@@ -58,6 +62,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
     setAccounts(body.accounts);
     setTransactions(body.transactions);
     setAllowances(body.allowances);
+    setFamilyParents(body.familyParents);
   }, [t]);
 
   async function saveTransaction(payload: {
@@ -135,6 +140,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutParent}>
+              <AuthLoadingOverlay title="Signing out" message="Closing the parent portal on this device." />
               <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto sm:px-4 sm:text-base">
                 <LogOut size={17} />
                 {t("parent.signOut")}
@@ -168,6 +174,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
               <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
             </ToolFrame>
             <ToolFrame title="Kids and access" description="Manage profiles, PINs, and the share link.">
+              <FamilyParentsCard parents={familyParents} onChanged={loadData} />
               <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
               <FamilyAccessLinkCard
                 familyName={initialData.parent.familyName}
@@ -177,8 +184,6 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             <ToolFrame title="Setup and safety" description="Email, export reminders, and onboarding checks.">
               <ParentOnboardingCard accounts={sortedAccounts} allowances={allowances} />
               <ParentSecurityCard
-                email={initialData.parent.email}
-                emailVerifiedAt={initialData.parent.emailVerifiedAt}
                 transactions={transactions}
               />
             </ToolFrame>

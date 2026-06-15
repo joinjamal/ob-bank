@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/adminApi";
-import { hashPassword } from "@/lib/passwords";
+import { hashSecret } from "@/lib/passwords";
 import { prisma } from "@/lib/prisma";
 
 export const preferredRegion = "hnd1";
@@ -22,7 +22,7 @@ export async function PATCH(request: Request, context: Context) {
 
     await prisma.parent.update({
       where: { id },
-      data: { passwordHash: hashPassword(password) }
+      data: { passwordHash: hashSecret(password) }
     });
 
     return NextResponse.json({ ok: true });
