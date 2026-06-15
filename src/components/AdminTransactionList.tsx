@@ -177,13 +177,13 @@ export default function AdminTransactionList({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="rounded-[8px] bg-white p-4 shadow-lift sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-black">Manage activity</h2>
           <p className="text-sm font-bold text-ink/55">Edit or delete entries. Balances recalculate automatically.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <button
             type="button"
             onClick={toggleAll}
@@ -205,7 +205,7 @@ export default function AdminTransactionList({
             type="button"
             onClick={handleBulkDelete}
             disabled={selectedIds.length === 0 || isDeleting}
-            className="h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+            className="col-span-2 h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1"
           >
             Delete selected ({selectedIds.length})
           </button>
@@ -218,13 +218,13 @@ export default function AdminTransactionList({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search reason, kid, or amount"
-            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white pl-9 pr-3 font-bold outline-none focus:border-mint"
+            className="h-10 w-full rounded-[8px] border-2 border-ink/10 bg-white pl-9 pr-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
           />
         </label>
         <select
           value={kidFilter}
           onChange={(event) => setKidFilter(event.target.value)}
-          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
         >
           <option value="all">All kids</option>
           {kidNames.map((kidName) => (
@@ -236,7 +236,7 @@ export default function AdminTransactionList({
         <select
           value={typeFilter}
           onChange={(event) => setTypeFilter(event.target.value)}
-          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
         >
           <option value="all">All types</option>
           <option value="Deposit">Deposits</option>
@@ -245,7 +245,7 @@ export default function AdminTransactionList({
         <select
           value={dateFilter}
           onChange={(event) => setDateFilter(event.target.value)}
-          className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
         >
           <option value="all">All dates</option>
           <option value="week">Last 7 days</option>
@@ -254,7 +254,7 @@ export default function AdminTransactionList({
         <button
           type="button"
           onClick={clearFilters}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5 sm:h-11"
         >
           <Filter size={16} />
           Clear
@@ -313,12 +313,12 @@ export default function AdminTransactionList({
                   </div>
                 </form>
               ) : (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="grid grid-cols-[auto_auto] gap-3 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:items-center">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(transaction.id)}
                     onChange={() => toggleSelected(transaction.id)}
-                    className="h-5 w-5 accent-mint"
+                    className="mt-3 h-5 w-5 accent-mint sm:mt-0"
                     aria-label={`Select ${transaction.reason || "transaction"}`}
                   />
                   <div
@@ -328,28 +328,30 @@ export default function AdminTransactionList({
                   >
                     <Icon size={22} />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-black">{transaction.reason || "Quick balance update"}</p>
+                  <div className="col-span-2 min-w-0 sm:col-span-1">
+                    <p className="break-words font-black leading-tight">{transaction.reason || "Quick balance update"}</p>
                     <p className="text-sm font-bold text-ink/50">
                       {transaction.accountName} - {new Date(transaction.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <p className={`text-lg font-black ${isDeposit ? "text-mint" : "text-coral"}`}>
+                  <p className={`col-span-2 rounded-[8px] px-3 py-2 text-right text-xl font-black sm:col-span-1 sm:bg-transparent sm:p-0 sm:text-lg ${isDeposit ? "bg-mint/10 text-mint" : "bg-coral/10 text-coral"}`}>
                     {isDeposit ? "+" : "-"}
                     {formatMoney(transaction.amount)}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-1 sm:flex">
                     <button
                       type="button"
                       onClick={() => startEdit(transaction)}
-                      className="grid h-10 w-10 place-items-center rounded-[8px] bg-ink/10 text-ink transition hover:bg-mint hover:text-white"
+                      className="grid h-10 place-items-center rounded-[8px] bg-ink/10 text-ink transition hover:bg-mint hover:text-white sm:w-10"
+                      aria-label="Edit transaction"
                     >
                       <Pencil size={17} />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(transaction)}
-                      className="grid h-10 w-10 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white"
+                      className="grid h-10 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white sm:w-10"
+                      aria-label="Delete transaction"
                     >
                       <Trash2 size={17} />
                     </button>
