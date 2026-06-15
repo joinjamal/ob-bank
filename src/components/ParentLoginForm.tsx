@@ -91,7 +91,7 @@ export default function ParentLoginForm() {
           <input
             name="email"
             autoComplete="username"
-            placeholder="parent@email.com"
+            placeholder="Parent name or parent@email.com"
             className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
           />
             </label>
