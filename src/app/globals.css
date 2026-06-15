@@ -10,6 +10,25 @@ html.dark {
   color-scheme: dark;
 }
 
+html[dir="rtl"] body {
+  direction: rtl;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea {
+  text-align: right;
+}
+
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] input[inputmode="numeric"] {
+  text-align: left;
+  direction: ltr;
+}
+
+html[dir="rtl"] .recharts-wrapper {
+  direction: ltr;
+}
+
 * {
   box-sizing: border-box;
 }

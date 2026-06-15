@@ -10,9 +10,11 @@ import KidPinSettings from "@/components/KidPinSettings";
 import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import KidWealthTrail from "@/components/KidWealthTrail";
+import LanguageToggle from "@/components/LanguageToggle";
 import StandardCalculator from "@/components/StandardCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { Account, KidPickerAccount, Transaction } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 import {
   applyAccountDelta,
   createOptimisticTransaction,
@@ -38,7 +40,7 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-const minimumVaultAnimationMs = 850;
+const minimumVaultAnimationMs = 350;
 
 export default function KidPortal({
   kids,
@@ -49,6 +51,7 @@ export default function KidPortal({
   familyName: string;
   initialKidData?: KidData | null;
 }) {
+  const { t } = useI18n();
   const [selectedKidId, setSelectedKidId] = useState(kids[0]?.id ?? "");
   const [pin, setPin] = useState("");
   const [rememberKid, setRememberKid] = useState(true);
@@ -89,7 +92,7 @@ export default function KidPortal({
     setMessage("");
 
     if (!selectedKid || !/^\d{4,8}$/.test(pin)) {
-      setMessage("Choose your name and enter your PIN.");
+      setMessage(t("kid.choose"));
       return;
     }
 
@@ -208,21 +211,22 @@ export default function KidPortal({
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
                 <BadgeDollarSign size={17} className="text-mint" />
-                Kid vault login
+                {t("kid.loginBadge")}
               </div>
               <h1 className="text-4xl font-black text-ink sm:text-6xl">OB Bank</h1>
               <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
-                {familyName}: choose your name and enter your PIN.
+                {familyName}: {t("kid.choose")}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
               <Link
                 href="/parent"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
               >
                 <UserRound size={17} className="text-mint" />
-                Parent
+                {t("kid.parent")}
               </Link>
+              <LanguageToggle compact />
               <ThemeToggle compact />
             </div>
           </header>
@@ -230,15 +234,15 @@ export default function KidPortal({
           <section className="rounded-[8px] bg-white p-5 shadow-lift">
             {kids.length === 0 ? (
               <div className="rounded-[8px] bg-mint/10 p-5">
-                <h2 className="text-2xl font-black text-ink">No kid vaults yet</h2>
+                <h2 className="text-2xl font-black text-ink">{t("kid.emptyTitle")}</h2>
                 <p className="mt-2 font-bold text-ink/60">
-                  Ask a parent to add the kids from the parent portal first.
+                  {t("kid.emptyBody")}
                 </p>
                 <Link
                   href="/parent"
                   className="mt-4 inline-flex h-11 items-center justify-center rounded-[8px] bg-mint px-4 font-black text-white"
                 >
-                  Go to parent portal
+                  {t("kid.emptyCta")}
                 </Link>
               </div>
             ) : (
@@ -268,7 +272,7 @@ export default function KidPortal({
 
             <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
               <label>
-                <span className="mb-2 block text-sm font-black text-ink/70">PIN</span>
+                <span className="mb-2 block text-sm font-black text-ink/70">{t("kid.pin")}</span>
                 <div className="relative">
                   <KeyRound size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
                   <input
@@ -291,7 +295,7 @@ export default function KidPortal({
                   type="checkbox"
                   className="h-5 w-5 accent-mint"
                 />
-                Remember me on this device
+                {t("kid.remember")}
               </label>
               <button
                 type="button"
@@ -299,7 +303,7 @@ export default function KidPortal({
                 disabled={isLoggingIn}
                 className="self-end h-12 rounded-[8px] bg-ink px-6 font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
               >
-                {isLoggingIn ? "Opening..." : "Open vault"}
+                {isLoggingIn ? t("kid.opening") : t("kid.open")}
               </button>
             </div>
               </>
@@ -319,14 +323,15 @@ export default function KidPortal({
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
               <BadgeDollarSign size={17} className="text-mint" />
-              {kidData.account.name}&apos;s vault
+              {t("kid.vault", { name: kidData.account.name })}
             </div>
-            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-6xl">My OB Bank</h1>
+            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-6xl">{t("kid.myBank")}</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
-              Save, spend carefully, and beat your best score.
+              {t("kid.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <LanguageToggle compact />
             <ThemeToggle compact />
             <KidPinSettings account={kidData.account} variant="button" />
             <button
@@ -339,7 +344,7 @@ export default function KidPortal({
               className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
             >
               <LogOut size={17} />
-              Switch kid
+              {t("kid.switch")}
             </button>
           </div>
         </header>
@@ -349,12 +354,12 @@ export default function KidPortal({
         <div className="space-y-5">
           {isLoadingDetails && (
             <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
-              Loading activity in the background...
+              {t("kid.loading")}
             </p>
           )}
           {isLoggingIn && (
             <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
-              Checking PIN...
+              {t("kid.checking")}
             </p>
           )}
           <BalanceCard
@@ -389,6 +394,8 @@ export default function KidPortal({
 }
 
 function VaultOpeningOverlay({ kidName }: { kidName: string }) {
+  const { t } = useI18n();
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm">
       <div className="vault-open-card w-full max-w-sm rounded-[8px] bg-white p-6 text-center shadow-lift">
@@ -397,8 +404,8 @@ function VaultOpeningOverlay({ kidName }: { kidName: string }) {
             <LockKeyhole size={28} className="text-mint" />
           </div>
         </div>
-        <p className="text-sm font-black uppercase text-mint">Checking PIN</p>
-        <h2 className="mt-1 text-2xl font-black text-ink">Opening {kidName}&apos;s vault</h2>
+        <p className="text-sm font-black uppercase text-mint">{t("kid.checking")}</p>
+        <h2 className="mt-1 text-2xl font-black text-ink">{t("kid.openingVault", { name: kidName })}</h2>
         <div className="mt-5 flex justify-center gap-2">
           <span className="vault-light h-3 w-3 rounded-full bg-mint" />
           <span className="vault-light h-3 w-3 rounded-full bg-mint" />

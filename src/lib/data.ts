@@ -210,7 +210,7 @@ export async function getParentData(parentId: string) {
 
   const [accounts, transactions, allowances] = await Promise.all([
     prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
-    getFamilyTransactions(parent.familyId),
+    getFamilyTransactions(parent.familyId, 120),
     prisma.recurringAllowance.findMany({
       where: { account: { familyId: parent.familyId } },
       include: {

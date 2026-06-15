@@ -1,15 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
-import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminTransactionList from "@/components/AdminTransactionList";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
+import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 import { applyAccountDelta, replacementDelta, transactionDelta } from "@/lib/optimisticMoney";
+
+const AdminAnalytics = dynamic(() => import("@/components/AdminAnalytics"), {
+  ssr: false,
+  loading: () => (
+    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+      <div className="h-5 w-44 rounded-full bg-ink/10" />
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="h-24 rounded-[8px] bg-ink/5" />
+        <div className="h-24 rounded-[8px] bg-ink/5" />
+      </div>
+    </section>
+  )
+});
 
 type AdminData = {
   accounts: Account[];
@@ -19,6 +34,7 @@ type AdminData = {
 };
 
 export default function AdminPanel({ initialData }: { initialData: AdminData }) {
+  const { t } = useI18n();
   const [accounts, setAccounts] = useState<Account[]>(initialData.accounts);
   const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
   const [, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
@@ -147,19 +163,20 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
           <div>
             <Link href="/" className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
               <ArrowLeft size={17} className="text-mint" />
-              Kid dashboard
+              {t("admin.dashboard")}
             </Link>
-            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">Super admin</h1>
+            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">{t("admin.title")}</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
-              Monitor families, parent access, platform balances, and full transaction history.
+              {t("admin.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutAdmin}>
               <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
                 <LogOut size={17} />
-                Sign out
+                {t("admin.signOut")}
               </button>
             </form>
           </div>

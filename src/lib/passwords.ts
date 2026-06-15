@@ -4,7 +4,7 @@ export function hashPassword(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-const iterations = 120_000;
+const iterations = 60_000;
 const keyLength = 32;
 const digest = "sha256";
 

@@ -11,11 +11,13 @@ import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
 import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
 import KidManagementCard from "@/components/KidManagementCard";
+import LanguageToggle from "@/components/LanguageToggle";
 import ParentOnboardingCard from "@/components/ParentOnboardingCard";
 import ParentSecurityCard from "@/components/ParentSecurityCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionForm from "@/components/TransactionForm";
 import type { Account, RecurringAllowance, Transaction } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 
 type ParentData = {
   parent: {
@@ -34,6 +36,7 @@ type ParentData = {
 };
 
 export default function ParentPanel({ initialData }: { initialData: ParentData }) {
+  const { t } = useI18n();
   const [accounts, setAccounts] = useState(initialData.accounts);
   const [transactions, setTransactions] = useState(initialData.transactions);
   const [allowances, setAllowances] = useState(initialData.allowances);
@@ -48,13 +51,13 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
     const response = await fetch("/api/parent/dashboard", { cache: "no-store" });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      setMessage(body?.message ?? "Could not refresh parent data.");
+      setMessage(body?.message ?? t("parent.refreshError"));
       return;
     }
     setAccounts(body.accounts);
     setTransactions(body.transactions);
     setAllowances(body.allowances);
-  }, []);
+  }, [t]);
 
   async function saveTransaction(payload: {
     accountId: string;
@@ -118,21 +121,22 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
           <div>
             <Link href="/" className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
               <ArrowLeft size={17} className="text-mint" />
-              Kid dashboard
+              {t("kid.dashboard")}
             </Link>
             <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">
-              {initialData.parent.name}&apos;s family portal
+              {t("parent.portal", { name: initialData.parent.name })}
             </h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
-              Parent controls for {initialData.parent.familyName}. This view only shows this family&apos;s kids and activity.
+              {t("parent.controls", { family: initialData.parent.familyName })}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutParent}>
               <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
                 <LogOut size={17} />
-                Sign out
+                {t("parent.signOut")}
               </button>
             </form>
           </div>

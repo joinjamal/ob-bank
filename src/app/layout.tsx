@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import LocaleProvider from "@/components/LocaleProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-rounded">{children}</body>
+      <body className="font-rounded">
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
