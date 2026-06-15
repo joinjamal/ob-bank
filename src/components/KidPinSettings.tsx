@@ -114,7 +114,7 @@ export default function KidPinSettings({
             setMessage("");
             setIsOpen(true);
           }}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
         >
           <KeyRound size={20} />
           Change PIN

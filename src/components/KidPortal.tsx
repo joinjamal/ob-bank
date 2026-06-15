@@ -13,6 +13,7 @@ import KidWealthTrail from "@/components/KidWealthTrail";
 import LanguageToggle from "@/components/LanguageToggle";
 import StandardCalculator from "@/components/StandardCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
+import ToolFrame from "@/components/ToolFrame";
 import type { Account, KidPickerAccount, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -205,23 +206,23 @@ export default function KidPortal({
 
   if (!kidData) {
     return (
-      <main className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
-          <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <main className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-4xl">
+          <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
                 <BadgeDollarSign size={17} className="text-mint" />
                 {t("kid.loginBadge")}
               </div>
-              <h1 className="text-4xl font-black text-ink sm:text-6xl">OB Bank</h1>
+              <h1 className="text-3xl font-black text-ink sm:text-5xl">OB Bank</h1>
               <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
                 {familyName}: {t("kid.choose")}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:justify-end">
               <Link
                 href="/parent"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
+                className="inline-flex h-10 items-center justify-center gap-1 rounded-[8px] bg-white px-2 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:h-11 sm:gap-2 sm:px-4 sm:text-base"
               >
                 <UserRound size={17} className="text-mint" />
                 {t("kid.parent")}
@@ -231,7 +232,7 @@ export default function KidPortal({
             </div>
           </header>
 
-          <section className="rounded-[8px] bg-white p-5 shadow-lift">
+          <section className="rounded-[8px] bg-white p-4 shadow-lift sm:p-5">
             {kids.length === 0 ? (
               <div className="rounded-[8px] bg-mint/10 p-5">
                 <h2 className="text-2xl font-black text-ink">{t("kid.emptyTitle")}</h2>
@@ -270,7 +271,7 @@ export default function KidPortal({
               ))}
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
               <label>
                 <span className="mb-2 block text-sm font-black text-ink/70">{t("kid.pin")}</span>
                 <div className="relative">
@@ -288,6 +289,14 @@ export default function KidPortal({
                   />
                 </div>
               </label>
+              <button
+                type="button"
+                onClick={handleLogin}
+                disabled={isLoggingIn}
+                className="h-12 rounded-[8px] bg-ink px-5 font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60 sm:self-end"
+              >
+                {isLoggingIn ? t("kid.opening") : t("kid.open")}
+              </button>
               <label className="flex items-center gap-3 self-end rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/70 sm:col-span-2">
                 <input
                   checked={rememberKid}
@@ -297,14 +306,6 @@ export default function KidPortal({
                 />
                 {t("kid.remember")}
               </label>
-              <button
-                type="button"
-                onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="self-end h-12 rounded-[8px] bg-ink px-6 font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
-              >
-                {isLoggingIn ? t("kid.opening") : t("kid.open")}
-              </button>
             </div>
               </>
             )}
@@ -317,20 +318,20 @@ export default function KidPortal({
   }
 
   return (
-    <main className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <main className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
               <BadgeDollarSign size={17} className="text-mint" />
               {t("kid.vault", { name: kidData.account.name })}
             </div>
-            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-6xl">{t("kid.myBank")}</h1>
+            <h1 className="text-3xl font-black tracking-normal text-ink sm:text-5xl">{t("kid.myBank")}</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
               {t("kid.subtitle")}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap md:justify-end">
             <LanguageToggle compact />
             <ThemeToggle compact />
             <KidPinSettings account={kidData.account} variant="button" />
@@ -351,7 +352,7 @@ export default function KidPortal({
 
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
 
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {isLoadingDetails && (
             <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
               {t("kid.loading")}
@@ -370,14 +371,14 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
-          <KidProgressPanel accounts={[kidData.account]} transactions={kidData.transactions} />
           <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
             <KidWealthTrail account={kidData.account} data={kidData.ledger} />
             <ActivityFeed transactions={kidData.transactions} compact />
           </div>
-          <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+          <ToolFrame title="Extras" description="Quests and quick math live here when you want them.">
+            <KidProgressPanel accounts={[kidData.account]} transactions={kidData.transactions} />
             <StandardCalculator />
-          </div>
+          </ToolFrame>
         </div>
       </div>
 

@@ -34,7 +34,7 @@ export default function ParentLoginForm() {
   return (
     <main className="grid min-h-screen place-items-center px-4 py-8">
       <section className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
-        <div className="mb-5 grid grid-cols-3 gap-2">
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Link
             href="/"
             className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5"
@@ -49,7 +49,7 @@ export default function ParentLoginForm() {
             <Shield size={16} className="text-mint" />
             {t("auth.admin")}
           </Link>
-          <div className="flex gap-2">
+          <div className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-2">
             <LanguageToggle compact />
             <ThemeToggle compact />
           </div>

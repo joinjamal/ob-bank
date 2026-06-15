@@ -9,6 +9,7 @@ import AdminTransactionList from "@/components/AdminTransactionList";
 import FamilyManagementCard, { FamilySummary } from "@/components/FamilyManagementCard";
 import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
+import ToolFrame from "@/components/ToolFrame";
 import { Account, LedgerPoint, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
 import { applyAccountDelta, replacementDelta, transactionDelta } from "@/lib/optimisticMoney";
@@ -157,24 +158,24 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
   }
 
   return (
-    <main className="super-admin-shell min-h-screen px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <main className="super-admin-shell min-h-screen px-3 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <Link href="/" className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
               <ArrowLeft size={17} className="text-mint" />
               {t("admin.dashboard")}
             </Link>
-            <h1 className="text-4xl font-black tracking-normal text-ink sm:text-5xl">{t("admin.title")}</h1>
+            <h1 className="text-3xl font-black tracking-normal text-ink sm:text-5xl">{t("admin.title")}</h1>
             <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
               {t("admin.subtitle")}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap md:justify-end">
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutAdmin}>
-              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
+              <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto sm:px-4 sm:text-base">
                 <LogOut size={17} />
                 {t("admin.signOut")}
               </button>
@@ -184,23 +185,21 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
 
         {error && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{error}</p>}
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
-          <div className="space-y-5">
-            {isRefreshing && (
-              <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
-                Updating admin data...
-              </p>
-            )}
-            <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
-            <AdminTransactionList
-              transactions={transactions}
-              onEdit={editTransaction}
-              onDelete={deleteTransactions}
-            />
-          </div>
-          <aside className="space-y-5">
+        <div className="space-y-5">
+          {isRefreshing && (
+            <p className="rounded-[8px] bg-white/80 px-4 py-3 text-sm font-black text-ink/55 shadow-sm">
+              Updating admin data...
+            </p>
+          )}
+          <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
+          <AdminTransactionList
+            transactions={transactions}
+            onEdit={editTransaction}
+            onDelete={deleteTransactions}
+          />
+          <ToolFrame title="Family management" description="Create, inspect, reset, or remove family access when needed.">
             <FamilyManagementCard families={families} onChanged={loadData} />
-          </aside>
+          </ToolFrame>
         </div>
       </div>
     </main>
