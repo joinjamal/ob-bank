@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { Lock } from "lucide-react";
 import { signInAdmin } from "@/app/actions";
 import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
@@ -15,7 +16,7 @@ function SubmitButton() {
   return (
     <button
       disabled={pending}
-      className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
+      className="action-button action-primary mt-5 w-full"
     >
       <Lock size={18} />
       {pending ? t("auth.checking") : t("admin.enter")}
@@ -25,11 +26,11 @@ function SubmitButton() {
 
 export default function AdminLoginForm() {
   const { t } = useI18n();
-  const [state, formAction] = useFormState(signInAdmin, { ok: true, message: "" });
+  const [state, formAction] = useActionState(signInAdmin, { ok: true, message: "" });
 
   return (
-    <main className="super-admin-shell grid min-h-screen place-items-center px-4 py-8">
-      <form action={formAction} className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
+    <main className="super-admin-shell app-shell grid place-items-center">
+      <form action={formAction} className="surface-card w-full max-w-md p-5 sm:p-6">
         <AuthLoadingOverlay
           title={t("admin.openingTitle")}
           message={t("admin.openingMessage")}
@@ -43,16 +44,16 @@ export default function AdminLoginForm() {
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />
           </div>
-          <h1 className="text-3xl font-black">{t("admin.title")}</h1>
-          <p className="mt-2 font-bold text-ink/60">{t("admin.enterPassword")}</p>
+          <h1 className="text-3xl font-black text-ink">{t("admin.title")}</h1>
+          <p className="section-copy mt-2">{t("admin.enterPassword")}</p>
         </div>
         <label className="block">
-          <span className="mb-2 block text-sm font-black text-ink/70">{t("admin.password")}</span>
+          <span className="field-label">{t("admin.password")}</span>
           <input
             name="password"
             type="password"
             autoComplete="current-password"
-            className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none transition focus:border-mint"
+            className="field-input"
           />
         </label>
         {!state.ok && (

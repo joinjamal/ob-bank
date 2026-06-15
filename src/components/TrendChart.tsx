@@ -76,7 +76,7 @@ export default function TrendChart({ data, accounts }: { data: LedgerPoint[]; ac
       : null;
 
   return (
-    <section className="overflow-hidden rounded-[8px] bg-white shadow-lift">
+    <section className="surface-card overflow-hidden">
       <div className="bg-mint/10 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -84,7 +84,7 @@ export default function TrendChart({ data, accounts }: { data: LedgerPoint[]; ac
               <TrendingUp size={16} className="text-mint" />
               Wealth trail
             </div>
-            <h2 className="text-2xl font-black text-ink">Watch your savings climb</h2>
+            <h2 className="text-2xl font-black text-ink">Savings over time</h2>
             <p className="mt-1 text-sm font-bold text-ink/60">
               Every add or spend becomes a step on the trail.
             </p>

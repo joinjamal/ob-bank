@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
-import { BadgeDollarSign, KeyRound, LockKeyhole, LogOut, UserRound } from "lucide-react";
+import { BadgeDollarSign, Check, KeyRound, LockKeyhole, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -208,23 +208,23 @@ export default function KidPortal({
 
   if (!kidData) {
     return (
-      <main className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-4xl">
-          <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+      <main className="app-shell">
+        <div className="app-container max-w-5xl">
+          <header className="app-header">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
+              <div className="eyebrow-pill mb-3">
                 <BadgeDollarSign size={17} className="text-mint" />
                 {t("kid.loginBadge")}
               </div>
-              <h1 className="text-3xl font-black text-ink sm:text-5xl">OB Bank</h1>
-              <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
+              <h1 className="page-title">{t("kid.chooseVault")}</h1>
+              <p className="page-subtitle">
                 {familyName}: {t("kid.choose")}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:justify-end">
+            <div className="app-actions">
               <Link
                 href="/parent"
-                className="inline-flex h-10 items-center justify-center gap-1 rounded-[8px] bg-white px-2 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:h-11 sm:gap-2 sm:px-4 sm:text-base"
+                className="action-button action-quiet"
               >
                 <UserRound size={17} className="text-mint" />
                 {t("kid.parent")}
@@ -234,7 +234,7 @@ export default function KidPortal({
             </div>
           </header>
 
-          <section className="rounded-[8px] bg-white p-4 shadow-lift sm:p-5">
+          <section className="kid-entry-panel">
             {kids.length === 0 ? (
               <div className="rounded-[8px] bg-mint/10 p-5">
                 <h2 className="text-2xl font-black text-ink">{t("kid.emptyTitle")}</h2>
@@ -249,91 +249,108 @@ export default function KidPortal({
                 </Link>
               </div>
             ) : (
-              <>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {kids.map((kid) => (
-                <button
-                  key={kid.id}
-                  type="button"
-                  onClick={() => setSelectedKidId(kid.id)}
-                  className={`kid-color-surface rounded-[8px] border-4 p-4 text-left transition hover:-translate-y-1 ${
-                    selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white"
-                  }`}
-                  style={{ backgroundColor: kid.profileColor, "--kid-theme-color": kid.themeColor } as CSSProperties}
-                >
-                  <img
-                    src={kid.avatarUrl}
-                    alt={`${kid.name} avatar`}
-                    className="mb-3 h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm"
-                    loading="eager"
-                    decoding="async"
-                  />
-                  <p className="text-2xl font-black text-ink">{kid.name}</p>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <label>
-                <span className="mb-2 block text-sm font-black text-ink/70">{t("kid.pin")}</span>
-                <div className="relative">
-                  <KeyRound size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
-                  <input
-                    value={pin}
-                    onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") void handleLogin();
-                    }}
-                    inputMode="numeric"
-                    type="password"
-                    placeholder="0000"
-                    className="h-12 w-full rounded-[8px] border-2 border-ink/10 pl-10 pr-3 text-lg font-black outline-none focus:border-mint"
-                  />
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {kids.map((kid) => (
+                    <button
+                      key={kid.id}
+                      type="button"
+                      onClick={() => setSelectedKidId(kid.id)}
+                      className={`kid-color-surface group min-h-56 rounded-[8px] border-2 p-5 text-left transition hover:-translate-y-1 ${
+                        selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white/90 shadow-sm"
+                      }`}
+                      style={{ backgroundColor: kid.profileColor, "--kid-theme-color": kid.themeColor } as CSSProperties}
+                    >
+                      <div className="flex h-full flex-col justify-between gap-5">
+                        <img
+                          src={kid.avatarUrl}
+                          alt={`${kid.name} avatar`}
+                          className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm transition group-hover:scale-105"
+                          loading="eager"
+                          decoding="async"
+                        />
+                        <div className="flex items-end justify-between gap-3">
+                          <p className="text-3xl font-black text-ink">{kid.name}</p>
+                          <span
+                            className={`grid h-8 w-8 place-items-center rounded-full text-sm font-black ${
+                              selectedKidId === kid.id ? "bg-mint text-white" : "bg-white/70 text-ink/40"
+                            }`}
+                          >
+                            <Check size={16} />
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              </label>
-              <button
-                type="button"
-                onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="h-12 rounded-[8px] bg-ink px-5 font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60 sm:self-end"
-              >
-                {isLoggingIn ? t("kid.opening") : t("kid.open")}
-              </button>
-              <label className="flex items-center gap-3 self-end rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/70 sm:col-span-2">
-                <input
-                  checked={rememberKid}
-                  onChange={(event) => setRememberKid(event.target.checked)}
-                  type="checkbox"
-                  className="h-5 w-5 accent-mint"
-                />
-                {t("kid.remember")}
-              </label>
-            </div>
-              </>
+
+                <div className="quiet-card flex flex-col justify-between p-4">
+                  <div>
+                    <p className="section-heading">{t("kid.openTitle")}</p>
+                    <p className="section-copy mt-1">{t("kid.openHelp")}</p>
+                  </div>
+                  <div className="mt-6 space-y-3">
+                    <label>
+                      <span className="field-label">{t("kid.pin")}</span>
+                      <div className="relative">
+                        <KeyRound size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
+                        <input
+                          value={pin}
+                          onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") void handleLogin();
+                          }}
+                          inputMode="numeric"
+                          type="password"
+                          placeholder="0000"
+                          className="field-input pl-10 text-lg font-black"
+                        />
+                      </div>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleLogin}
+                      disabled={isLoggingIn}
+                      className="action-button action-primary w-full"
+                    >
+                      {isLoggingIn ? t("kid.opening") : t("kid.open")}
+                    </button>
+                    <label className="flex items-center gap-3 rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/65">
+                      <input
+                        checked={rememberKid}
+                        onChange={(event) => setRememberKid(event.target.checked)}
+                        type="checkbox"
+                        className="h-5 w-5 accent-mint"
+                      />
+                      {t("kid.remember")}
+                    </label>
+                  </div>
+                </div>
+              </div>
             )}
             {message && <p className="mt-4 rounded-[8px] bg-coral/10 p-3 font-bold text-coral">{message}</p>}
           </section>
         </div>
-        {isLoggingIn && <VaultOpeningOverlay kidName={selectedKid?.name ?? "your vault"} />}
+        {isLoggingIn && <VaultOpeningOverlay kidName={selectedKid?.name ?? t("kid.yourVault")} />}
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+    <main className="app-shell">
+      <div className="app-container">
+        <header className="app-header">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
+            <div className="eyebrow-pill mb-3">
               <BadgeDollarSign size={17} className="text-mint" />
               {t("kid.vault", { name: kidData.account.name })}
             </div>
-            <h1 className="text-3xl font-black tracking-normal text-ink sm:text-5xl">{t("kid.myBank")}</h1>
-            <p className="mt-2 max-w-2xl text-base font-bold text-ink/65 sm:text-lg">
+            <h1 className="page-title">{t("kid.myBank")}</h1>
+            <p className="page-subtitle">
               {t("kid.subtitle")}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap md:justify-end">
+          <div className="app-actions">
             <LanguageToggle compact />
             <ThemeToggle compact />
             <KidPinSettings account={kidData.account} variant="button" />
@@ -347,7 +364,7 @@ export default function KidPortal({
                   setIsSigningOut(false);
                 });
               }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-4 font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+              className="action-button action-quiet"
             >
               <LogOut size={17} />
               {t("kid.switch")}
@@ -376,12 +393,12 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
-          <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
             <KidWealthTrail account={kidData.account} data={kidData.ledger} />
             <ActivityFeed transactions={kidData.transactions} compact />
           </div>
-          <ToolFrame title="Extras" description="Quests and quick math live here when you want them.">
-            <KidProgressPanel accounts={[kidData.account]} transactions={kidData.transactions} />
+          <KidProgressPanel accounts={[kidData.account]} transactions={kidData.transactions} />
+          <ToolFrame title={t("kid.moreTools")} description={t("kid.moreToolsDescription")}>
             <StandardCalculator />
           </ToolFrame>
         </div>
@@ -396,7 +413,7 @@ export default function KidPortal({
         />
       )}
       {isSigningOut && (
-        <SessionLoadingOverlay title="Switching kid" message="Closing this vault and returning to the profile picker." />
+        <SessionLoadingOverlay title={t("kid.switchingTitle")} message={t("kid.switchingMessage")} />
       )}
     </main>
   );

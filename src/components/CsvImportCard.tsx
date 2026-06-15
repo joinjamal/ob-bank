@@ -47,10 +47,10 @@ export default function CsvImportCard({ onImported }: { onImported: () => Promis
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[8px] bg-white p-5 shadow-lift">
+    <form onSubmit={handleSubmit} className="surface-card p-5">
       <div className="mb-4">
-        <h2 className="text-xl font-black">Legacy CSV import</h2>
-        <p className="text-sm font-bold text-ink/55">Headers: kid,date,type,amount,reason</p>
+        <h2 className="section-heading">Legacy CSV import</h2>
+        <p className="section-copy">Headers: kid,date,type,amount,reason</p>
         <p className="mt-1 text-xs font-bold text-ink/45">
           Type accepts Deposit or Withdrawal. Use positive amounts, even for withdrawals.
         </p>
@@ -66,7 +66,7 @@ export default function CsvImportCard({ onImported }: { onImported: () => Promis
       {message && <p className="mt-3 rounded-[8px] bg-ink/5 px-3 py-2 text-sm font-bold text-ink/65">{message}</p>}
       <button
         disabled={isImporting}
-        className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
+        className="action-button action-primary mt-4 w-full"
       >
         <Upload size={18} />
         {isImporting ? "Importing..." : "Import CSV"}

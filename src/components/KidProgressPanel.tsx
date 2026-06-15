@@ -3,8 +3,9 @@
 import { Award, BadgeCheck, Coins, LockKeyhole, Sparkles, Target, WalletCards } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Account, Transaction } from "@/components/types";
-import { formatMoney } from "@/lib/money";
 import { KidInsight, buildKidInsights } from "@/lib/insights";
+import { useI18n } from "@/lib/i18n";
+import { formatMoney } from "@/lib/money";
 
 export default function KidProgressPanel({
   accounts,
@@ -13,24 +14,25 @@ export default function KidProgressPanel({
   accounts: Account[];
   transactions: Transaction[];
 }) {
+  const { t } = useI18n();
   const insights = buildKidInsights(accounts, transactions);
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-mint/10 px-3 py-1 text-sm font-black text-mint">
             <Sparkles size={16} />
-            Vault quests
+            {t("kidQuest.vaultQuests")}
           </div>
-          <h2 className="text-2xl font-black text-ink">Vault quests</h2>
-          <p className="text-sm font-bold text-ink/55">Easy wins that make saving feel good.</p>
+          <h2 className="section-heading">{t("kidQuest.title")}</h2>
+          <p className="section-copy">{t("kidQuest.subtitle")}</p>
         </div>
       </div>
 
       <div className="grid gap-4">
         {insights.map((insight) => (
-          <article key={insight.account.id} className="rounded-[8px] border border-ink/5 bg-cream/55 p-4">
+          <article key={insight.account.id} className="rounded-[8px] border border-ink/5 bg-ink/[0.03] p-4">
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
               <div>
                 <div className="mb-4 flex items-center gap-3">
@@ -43,8 +45,8 @@ export default function KidProgressPanel({
                     <p className="text-lg font-black text-ink">{insight.account.name}</p>
                     <p className="text-sm font-bold text-ink/55">Vault level {insight.level}</p>
                   </div>
-                  <div className="rounded-[8px] bg-white px-3 py-2 text-right shadow-sm">
-                    <p className="text-xs font-black uppercase text-ink/45">Vault money</p>
+                  <div className="rounded-[8px] bg-white/70 px-3 py-2 text-right shadow-sm">
+                    <p className="text-xs font-black uppercase text-ink/45">{t("kidQuest.vaultMoney")}</p>
                     <p className="text-xl font-black text-mint">{formatMoney(insight.account.currentBalance)}</p>
                   </div>
                 </div>
@@ -52,27 +54,31 @@ export default function KidProgressPanel({
                 <div className="grid gap-3 md:grid-cols-3">
                   <Stat
                     icon={<WalletCards size={16} />}
-                    label="In my vault"
+                    label={t("kidQuest.inMyVault")}
                     value={formatMoney(insight.account.currentBalance)}
-                    detail="What I have now"
+                    detail={t("kidQuest.whatIHave")}
                   />
                   <Stat
                     icon={<Target size={16} />}
-                    label={insight.account.goalName ? "Goal left" : "Goal"}
-                    value={insight.account.goalName ? formatMoney(insight.goalRemaining) : "Pick one"}
-                    detail={insight.account.goalName || "Choose something fun"}
+                    label={insight.account.goalName ? t("kidQuest.goalLeft") : t("kidQuest.goal")}
+                    value={insight.account.goalName ? formatMoney(insight.goalRemaining) : t("kidQuest.pickOne")}
+                    detail={insight.account.goalName || t("kidQuest.chooseSomething")}
                   />
                   <Stat
                     icon={<Coins size={16} />}
-                    label="Kept this month"
+                    label={t("kidQuest.keptThisMonth")}
                     value={formatMoney(insight.monthlyDeposits - insight.monthlyWithdrawals)}
-                    detail="Added minus spent"
+                    detail={t("kidQuest.addedMinusSpent")}
                   />
                 </div>
 
                 <div className="mt-4">
                   <div className="mb-2 flex items-center justify-between text-xs font-black text-ink/55">
-                    <span>{insight.account.goalName ? `${insight.account.goalName} progress` : "Next vault level"}</span>
+                    <span>
+                      {insight.account.goalName
+                        ? t("kidQuest.progress", { goal: insight.account.goalName })
+                        : t("kidQuest.nextLevel")}
+                    </span>
                     <span>{insight.account.goalName ? `${insight.goalProgress}%` : `${insight.xp}%`}</span>
                   </div>
                   <div className="h-4 overflow-hidden rounded-full bg-ink/10">
@@ -84,17 +90,17 @@ export default function KidProgressPanel({
                       }}
                     />
                   </div>
-                  <p className="mt-2 text-sm font-bold text-ink/50">{getQuestPrompt(insight)}</p>
+                  <p className="mt-2 text-sm font-bold text-ink/50">{getQuestPrompt(insight, t)}</p>
                 </div>
               </div>
 
-              <div className="rounded-[8px] bg-white p-3 shadow-sm">
+              <div className="rounded-[8px] bg-white/70 p-3 shadow-sm">
                 <p className="mb-3 inline-flex items-center gap-2 text-sm font-black text-ink">
                   <Award size={16} className="text-[#FFC64E]" />
-                  Badge shelf
+                  {t("kidQuest.badgeShelf")}
                 </p>
                 <div className="grid gap-2">
-                  {getBadgeShelf(insight).map((badge) => (
+                  {getBadgeShelf(insight, t).map((badge) => (
                     <div
                       key={badge.label}
                       className={`flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm font-black ${
@@ -133,38 +139,41 @@ function Stat({ icon, label, value, detail }: { icon: ReactNode; label: string; 
   );
 }
 
-function getQuestPrompt(insight: KidInsight) {
-  if (!insight.account.goalName) return "Set a goal so your vault has a target.";
-  if (insight.goalProgress >= 100) return "Goal reached. Time to celebrate or pick a new one.";
-  if (insight.goalRemaining <= 25) return `Almost there. ${formatMoney(insight.goalRemaining)} left.`;
-  return `Keep going. ${formatMoney(insight.goalRemaining)} left for ${insight.account.goalName}.`;
+function getQuestPrompt(insight: KidInsight, t: (key: string, replacements?: Record<string, string | number>) => string) {
+  if (!insight.account.goalName) return t("kidQuest.promptSetGoal");
+  if (insight.goalProgress >= 100) return t("kidQuest.promptReached");
+  if (insight.goalRemaining <= 25) return t("kidQuest.promptAlmost", { amount: formatMoney(insight.goalRemaining) });
+  return t("kidQuest.promptKeepGoing", {
+    amount: formatMoney(insight.goalRemaining),
+    goal: insight.account.goalName
+  });
 }
 
-function getBadgeShelf(insight: KidInsight) {
+function getBadgeShelf(insight: KidInsight, t: (key: string) => string) {
   return [
     {
-      label: "First Save",
-      help: "Add money once",
+      label: t("kidQuest.firstSave"),
+      help: t("kidQuest.firstSaveHelp"),
       earned: insight.depositCount >= 1
     },
     {
-      label: "Goal Picker",
-      help: "Choose a saving goal",
+      label: t("kidQuest.goalPicker"),
+      help: t("kidQuest.goalPickerHelp"),
       earned: Boolean(insight.account.goalName)
     },
     {
-      label: "Halfway Hero",
-      help: "Reach 50% of a goal",
+      label: t("kidQuest.halfwayHero"),
+      help: t("kidQuest.halfwayHeroHelp"),
       earned: insight.goalProgress >= 50
     },
     {
-      label: "Careful Spender",
-      help: "Keep some money this month",
+      label: t("kidQuest.carefulSpender"),
+      help: t("kidQuest.carefulSpenderHelp"),
       earned: insight.monthlyDeposits - insight.monthlyWithdrawals > 0
     },
     {
-      label: "Goal Champion",
-      help: "Finish a goal",
+      label: t("kidQuest.goalChampion"),
+      help: t("kidQuest.goalChampionHelp"),
       earned: insight.goalProgress >= 100
     }
   ];

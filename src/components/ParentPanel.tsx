@@ -121,27 +121,27 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
   }
 
   return (
-    <main className="min-h-screen px-3 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+    <main className="app-shell">
+      <div className="app-container">
+        <header className="app-header">
           <div>
-            <Link href="/" className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
+            <Link href="/" className="eyebrow-pill mb-3">
               <ArrowLeft size={17} className="text-mint" />
               {t("kid.dashboard")}
             </Link>
-            <h1 className="text-3xl font-black tracking-normal text-ink sm:text-5xl">
+            <h1 className="page-title">
               {t("parent.portal", { name: initialData.parent.name })}
             </h1>
-            <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
+            <p className="page-subtitle">
               {t("parent.controls", { family: initialData.parent.familyName })}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap md:justify-end">
+          <div className="app-actions">
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutParent}>
-              <AuthLoadingOverlay title="Signing out" message="Closing the parent portal on this device." />
-              <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto sm:px-4 sm:text-base">
+              <AuthLoadingOverlay title={t("common.signingOut")} message={t("parent.signOutMessage")} />
+              <button className="action-button action-primary w-full sm:w-auto">
                 <LogOut size={17} />
                 {t("parent.signOut")}
               </button>
@@ -151,7 +151,7 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
 
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="control-grid">
           <div className="min-w-0 space-y-5">
             <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
             <div className="grid min-w-0 gap-5 md:grid-cols-2">
@@ -166,22 +166,26 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
             />
           </div>
           <aside className="min-w-0 space-y-3">
-            <ToolFrame title="Money tools" description="Add allowance moves or set a balance directly.">
+            <ToolFrame title={t("parent.addMoneyMove")} description={t("parent.addMoneyMoveDesc")} defaultOpen>
               <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
+            </ToolFrame>
+            <ToolFrame title={t("parent.balanceCorrection")} description={t("parent.balanceCorrectionDesc")}>
               <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
             </ToolFrame>
-            <ToolFrame title="Allowance schedule" description="Automatic daily, weekly, or monthly allowance.">
+            <ToolFrame title={t("parent.automaticAllowance")} description={t("parent.automaticAllowanceDesc")}>
               <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
             </ToolFrame>
-            <ToolFrame title="Kids and access" description="Manage profiles, PINs, and the share link.">
-              <FamilyParentsCard parents={familyParents} onChanged={loadData} />
+            <ToolFrame title={t("parent.kids")} description={t("parent.kidsDesc")}>
               <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
+            </ToolFrame>
+            <ToolFrame title={t("parent.shareAccess")} description={t("parent.shareAccessDesc")}>
+              <FamilyParentsCard parents={familyParents} onChanged={loadData} />
               <FamilyAccessLinkCard
                 familyName={initialData.parent.familyName}
                 token={initialData.parent.familyAccessToken}
               />
             </ToolFrame>
-            <ToolFrame title="Setup and safety" description="Email, export reminders, and onboarding checks.">
+            <ToolFrame title={t("parent.setupChecks")} description={t("parent.setupChecksDesc")}>
               <ParentOnboardingCard accounts={sortedAccounts} allowances={allowances} />
               <ParentSecurityCard
                 transactions={transactions}

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { KeyRound, Plus, Trash2, UsersRound } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export type FamilyParent = {
   id: string;
@@ -17,6 +18,7 @@ export default function FamilyParentsCard({
   parents: FamilyParent[];
   onChanged: () => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +41,7 @@ export default function FamilyParentsCard({
       setName("");
       setEmail("");
       setPassword("");
-      setMessage("Parent login added.");
+      setMessage(t("familyParents.added"));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not add parent.");
@@ -50,7 +52,7 @@ export default function FamilyParentsCard({
 
   async function resetParent(parent: FamilyParent) {
     if (resetPassword.length < 6) {
-      setMessage("Enter a reset password of at least 6 characters.");
+      setMessage(t("familyParents.resetTooShort"));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function FamilyParentsCard({
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.message ?? "Could not reset password.");
       setResetPassword("");
-      setMessage(`Reset ${parent.name}'s password.`);
+      setMessage(t("familyParents.resetDone", { name: parent.name }));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not reset password.");
     } finally {
@@ -74,7 +76,7 @@ export default function FamilyParentsCard({
   }
 
   async function removeParent(parent: FamilyParent) {
-    if (!window.confirm(`Remove ${parent.name} from this family?`)) return;
+    if (!window.confirm(t("familyParents.removeConfirm", { name: parent.name }))) return;
 
     setMessage("");
     setIsSaving(true);
@@ -82,7 +84,7 @@ export default function FamilyParentsCard({
       const response = await fetch(`/api/parent/parents/${parent.id}`, { method: "DELETE" });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.message ?? "Could not remove parent.");
-      setMessage(`Removed ${parent.name}.`);
+      setMessage(t("familyParents.removed", { name: parent.name }));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not remove parent.");
@@ -92,14 +94,14 @@ export default function FamilyParentsCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-4 flex items-start gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mint/15 text-mint">
           <UsersRound size={21} />
         </div>
         <div>
-          <h2 className="text-xl font-black">Family parents</h2>
-          <p className="text-sm font-bold text-ink/55">Add another parent login or reset access for this family.</p>
+          <h2 className="section-heading">{t("familyParents.title")}</h2>
+          <p className="section-copy">{t("familyParents.description")}</p>
         </div>
       </div>
 
@@ -108,15 +110,15 @@ export default function FamilyParentsCard({
           <div key={parent.id} className="grid gap-2 rounded-[8px] bg-ink/5 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="min-w-0">
               <p className="truncate font-black text-ink">{parent.name}</p>
-              <p className="truncate text-xs font-bold text-ink/45">{parent.email || "No email"}</p>
+              <p className="truncate text-xs font-bold text-ink/45">{parent.email || t("familyParents.noEmail")}</p>
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => resetParent(parent)}
                 disabled={isSaving || resetPassword.length < 6}
-                className="grid h-10 w-10 place-items-center rounded-[8px] bg-mint/15 text-mint disabled:opacity-40"
-                aria-label={`Reset ${parent.name}'s password`}
+                className="icon-button bg-mint/15 text-mint hover:bg-mint hover:text-white"
+                aria-label={t("familyParents.reset", { name: parent.name })}
               >
                 <KeyRound size={17} />
               </button>
@@ -124,8 +126,8 @@ export default function FamilyParentsCard({
                 type="button"
                 onClick={() => removeParent(parent)}
                 disabled={isSaving || parents.length <= 1}
-                className="grid h-10 w-10 place-items-center rounded-[8px] bg-coral/10 text-coral disabled:opacity-40"
-                aria-label={`Remove ${parent.name}`}
+                className="icon-button bg-coral/10 text-coral hover:bg-coral hover:text-white"
+                aria-label={t("familyParents.remove", { name: parent.name })}
               >
                 <Trash2 size={17} />
               </button>
@@ -135,46 +137,46 @@ export default function FamilyParentsCard({
       </div>
 
       <label className="mt-4 block">
-        <span className="mb-2 block text-sm font-black text-ink/70">Password for reset buttons</span>
+        <span className="field-label">{t("familyParents.passwordReset")}</span>
         <input
           value={resetPassword}
           onChange={(event) => setResetPassword(event.target.value)}
           type="password"
-          placeholder="New password"
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          placeholder={t("auth.password")}
+          className="field-input h-11"
         />
       </label>
 
       <form onSubmit={addParent} className="mt-5 rounded-[8px] bg-ink/5 p-3">
-        <p className="mb-3 font-black text-ink">Add parent</p>
+        <p className="mb-3 font-black text-ink">{t("familyParents.add")}</p>
         <div className="grid gap-3">
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Parent name"
-            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            placeholder={t("auth.parentNamePlaceholder")}
+            className="field-input h-11"
           />
           <input
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             type="email"
-            placeholder="Email optional"
-            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            placeholder={t("auth.emailOptional")}
+            className="field-input h-11"
           />
           <input
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             type="password"
-            placeholder="Password"
-            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            placeholder={t("auth.password")}
+            className="field-input h-11"
           />
         </div>
         <button
           disabled={isSaving}
-          className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 font-black text-white disabled:opacity-60"
+          className="action-button action-primary mt-3 w-full"
         >
           <Plus size={17} />
-          Add parent login
+          {t("familyParents.addLogin")}
         </button>
       </form>
 

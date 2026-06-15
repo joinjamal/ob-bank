@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { Home, Lock, Shield, Sparkles } from "lucide-react";
 import { registerParentFamily, signInParent } from "@/app/actions";
@@ -17,7 +17,7 @@ function SubmitButton() {
   return (
     <button
       disabled={pending}
-      className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:opacity-60"
+      className="action-button action-primary mt-5 w-full"
     >
       <Lock size={18} />
       {pending ? t("auth.checking") : t("auth.submit")}
@@ -28,23 +28,23 @@ function SubmitButton() {
 export default function ParentLoginForm() {
   const { t } = useI18n();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [loginState, loginAction] = useFormState(signInParent, { ok: true, message: "" });
-  const [registerState, registerAction] = useFormState(registerParentFamily, { ok: true, message: "" });
+  const [loginState, loginAction] = useActionState(signInParent, { ok: true, message: "" });
+  const [registerState, registerAction] = useActionState(registerParentFamily, { ok: true, message: "" });
 
   return (
-    <main className="grid min-h-screen place-items-center px-4 py-8">
-      <section className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
+    <main className="app-shell grid place-items-center">
+      <section className="surface-card w-full max-w-md p-5 sm:p-6">
         <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Link
             href="/"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5"
+            className="action-button action-muted min-h-10 px-3 py-1"
           >
             <Home size={16} className="text-mint" />
             {t("auth.home")}
           </Link>
           <Link
             href="/admin"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5"
+            className="action-button action-primary min-h-10 px-3 py-1"
           >
             <Shield size={16} className="text-mint" />
             {t("auth.admin")}
@@ -58,8 +58,8 @@ export default function ParentLoginForm() {
           <div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-mint/15 text-mint">
             <Lock size={24} />
           </div>
-          <h1 className="text-3xl font-black">{t("auth.parentPortal")}</h1>
-          <p className="mt-2 font-bold text-ink/60">{t("auth.parentPortalSubtitle")}</p>
+          <h1 className="text-3xl font-black text-ink">{t("auth.parentPortal")}</h1>
+          <p className="section-copy mt-2">{t("auth.parentPortalSubtitle")}</p>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-2 rounded-[8px] bg-ink/5 p-1">
@@ -87,21 +87,21 @@ export default function ParentLoginForm() {
             />
             <input type="hidden" name="redirectTo" value="/parent" />
             <label className="block">
-          <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.parentNameEmail")}</span>
+          <span className="field-label">{t("auth.parentNameEmail")}</span>
           <input
             name="email"
             autoComplete="username"
             placeholder="Parent name or parent@email.com"
-            className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            className="field-input"
           />
             </label>
             <label className="mt-4 block">
-          <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.password")}</span>
+          <span className="field-label">{t("auth.password")}</span>
           <input
             name="password"
             type="password"
             autoComplete="current-password"
-            className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            className="field-input"
           />
             </label>
             <label className="mt-4 flex items-center gap-3 rounded-[8px] bg-ink/5 p-3 text-sm font-black text-ink/70">
@@ -118,27 +118,27 @@ export default function ParentLoginForm() {
               message={t("auth.createMessage")}
             />
             <label className="block">
-              <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.familyName")}</span>
-              <input name="familyName" placeholder={t("auth.familyNamePlaceholder")} className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <span className="field-label">{t("auth.familyName")}</span>
+              <input name="familyName" placeholder={t("auth.familyNamePlaceholder")} className="field-input" />
             </label>
             <label className="mt-4 block">
-              <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.parentName")}</span>
-              <input name="parentName" placeholder={t("auth.parentNamePlaceholder")} className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <span className="field-label">{t("auth.parentName")}</span>
+              <input name="parentName" placeholder={t("auth.parentNamePlaceholder")} className="field-input" />
             </label>
             <label className="mt-4 block">
-              <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.emailOptional")}</span>
-              <input name="email" type="email" autoComplete="username" placeholder="parent@email.com" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <span className="field-label">{t("auth.emailOptional")}</span>
+              <input name="email" type="email" autoComplete="username" placeholder="parent@email.com" className="field-input" />
             </label>
             <label className="mt-4 block">
-              <span className="mb-2 block text-sm font-black text-ink/70">{t("auth.password")}</span>
-              <input name="password" type="password" autoComplete="new-password" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
+              <span className="field-label">{t("auth.password")}</span>
+              <input name="password" type="password" autoComplete="new-password" className="field-input" />
             </label>
             <label className="mt-4 flex items-center gap-3 rounded-[8px] bg-ink/5 p-3 text-sm font-black text-ink/70">
               <input name="remember" type="checkbox" className="h-5 w-5 accent-mint" defaultChecked />
               {t("auth.remember")}
             </label>
             {!registerState.ok && <p className="mt-4 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{registerState.message}</p>}
-            <button className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-mint px-4 font-black text-white shadow-sm transition hover:-translate-y-0.5">
+            <button className="action-button action-mint mt-5 w-full">
               <Sparkles size={18} />
               {t("auth.create")}
             </button>

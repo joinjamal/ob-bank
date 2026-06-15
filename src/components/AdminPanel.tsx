@@ -159,25 +159,25 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
   }
 
   return (
-    <main className="super-admin-shell min-h-screen px-3 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+    <main className="super-admin-shell app-shell">
+      <div className="app-container">
+        <header className="app-header">
           <div>
-            <Link href="/" className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-sm font-black shadow-sm">
+            <Link href="/" className="eyebrow-pill mb-3">
               <ArrowLeft size={17} className="text-mint" />
               {t("admin.dashboard")}
             </Link>
-            <h1 className="text-3xl font-black tracking-normal text-ink sm:text-5xl">{t("admin.title")}</h1>
-            <p className="mt-2 max-w-2xl text-base font-bold text-ink/65">
+            <h1 className="page-title">{t("admin.title")}</h1>
+            <p className="page-subtitle">
               {t("admin.subtitle")}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap md:justify-end">
+          <div className="app-actions">
             <LanguageToggle compact />
             <ThemeToggle compact />
             <form action={signOutAdmin}>
               <AuthLoadingOverlay title="Signing out" message="Closing the super admin console." tone="admin" />
-              <button className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 sm:w-auto sm:px-4 sm:text-base">
+              <button className="action-button action-primary w-full sm:w-auto">
                 <LogOut size={17} />
                 {t("admin.signOut")}
               </button>
@@ -194,12 +194,14 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
             </p>
           )}
           <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
-          <AdminTransactionList
-            transactions={transactions}
-            onEdit={editTransaction}
-            onDelete={deleteTransactions}
-          />
-          <ToolFrame title="Family management" description="Create, inspect, reset, or remove family access when needed.">
+          <ToolFrame title="Transaction history" description="Search, export, edit, or delete platform entries.">
+            <AdminTransactionList
+              transactions={transactions}
+              onEdit={editTransaction}
+              onDelete={deleteTransactions}
+            />
+          </ToolFrame>
+          <ToolFrame title="Families" description="Inspect tenants, reset parent access, or remove abandoned spaces.">
             <FamilyManagementCard families={families} onChanged={loadData} />
           </ToolFrame>
         </div>

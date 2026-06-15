@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { KeyRound, X } from "lucide-react";
 import type { Account } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 
 export default function KidPinSettings({
   account,
@@ -11,6 +12,7 @@ export default function KidPinSettings({
   account: Account;
   variant?: "card" | "button";
 }) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(variant === "card");
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
@@ -22,7 +24,7 @@ export default function KidPinSettings({
     setMessage("");
 
     if (!/^\d{4,8}$/.test(currentPin) || !/^\d{4,8}$/.test(newPin)) {
-      setMessage("Use 4 to 8 numbers for your PIN.");
+      setMessage(t("kidPin.invalid"));
       return;
     }
 
@@ -41,7 +43,7 @@ export default function KidPinSettings({
 
       setCurrentPin("");
       setNewPin("");
-      setMessage("PIN updated.");
+      setMessage(t("kidPin.saved"));
       if (variant === "button") {
         window.setTimeout(() => setIsOpen(false), 650);
       }
@@ -59,15 +61,15 @@ export default function KidPinSettings({
           <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-ink/10 text-ink">
             <KeyRound size={20} />
           </div>
-          <h2 className="text-xl font-black">My PIN</h2>
-          <p className="text-sm font-bold text-ink/55">Change your secret numbers whenever you need to.</p>
+          <h2 className="text-xl font-black">{t("kidPin.title")}</h2>
+          <p className="text-sm font-bold text-ink/55">{t("kidPin.description")}</p>
         </div>
         {variant === "button" && (
           <button
             type="button"
             onClick={() => setIsOpen(false)}
             className="grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink"
-            aria-label="Close PIN settings"
+            aria-label={t("kidPin.close")}
           >
             <X size={18} />
           </button>
@@ -75,7 +77,7 @@ export default function KidPinSettings({
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label>
-          <span className="mb-2 block text-sm font-black text-ink/70">Current PIN</span>
+          <span className="mb-2 block text-sm font-black text-ink/70">{t("kidPin.current")}</span>
           <input
             value={currentPin}
             onChange={(event) => setCurrentPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
@@ -85,7 +87,7 @@ export default function KidPinSettings({
           />
         </label>
         <label>
-          <span className="mb-2 block text-sm font-black text-ink/70">New PIN</span>
+          <span className="mb-2 block text-sm font-black text-ink/70">{t("kidPin.new")}</span>
           <input
             value={newPin}
             onChange={(event) => setNewPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
@@ -100,7 +102,7 @@ export default function KidPinSettings({
         disabled={isSaving}
         className="mt-4 h-12 w-full rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
       >
-        {isSaving ? "Saving..." : "Save PIN"}
+        {isSaving ? t("common.saving") : t("kidPin.save")}
       </button>
     </form>
   );
@@ -117,7 +119,7 @@ export default function KidPinSettings({
           className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
         >
           <KeyRound size={20} />
-          Change PIN
+          {t("kidPin.change")}
         </button>
         {isOpen && (
           <div className="fixed inset-0 z-50 grid place-items-center bg-ink/55 p-4 backdrop-blur-sm">

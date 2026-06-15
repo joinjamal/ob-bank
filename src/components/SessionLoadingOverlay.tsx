@@ -1,6 +1,7 @@
 "use client";
 
 import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function SessionLoadingOverlay({
   title,
@@ -11,6 +12,7 @@ export default function SessionLoadingOverlay({
   message: string;
   tone?: "parent" | "admin";
 }) {
+  const { t } = useI18n();
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm">
       <div className="vault-open-card w-full max-w-sm rounded-[8px] bg-white p-6 text-center shadow-lift">
@@ -23,7 +25,7 @@ export default function SessionLoadingOverlay({
             {tone === "admin" ? <ShieldCheck size={28} className="text-mint" /> : <LockKeyhole size={28} className="text-mint" />}
           </div>
         </div>
-        <p className="text-sm font-black uppercase text-mint">Please wait</p>
+        <p className="text-sm font-black uppercase text-mint">{t("common.pleaseWait")}</p>
         <h2 className="mt-1 text-2xl font-black text-ink">{title}</h2>
         <p className="mt-2 text-sm font-bold text-ink/55">{message}</p>
         <div className="mt-5 flex justify-center gap-2">

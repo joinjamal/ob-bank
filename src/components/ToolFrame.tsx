@@ -19,7 +19,7 @@ export default function ToolFrame({
   const contentId = useId();
 
   return (
-    <section className={`tool-frame rounded-[8px] bg-white shadow-lift ${isOpen ? "is-open" : ""}`}>
+    <section className={`tool-frame surface-card ${isOpen ? "is-open" : ""}`}>
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
@@ -36,7 +36,7 @@ export default function ToolFrame({
         </span>
       </button>
       {isOpen && (
-        <div id={contentId} className="space-y-4 border-t border-ink/5 p-4 [&>section]:bg-transparent [&>section]:p-0 [&>section]:shadow-none">
+        <div id={contentId} className="settings-stack border-t border-ink/5 p-4">
           {children}
         </div>
       )}

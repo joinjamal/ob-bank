@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Copy, RefreshCw, Send, Share2, ShieldCheck, XCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function FamilyAccessLinkCard({
   familyName,
@@ -10,6 +11,7 @@ export default function FamilyAccessLinkCard({
   familyName: string;
   token: string;
 }) {
+  const { t } = useI18n();
   const [message, setMessage] = useState("");
   const [currentToken, setCurrentToken] = useState(token);
   const [isActive, setIsActive] = useState(true);
@@ -22,34 +24,34 @@ export default function FamilyAccessLinkCard({
   async function copyLink() {
     setMessage("");
     if (!isActive) {
-      setMessage("Rotate the link before sharing it again.");
+      setMessage(t("familyAccess.rotateFirst"));
       return;
     }
     try {
       await navigator.clipboard.writeText(link);
-      setMessage("Kid link copied.");
+      setMessage(t("familyAccess.copied"));
     } catch {
-      setMessage("Copy failed. Select and copy the link below.");
+      setMessage(t("familyAccess.copyFailed"));
     }
   }
 
   async function shareLink() {
     setMessage("");
     if (!isActive) {
-      setMessage("Rotate the link before sharing it again.");
+      setMessage(t("familyAccess.rotateFirst"));
       return;
     }
 
     const shareData = {
-      title: "OB Bank kid link",
-      text: `Open ${familyName}'s OB Bank kid vault picker.`,
+      title: t("familyAccess.title"),
+      text: t("familyAccess.shareText", { family: familyName }),
       url: link
     };
 
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-        setMessage("Ready to open on the kid's device.");
+        setMessage(t("familyAccess.ready"));
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -73,11 +75,11 @@ export default function FamilyAccessLinkCard({
 
       if (action === "revoke") {
         setIsActive(false);
-        setMessage("Kid link revoked. Rotate to create a new one.");
+        setMessage(t("familyAccess.revoked"));
       } else {
         setCurrentToken(body.token);
         setIsActive(true);
-        setMessage("New kid link created.");
+        setMessage(t("familyAccess.newLink"));
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update the kid link.");
@@ -87,21 +89,21 @@ export default function FamilyAccessLinkCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-4 flex items-start gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mint/15 text-mint">
           <Send size={21} />
         </div>
         <div>
-          <h2 className="text-xl font-black">Kid device link</h2>
-          <p className="text-sm font-bold text-ink/55">
-            Send this to a child&apos;s device so it opens {familyName}&apos;s kid picker without the parent password.
+          <h2 className="section-heading">{t("familyAccess.title")}</h2>
+          <p className="section-copy">
+            {t("familyAccess.description", { family: familyName })}
           </p>
         </div>
       </div>
 
       <div className="rounded-[8px] bg-ink/5 p-3">
-        <p className="break-all text-xs font-bold text-ink/55">{isActive ? link : "This kid link is revoked."}</p>
+        <p className="break-all text-xs font-bold text-ink/55">{isActive ? link : t("familyAccess.linkInactive")}</p>
       </div>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -109,25 +111,25 @@ export default function FamilyAccessLinkCard({
           type="button"
           onClick={shareLink}
           disabled={!isActive}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-mint w-full"
         >
           <Share2 size={17} />
-          Share to kid
+          {t("familyAccess.share")}
         </button>
         <button
           type="button"
           onClick={copyLink}
           disabled={!isActive}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-primary w-full"
         >
           <Copy size={17} />
-          Copy link
+          {t("familyAccess.copy")}
         </button>
       </div>
 
       <p className="mt-3 flex items-start gap-2 text-xs font-bold text-ink/50">
         <ShieldCheck size={15} className="mt-0.5 shrink-0 text-mint" />
-        This remembers only the family on that device. Each kid still needs their PIN to open their own vault.
+        {t("familyAccess.safety")}
       </p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -135,19 +137,19 @@ export default function FamilyAccessLinkCard({
           type="button"
           onClick={() => updateLink("rotate")}
           disabled={isUpdating}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-ink/5 font-black text-ink transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-muted min-h-10 w-full px-3 py-1"
         >
           <RefreshCw size={16} />
-          Rotate link
+          {t("familyAccess.rotate")}
         </button>
         <button
           type="button"
           onClick={() => updateLink("revoke")}
           disabled={isUpdating}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-coral/10 font-black text-coral transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button min-h-10 w-full bg-coral/10 px-3 py-1 text-coral hover:bg-coral hover:text-white"
         >
           <XCircle size={16} />
-          Revoke link
+          {t("familyAccess.revoke")}
         </button>
       </div>
 

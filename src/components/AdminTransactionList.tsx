@@ -13,6 +13,7 @@ import {
   X
 } from "lucide-react";
 import { Transaction } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 
 export default function AdminTransactionList({
@@ -24,6 +25,7 @@ export default function AdminTransactionList({
   onEdit: (transactionId: string, payload: { type: "Deposit" | "Withdrawal"; amount: number; reason: string }) => Promise<void>;
   onDelete: (transactions: Transaction[]) => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [type, setType] = useState<"Deposit" | "Withdrawal">("Deposit");
   const [amount, setAmount] = useState("");
@@ -134,31 +136,31 @@ export default function AdminTransactionList({
       await onEdit(editingId, { type, amount: Number(amount), reason });
       setEditingId(null);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not update transaction.");
+      setMessage(error instanceof Error ? error.message : t("activity.updateError"));
     }
   }
 
   async function handleDelete(transaction: Transaction) {
-    if (!window.confirm("Delete this transaction and recalculate the balance?")) return;
+    if (!window.confirm(t("activity.deleteConfirm"))) return;
 
     setMessage("");
     try {
       await onDelete([transaction]);
       setSelectedIds((current) => current.filter((id) => id !== transaction.id));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not delete transaction.");
+      setMessage(error instanceof Error ? error.message : t("activity.deleteAria"));
     }
   }
 
   async function handleBulkDelete() {
     if (selectedIds.length === 0) {
-      setMessage("Select at least one transaction.");
+      setMessage(t("activity.selectAtLeastOne"));
       return;
     }
 
     if (
       !window.confirm(
-        `Delete ${selectedIds.length} selected transaction${selectedIds.length === 1 ? "" : "s"} and recalculate balances?`
+        t("activity.deleteSelectedConfirm", { count: selectedIds.length })
       )
     ) {
       return;
@@ -170,46 +172,46 @@ export default function AdminTransactionList({
       await onDelete(transactions.filter((transaction) => selectedIds.includes(transaction.id)));
       setSelectedIds([]);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not delete selected transactions.");
+      setMessage(error instanceof Error ? error.message : t("activity.deleteSelected", { count: selectedIds.length }));
     } finally {
       setIsDeleting(false);
     }
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-4 shadow-lift sm:p-5">
+    <section className="surface-card p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-black">Manage activity</h2>
-          <p className="text-sm font-bold text-ink/55">Edit or delete entries. Balances recalculate automatically.</p>
+          <h2 className="section-heading">{t("activity.title")}</h2>
+          <p className="section-copy">{t("activity.fullSubtitle")}</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <button
             type="button"
             onClick={toggleAll}
             disabled={filteredTransactions.length === 0}
-            className="h-10 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink transition hover:bg-ink/10"
+            className="action-button action-muted min-h-10 px-3 py-1"
           >
-            {allSelected ? "Clear filtered" : "Select filtered"}
+            {allSelected ? t("activity.clearFiltered") : t("activity.selectFiltered")}
           </button>
           <button
             type="button"
             onClick={exportCsv}
             disabled={filteredTransactions.length === 0}
-            className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-ink/5 px-3 text-sm font-black text-ink transition hover:bg-ink/10 disabled:opacity-50"
+            className="action-button action-muted min-h-10 px-3 py-1"
           >
             <Download size={16} />
-            Export CSV
+            {t("common.exportCsv")}
           </button>
           <button
             type="button"
             onClick={handleBulkDelete}
             disabled={selectedIds.length === 0 || isDeleting}
-            className={`col-span-2 h-10 rounded-[8px] bg-coral px-3 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-1 ${
+            className={`action-button action-coral col-span-2 min-h-10 px-3 py-1 sm:col-span-1 ${
               selectedIds.length === 0 ? "hidden sm:block" : ""
             }`}
           >
-            Delete selected ({selectedIds.length})
+            {t("activity.deleteSelected", { count: selectedIds.length })}
           </button>
         </div>
       </div>
@@ -219,8 +221,8 @@ export default function AdminTransactionList({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search reason, kid, or amount"
-            className="h-10 w-full rounded-[8px] border-2 border-ink/10 bg-white pl-9 pr-3 text-sm font-bold outline-none focus:border-mint sm:h-11 sm:text-base"
+            placeholder={t("activity.searchPlaceholder")}
+            className="field-input h-11 pl-9 text-sm sm:text-base"
           />
         </label>
       </div>
@@ -228,19 +230,19 @@ export default function AdminTransactionList({
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-black text-ink">
           <span className="inline-flex items-center gap-2">
             <Filter size={15} />
-            Filters
+            {t("activity.filters")}
           </span>
           <span className="text-xs text-ink/45">
-            {[kidFilter, typeFilter, dateFilter].filter((value) => value !== "all").length || "None"}
+            {[kidFilter, typeFilter, dateFilter].filter((value) => value !== "all").length || t("activity.noFilters")}
           </span>
         </summary>
         <div className="grid gap-2 border-t border-ink/5 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
           <select
             value={kidFilter}
             onChange={(event) => setKidFilter(event.target.value)}
-            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+            className="field-input h-10 text-sm"
           >
-            <option value="all">All kids</option>
+            <option value="all">{t("activity.allKids")}</option>
             {kidNames.map((kidName) => (
               <option key={kidName} value={kidName}>
                 {kidName}
@@ -250,38 +252,38 @@ export default function AdminTransactionList({
           <select
             value={typeFilter}
             onChange={(event) => setTypeFilter(event.target.value)}
-            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+            className="field-input h-10 text-sm"
           >
-            <option value="all">All types</option>
-            <option value="Deposit">Deposits</option>
-            <option value="Withdrawal">Withdrawals</option>
+            <option value="all">{t("activity.allTypes")}</option>
+            <option value="Deposit">{t("activity.depositFilter")}</option>
+            <option value="Withdrawal">{t("activity.withdrawalFilter")}</option>
           </select>
           <select
             value={dateFilter}
             onChange={(event) => setDateFilter(event.target.value)}
-            className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+            className="field-input h-10 text-sm"
           >
-            <option value="all">All dates</option>
-            <option value="week">Last 7 days</option>
-            <option value="month">This month</option>
+            <option value="all">{t("activity.allDates")}</option>
+            <option value="week">{t("activity.last7")}</option>
+            <option value="month">{t("activity.thisMonth")}</option>
           </select>
           <button
             type="button"
             onClick={clearFilters}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white transition hover:-translate-y-0.5"
+            className="action-button action-primary min-h-10 px-3 py-1"
           >
-            Clear
+            {t("common.clear")}
           </button>
         </div>
       </details>
       <p className="mb-3 text-sm font-bold text-ink/50">
-        Showing {filteredTransactions.length} of {transactions.length} entries.
+        {t("activity.showing", { shown: filteredTransactions.length, total: transactions.length })}
       </p>
       {message && <p className="mb-3 rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{message}</p>}
       <div className="max-h-[680px] space-y-3 overflow-y-auto pr-1">
         {filteredTransactions.length === 0 ? (
           <p className="rounded-[8px] bg-ink/5 p-4 text-sm font-bold text-ink/55">
-            No entries match those filters.
+            {t("activity.noMatches")}
           </p>
         ) : (
           filteredTransactions.map((transaction) => {
@@ -290,82 +292,89 @@ export default function AdminTransactionList({
           const isEditing = editingId === transaction.id;
 
           return (
-            <article key={transaction.id} className="rounded-[8px] border border-ink/5 bg-white p-3 shadow-sm">
+            <article key={transaction.id} className="quiet-card p-3">
               {isEditing ? (
                 <form onSubmit={handleSave} className="grid gap-3 md:grid-cols-[140px_120px_1fr_auto] md:items-center">
                   <select
                     value={type}
                     onChange={(event) => setType(event.target.value as "Deposit" | "Withdrawal")}
-                    className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+                    className="field-input h-11"
                   >
-                    <option value="Deposit">Deposit</option>
-                    <option value="Withdrawal">Withdrawal</option>
+                    <option value="Deposit">{t("transaction.deposit")}</option>
+                    <option value="Withdrawal">{t("transaction.withdrawal")}</option>
                   </select>
                   <input
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
                     inputMode="decimal"
-                    className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+                    className="field-input h-11"
                   />
                   <input
                     value={reason}
                     onChange={(event) => setReason(event.target.value)}
-                    placeholder="Reason"
-                    className="h-11 rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+                    placeholder={t("transaction.reason")}
+                    className="field-input h-11"
                   />
                   <div className="flex gap-2">
-                    <button className="grid h-11 w-11 place-items-center rounded-[8px] bg-mint text-white">
+                    <button className="icon-button bg-mint text-white hover:bg-mint">
                       <Save size={18} />
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="grid h-11 w-11 place-items-center rounded-[8px] bg-ink/10 text-ink"
+                      className="icon-button"
                     >
                       <X size={18} />
                     </button>
                   </div>
                 </form>
               ) : (
-                <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto]">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(transaction.id)}
-                    onChange={() => toggleSelected(transaction.id)}
-                    className="h-5 w-5 accent-mint"
-                    aria-label={`Select ${transaction.reason || "transaction"}`}
-                  />
-                  <div
-                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
-                      isDeposit ? "bg-mint/15 text-mint" : "bg-coral/15 text-coral"
-                    }`}
-                  >
-                    <Icon size={22} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-black leading-tight">{transaction.reason || "Quick balance update"}</p>
-                    <p className="text-sm font-bold text-ink/50">
-                      {transaction.accountName} - {new Date(transaction.date).toLocaleDateString()}
+                <div>
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(transaction.id)}
+                      onChange={() => toggleSelected(transaction.id)}
+                      className="mt-3 h-5 w-5 accent-mint"
+                      aria-label={transaction.reason || t("activity.balanceUpdateShort")}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
+                            isDeposit ? "bg-mint/15 text-mint" : "bg-coral/15 text-coral"
+                          }`}
+                        >
+                          <Icon size={22} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-black leading-tight">{transaction.reason || t("activity.balanceUpdateShort")}</p>
+                          <p className="text-sm font-bold text-ink/50">
+                            {transaction.accountName} · {new Date(transaction.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className={`whitespace-nowrap pt-2 text-right text-lg font-black ${isDeposit ? "text-mint" : "text-coral"}`}>
+                      {isDeposit ? "+" : "-"}
+                      {formatMoney(transaction.amount)}
                     </p>
                   </div>
-                  <p className={`col-span-2 ml-8 text-lg font-black sm:col-span-1 sm:ml-0 sm:text-right ${isDeposit ? "text-mint" : "text-coral"}`}>
-                    {isDeposit ? "+" : "-"}
-                    {formatMoney(transaction.amount)}
-                  </p>
-                  <div className="col-span-1 col-start-3 row-start-2 flex justify-end gap-2 sm:col-span-1 sm:col-start-auto sm:row-start-auto">
+
+                  <div className="mt-3 flex items-center justify-end gap-2 border-t border-ink/5 pt-3">
                     <button
                       type="button"
                       onClick={() => startEdit(transaction)}
-                      className="grid h-9 w-9 place-items-center rounded-[8px] bg-ink/10 text-ink transition hover:bg-mint hover:text-white sm:h-10 sm:w-10"
-                      aria-label="Edit transaction"
+                      className="icon-button"
+                      aria-label={t("activity.editAria")}
                     >
                       <Pencil size={17} />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(transaction)}
-                      className="grid h-9 w-9 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white sm:h-10 sm:w-10"
-                      aria-label="Delete transaction"
+                      className="icon-button bg-coral/10 text-coral hover:bg-coral hover:text-white"
+                      aria-label={t("activity.deleteAria")}
                     >
                       <Trash2 size={17} />
                     </button>

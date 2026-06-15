@@ -31,14 +31,14 @@ export default function ParentSecurityCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-4 flex items-start gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-mint/15 text-mint">
           <ShieldCheck size={21} />
         </div>
         <div>
-          <h2 className="text-xl font-black">Account safety</h2>
-          <p className="text-sm font-bold text-ink/55">Keep a local copy of the family ledger.</p>
+          <h2 className="section-heading">Account safety</h2>
+          <p className="section-copy">Keep a local copy of the family ledger.</p>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export default function ParentSecurityCard({
         <button
           type="button"
           onClick={exportCsv}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5"
+          className="action-button action-primary w-full"
         >
           <Download size={17} />
           Export family CSV

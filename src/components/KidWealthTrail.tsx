@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { TrendingUp } from "lucide-react";
 import { Account } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 
 type KidLedgerPoint = {
@@ -19,6 +20,7 @@ export default function KidWealthTrail({
   account: Account;
   data: KidLedgerPoint[];
 }) {
+  const { t } = useI18n();
   const chartData = data.map((point) => ({
     ...point,
     label: format(new Date(point.date), "MMM d")
@@ -28,25 +30,27 @@ export default function KidWealthTrail({
   const change = last - first;
 
   return (
-    <section className="overflow-hidden rounded-[8px] bg-white shadow-lift">
+    <section className="surface-card overflow-hidden">
       <div
         className="kid-color-surface p-5"
         style={{ backgroundColor: account.profileColor, "--kid-theme-color": account.themeColor } as React.CSSProperties}
       >
         <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-black text-ink shadow-sm">
           <TrendingUp size={16} className="text-mint" />
-          My wealth trail
+          {t("kidTrail.badge")}
         </div>
-        <h2 className="text-2xl font-black text-ink">{account.name}&apos;s climb</h2>
+        <h2 className="text-2xl font-black text-ink">{t("kidTrail.title")}</h2>
         <p className={`mt-2 text-sm font-black ${change >= 0 ? "text-mint" : "text-coral"}`}>
-          {change >= 0 ? "+" : "-"}
-          {formatMoney(Math.abs(change))} from the first trail stop
+          {t("kidTrail.fromFirst", {
+            sign: change >= 0 ? "+" : "-",
+            amount: formatMoney(Math.abs(change))
+          })}
         </p>
       </div>
       <div className="h-72 p-4">
         {chartData.length === 0 ? (
           <div className="grid h-full place-items-center rounded-[8px] bg-ink/5 text-center font-bold text-ink/55">
-            Add your first money move to start your trail.
+            {t("kidTrail.empty")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +78,7 @@ export default function KidWealthTrail({
               />
               <Tooltip
                 formatter={(value: number) => [formatMoney(value), account.name]}
-                labelFormatter={(label) => `Trail stop: ${label}`}
+                labelFormatter={(label) => t("kidTrail.stop", { label: String(label) })}
                 contentStyle={{
                   border: "none",
                   borderRadius: 8,

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Sparkles, X } from "lucide-react";
 import { Account } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   account: Account;
@@ -12,18 +13,24 @@ type Props = {
 };
 
 export default function KidTransactionModal({ account, type, onClose, onSave }: Props) {
+  const { t } = useI18n();
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   const isDeposit = type === "Deposit";
-  const title = isDeposit ? "Add to savings" : "Record spending";
+  const title = isDeposit ? t("kidMove.addTitle") : t("kidMove.recordSpending");
   const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
   const amountChips = isDeposit ? [5, 10, 25, 50, 100] : [5, 10, 20, 50, 100];
   const reasonChips = isDeposit
-    ? ["Allowance", "Gift", "Chores", "Saved cash"]
-    : ["Game", "Snack", "Book", "Fun day"];
+    ? [
+        t("kidMove.allowance"),
+        t("kidMove.gift"),
+        t("kidMove.chores"),
+        t("kidMove.savedCash")
+      ]
+    : [t("kidMove.game"), t("kidMove.snack"), t("kidMove.book"), t("kidMove.funDay")];
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,7 +38,7 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
     const parsedAmount = Number(amount);
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setError("Enter an amount bigger than zero.");
+      setError(t("kidMove.amountError"));
       return;
     }
 
@@ -41,7 +48,7 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
       accountId: account.id,
       type,
       amount: parsedAmount,
-      reason: reason.trim() || (isDeposit ? "Saved money" : "Spent money")
+      reason: reason.trim() || (isDeposit ? t("kidMove.savedMoney") : t("kidMove.spentMoney"))
     });
   }
 
@@ -64,7 +71,7 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
         <div className="space-y-4 p-5">
           {error && <p className="rounded-[8px] bg-coral/10 px-3 py-2 text-sm font-bold text-coral">{error}</p>}
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">Amount</span>
+            <span className="mb-2 block text-sm font-black text-ink/70">{t("transaction.amount")}</span>
             <input
               type="number"
               step="0.01"
@@ -96,12 +103,12 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
           </div>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">Reason</span>
+            <span className="mb-2 block text-sm font-black text-ink/70">{t("transaction.reason")}</span>
             <input
               disabled={isSaving}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder={isDeposit ? "Allowance, gift, chore..." : "Toy, snack, game..."}
+              placeholder={isDeposit ? t("kidMove.reasonDepositPlaceholder") : t("kidMove.reasonWithdrawalPlaceholder")}
               className="h-12 w-full rounded-[8px] border-2 border-ink/10 px-3 font-bold outline-none transition focus:border-mint"
             />
           </label>
@@ -126,7 +133,7 @@ export default function KidTransactionModal({ account, type, onClose, onSave }: 
             disabled={isSaving}
             className={`${isDeposit ? "bg-mint" : "bg-coral"} h-12 w-full rounded-[8px] font-black text-white shadow-sm transition hover:-translate-y-0.5 disabled:opacity-60`}
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </form>

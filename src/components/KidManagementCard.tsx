@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { KeyRound, Plus, Trash2, UsersRound } from "lucide-react";
 import type { Account } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 
 export default function KidManagementCard({
   accounts,
@@ -13,6 +14,7 @@ export default function KidManagementCard({
   onChanged: () => Promise<void>;
   apiBase?: string;
 }) {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [initialPin, setInitialPin] = useState("0000");
   const [resetAccountId, setResetAccountId] = useState(accounts[0]?.id ?? "");
@@ -41,7 +43,7 @@ export default function KidManagementCard({
 
       setName("");
       setInitialPin("0000");
-      setMessage(`Added ${body.name}.`);
+      setMessage(t("kids.added", { name: body.name }));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not add kid.");
@@ -70,7 +72,7 @@ export default function KidManagementCard({
       }
 
       setResetPin("0000");
-      setMessage(`Reset ${selectedResetAccount.name}'s PIN.`);
+      setMessage(t("kids.resetPinDone", { name: selectedResetAccount.name }));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not reset PIN.");
     } finally {
@@ -79,7 +81,7 @@ export default function KidManagementCard({
   }
 
   async function removeKid(account: Account) {
-    if (!window.confirm(`Remove ${account.name} and all their transactions? This cannot be undone.`)) return;
+    if (!window.confirm(t("kids.removeConfirm", { name: account.name }))) return;
 
     setMessage("");
     setIsSaving(true);
@@ -92,7 +94,7 @@ export default function KidManagementCard({
         throw new Error(body?.message ?? "Could not remove kid.");
       }
 
-      setMessage(`Removed ${account.name}.`);
+      setMessage(t("kids.removed", { name: account.name }));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not remove kid.");
@@ -102,45 +104,45 @@ export default function KidManagementCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-5">
         <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-mint/15 text-mint">
           <UsersRound size={21} />
         </div>
-        <h2 className="text-xl font-black">Kids</h2>
-        <p className="text-sm font-bold text-ink/55">Add kids, remove kids, or reset a forgotten PIN.</p>
+        <h2 className="section-heading">{t("kids.title")}</h2>
+        <p className="section-copy">{t("kids.description")}</p>
       </div>
 
       <form onSubmit={createKid} className="space-y-3 rounded-[8px] bg-ink/5 p-3">
-        <p className="text-sm font-black text-ink/70">Add kid</p>
+        <p className="text-sm font-black text-ink/70">{t("kids.add")}</p>
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Kid name"
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          placeholder={t("kids.namePlaceholder")}
+          className="field-input h-11"
         />
         <input
           value={initialPin}
           onChange={(event) => setInitialPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
           inputMode="numeric"
-          placeholder="Initial PIN"
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          placeholder={t("kids.initialPin")}
+          className="field-input h-11"
         />
         <button
           disabled={isSaving}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-mint w-full"
         >
           <Plus size={17} />
-          Add kid
+          {t("kids.add")}
         </button>
       </form>
 
       <form onSubmit={resetKidPin} className="mt-4 space-y-3 rounded-[8px] bg-ink/5 p-3">
-        <p className="text-sm font-black text-ink/70">Reset PIN</p>
+        <p className="text-sm font-black text-ink/70">{t("kids.resetPin")}</p>
         <select
           value={selectedResetAccount?.id ?? ""}
           onChange={(event) => setResetAccountId(event.target.value)}
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          className="field-input h-11"
         >
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
@@ -152,15 +154,15 @@ export default function KidManagementCard({
           value={resetPin}
           onChange={(event) => setResetPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
           inputMode="numeric"
-          placeholder="New PIN"
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          placeholder={t("kids.newPin")}
+          className="field-input h-11"
         />
         <button
           disabled={isSaving || !selectedResetAccount}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-ink font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-primary w-full"
         >
           <KeyRound size={17} />
-          Reset PIN
+          {t("kids.resetPin")}
         </button>
       </form>
 
@@ -170,14 +172,14 @@ export default function KidManagementCard({
             <img src={account.avatarUrl} alt={`${account.name} avatar`} className="h-10 w-10 rounded-full object-cover" />
             <div className="min-w-0 flex-1">
               <p className="truncate font-black text-ink">{account.name}</p>
-              <p className="text-xs font-bold text-ink/45">Balance {account.currentBalance}</p>
+              <p className="text-xs font-bold text-ink/45">{t("kids.balance", { amount: account.currentBalance })}</p>
             </div>
             <button
               type="button"
               onClick={() => removeKid(account)}
               disabled={isSaving || accounts.length <= 1}
-              className="grid h-10 w-10 place-items-center rounded-[8px] bg-coral/10 text-coral transition hover:bg-coral hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label={`Remove ${account.name}`}
+              className="icon-button bg-coral/10 text-coral hover:bg-coral hover:text-white"
+              aria-label={t("kids.removeAria", { name: account.name })}
             >
               <Trash2 size={17} />
             </button>

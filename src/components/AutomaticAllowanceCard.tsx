@@ -3,16 +3,17 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CalendarClock, PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react";
 import type { Account, RecurringAllowance } from "@/components/types";
+import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
 
 const weekDays = [
-  { value: 0, label: "Sunday" },
-  { value: 1, label: "Monday" },
-  { value: 2, label: "Tuesday" },
-  { value: 3, label: "Wednesday" },
-  { value: 4, label: "Thursday" },
-  { value: 5, label: "Friday" },
-  { value: 6, label: "Saturday" }
+  { value: 0, labelKey: "day.sunday" },
+  { value: 1, labelKey: "day.monday" },
+  { value: 2, labelKey: "day.tuesday" },
+  { value: 3, labelKey: "day.wednesday" },
+  { value: 4, labelKey: "day.thursday" },
+  { value: 5, labelKey: "day.friday" },
+  { value: 6, labelKey: "day.saturday" }
 ];
 
 export default function AutomaticAllowanceCard({
@@ -24,6 +25,7 @@ export default function AutomaticAllowanceCard({
   schedules: RecurringAllowance[];
   onChanged: () => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [frequency, setFrequency] = useState<RecurringAllowance["frequency"]>("Weekly");
   const [amount, setAmount] = useState("");
@@ -66,7 +68,7 @@ export default function AutomaticAllowanceCard({
       }
 
       setAmount("");
-      setMessage("Automatic allowance saved.");
+      setMessage(t("allowance.created"));
       await onChanged();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not create automatic allowance.");
@@ -102,22 +104,22 @@ export default function AutomaticAllowanceCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-5">
         <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-mint/15 text-mint">
           <CalendarClock size={21} />
         </div>
-        <h2 className="text-xl font-black">Automatic allowance</h2>
-        <p className="text-sm font-bold text-ink/55">Add allowance on a daily, weekly, or monthly rhythm.</p>
+        <h2 className="section-heading">{t("allowance.title")}</h2>
+        <p className="section-copy">{t("allowance.description")}</p>
       </div>
 
       <form onSubmit={createSchedule} className="space-y-3 rounded-[8px] bg-ink/5 p-3">
         <label className="block">
-          <span className="mb-2 block text-sm font-black text-ink/70">Kid</span>
+          <span className="field-label">{t("transaction.kid")}</span>
           <select
             value={accountId}
             onChange={(event) => setAccountId(event.target.value)}
-            className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+            className="field-input h-11"
           >
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
@@ -129,40 +131,40 @@ export default function AutomaticAllowanceCard({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">Amount</span>
+            <span className="field-label">{t("transaction.amount")}</span>
             <input
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               inputMode="decimal"
               placeholder="25"
-              className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+              className="field-input h-11"
             />
           </label>
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">How often</span>
+            <span className="field-label">{t("allowance.frequency")}</span>
             <select
               value={frequency}
               onChange={(event) => setFrequency(event.target.value as RecurringAllowance["frequency"])}
-              className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+              className="field-input h-11"
             >
-              <option value="Daily">Daily</option>
-              <option value="Weekly">Weekly</option>
-              <option value="Monthly">Monthly</option>
+              <option value="Daily">{t("allowance.daily")}</option>
+              <option value="Weekly">{t("allowance.weekly")}</option>
+              <option value="Monthly">{t("allowance.monthly")}</option>
             </select>
           </label>
         </div>
 
         {frequency === "Weekly" && (
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">Weekly day</span>
+            <span className="field-label">{t("allowance.weeklyDay")}</span>
             <select
               value={dayOfWeek}
               onChange={(event) => setDayOfWeek(Number(event.target.value))}
-              className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+              className="field-input h-11"
             >
               {weekDays.map((day) => (
                 <option key={day.value} value={day.value}>
-                  {day.label}
+                  {t(day.labelKey)}
                 </option>
               ))}
             </select>
@@ -171,7 +173,7 @@ export default function AutomaticAllowanceCard({
 
         {frequency === "Monthly" && (
           <label className="block">
-            <span className="mb-2 block text-sm font-black text-ink/70">Monthly day</span>
+            <span className="field-label">{t("allowance.monthlyDay")}</span>
             <input
               value={dayOfMonth}
               onChange={(event) => setDayOfMonth(Number(event.target.value))}
@@ -179,32 +181,32 @@ export default function AutomaticAllowanceCard({
               min={1}
               max={31}
               type="number"
-              className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+              className="field-input h-11"
             />
           </label>
         )}
 
         <button
           disabled={isSaving || accounts.length === 0}
-          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[8px] bg-mint font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+          className="action-button action-mint w-full"
         >
           <Plus size={17} />
-          {isSaving ? "Saving..." : "Save automatic allowance"}
+          {isSaving ? t("common.saving") : t("allowance.save")}
         </button>
       </form>
 
       <div className="mt-4 space-y-2">
         {sortedSchedules.length === 0 ? (
-          <p className="rounded-[8px] bg-ink/5 p-3 text-sm font-bold text-ink/55">No automatic allowances yet.</p>
+          <p className="rounded-[8px] bg-ink/5 p-3 text-sm font-bold text-ink/55">{t("allowance.empty")}</p>
         ) : (
           sortedSchedules.map((schedule) => (
             <div key={schedule.id} className="flex items-center gap-2 rounded-[8px] bg-ink/5 p-3">
               <div className="min-w-0 flex-1">
                 <p className="font-black text-ink">
-                  {schedule.accountName} gets {formatMoney(schedule.amount)}
+                  {t("allowance.gets", { name: schedule.accountName, amount: formatMoney(schedule.amount) })}
                 </p>
                 <p className="text-xs font-bold text-ink/50">
-                  {describeSchedule(schedule)}. Next: {new Date(schedule.nextRunAt).toLocaleDateString()}.
+                  {describeSchedule(schedule, t)}. {t("allowance.next", { date: new Date(schedule.nextRunAt).toLocaleDateString() })}
                 </p>
               </div>
               <button
@@ -213,7 +215,7 @@ export default function AutomaticAllowanceCard({
                 className={`grid h-9 w-9 place-items-center rounded-[8px] ${
                   schedule.active ? "bg-mint/15 text-mint" : "bg-ink/10 text-ink/50"
                 }`}
-                aria-label={schedule.active ? "Pause automatic allowance" : "Resume automatic allowance"}
+                aria-label={schedule.active ? t("allowance.pauseAria") : t("allowance.resumeAria")}
               >
                 {schedule.active ? <PauseCircle size={17} /> : <PlayCircle size={17} />}
               </button>
@@ -221,7 +223,7 @@ export default function AutomaticAllowanceCard({
                 type="button"
                 onClick={() => deleteSchedule(schedule)}
                 className="grid h-9 w-9 place-items-center rounded-[8px] bg-coral/10 text-coral"
-                aria-label="Delete automatic allowance"
+                aria-label={t("allowance.deleteAria")}
               >
                 <Trash2 size={17} />
               </button>
@@ -235,9 +237,12 @@ export default function AutomaticAllowanceCard({
   );
 }
 
-function describeSchedule(schedule: RecurringAllowance) {
-  if (!schedule.active) return "Paused";
-  if (schedule.frequency === "Daily") return "Every day";
-  if (schedule.frequency === "Weekly") return `Every ${weekDays.find((day) => day.value === schedule.dayOfWeek)?.label ?? "week"}`;
-  return `Every month on day ${schedule.dayOfMonth ?? 1}`;
+function describeSchedule(schedule: RecurringAllowance, t: (key: string, replacements?: Record<string, string | number>) => string) {
+  if (!schedule.active) return t("allowance.paused");
+  if (schedule.frequency === "Daily") return t("allowance.everyDay");
+  if (schedule.frequency === "Weekly") {
+    const dayKey = weekDays.find((day) => day.value === schedule.dayOfWeek)?.labelKey ?? "day.friday";
+    return t("allowance.everyWeek", { day: t(dayKey) });
+  }
+  return t("allowance.everyMonth", { day: schedule.dayOfMonth ?? 1 });
 }

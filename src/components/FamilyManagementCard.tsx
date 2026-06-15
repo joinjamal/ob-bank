@@ -101,13 +101,13 @@ export default function FamilyManagementCard({
   }
 
   return (
-    <section className="rounded-[8px] bg-white p-5 shadow-lift">
+    <section className="surface-card p-5">
       <div className="mb-5">
         <div className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-mint/15 text-mint">
           <UsersRound size={21} />
         </div>
-        <h2 className="text-xl font-black">Families</h2>
-        <p className="text-sm font-bold text-ink/55">Review tenants, reset parent access, and remove abandoned families.</p>
+        <h2 className="section-heading">Families</h2>
+        <p className="section-copy">Review tenants, reset parent access, and remove abandoned families.</p>
       </div>
 
       <div className="space-y-3">
@@ -124,7 +124,7 @@ export default function FamilyManagementCard({
                 type="button"
                 onClick={() => removeFamily(family.id, family.name)}
                 disabled={isSaving}
-                className="grid h-9 w-9 place-items-center rounded-[8px] bg-coral/10 text-coral"
+                className="icon-button bg-coral/10 text-coral hover:bg-coral hover:text-white"
                 aria-label={`Remove ${family.name}`}
               >
                 <Trash2 size={16} />
@@ -154,7 +154,7 @@ export default function FamilyManagementCard({
                     type="button"
                     onClick={() => resetParent(parent.id, parent.name)}
                     disabled={isSaving}
-                    className="grid h-9 w-9 place-items-center rounded-[8px] bg-mint/15 text-mint"
+                    className="icon-button bg-mint/15 text-mint hover:bg-mint hover:text-white"
                     aria-label={`Reset ${parent.name}'s password`}
                   >
                     <KeyRound size={16} />
@@ -163,7 +163,7 @@ export default function FamilyManagementCard({
                     type="button"
                     onClick={() => removeParent(parent.id, parent.name)}
                     disabled={isSaving}
-                    className="grid h-9 w-9 place-items-center rounded-[8px] bg-coral/10 text-coral"
+                    className="icon-button bg-coral/10 text-coral hover:bg-coral hover:text-white"
                     aria-label={`Remove ${parent.name}`}
                   >
                     <Trash2 size={16} />
@@ -180,21 +180,21 @@ export default function FamilyManagementCard({
                     value={parentName}
                     onChange={(event) => setParentName(event.target.value)}
                     placeholder="Parent name"
-                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                    className="field-input h-10 text-sm"
                   />
                   <input
                     value={parentEmail}
                     onChange={(event) => setParentEmail(event.target.value)}
                     type="email"
                     placeholder="Email optional"
-                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                    className="field-input h-10 text-sm"
                   />
                   <input
                     value={parentPassword}
                     onChange={(event) => setParentPassword(event.target.value)}
                     type="password"
                     placeholder="Password"
-                    className="h-10 rounded-[8px] border-2 border-ink/10 bg-white px-3 text-sm font-bold outline-none focus:border-mint"
+                    className="field-input h-10 text-sm"
                   />
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -202,7 +202,7 @@ export default function FamilyManagementCard({
                     type="button"
                     onClick={() => addParent(family.id, family.name)}
                     disabled={isSaving}
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-mint px-3 text-sm font-black text-white disabled:opacity-60"
+                    className="action-button action-mint min-h-10 px-3 py-1"
                   >
                     <Plus size={16} />
                     Add
@@ -210,7 +210,7 @@ export default function FamilyManagementCard({
                   <button
                     type="button"
                     onClick={() => setActiveFamilyId("")}
-                    className="h-10 rounded-[8px] bg-white px-3 text-sm font-black text-ink"
+                    className="action-button action-quiet min-h-10 px-3 py-1"
                   >
                     Cancel
                   </button>
@@ -225,7 +225,7 @@ export default function FamilyManagementCard({
                   setParentEmail("");
                   setParentPassword("");
                 }}
-                className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-ink px-3 text-sm font-black text-white"
+                className="action-button action-primary mt-3 min-h-10 w-full px-3 py-1"
               >
                 <Plus size={16} />
                 Add parent
@@ -236,11 +236,11 @@ export default function FamilyManagementCard({
       </div>
 
       <label className="mt-4 block">
-        <span className="mb-2 block text-sm font-black text-ink/70">Parent password reset value</span>
+        <span className="field-label">Parent password reset value</span>
         <input
           value={resetPassword}
           onChange={(event) => setResetPassword(event.target.value)}
-          className="h-11 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint"
+          className="field-input h-11"
         />
       </label>
 
