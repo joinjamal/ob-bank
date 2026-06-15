@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { Lock } from "lucide-react";
 import { signInAdmin } from "@/app/actions";
+import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
 import ThemeToggle from "@/components/ThemeToggle";
 
 function SubmitButton() {
@@ -25,6 +26,11 @@ export default function AdminLoginForm() {
   return (
     <main className="super-admin-shell grid min-h-screen place-items-center px-4 py-8">
       <form action={formAction} className="w-full max-w-md rounded-[8px] bg-white p-6 shadow-lift">
+        <AuthLoadingOverlay
+          title="Opening super admin"
+          message="Verifying admin access and preparing the operator dashboard."
+          tone="admin"
+        />
         <div className="mb-5 flex justify-end">
           <ThemeToggle compact />
         </div>

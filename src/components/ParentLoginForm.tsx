@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
 import { Home, Lock, Shield, Sparkles } from "lucide-react";
 import { registerParentFamily, signInParent } from "@/app/actions";
+import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
 import ThemeToggle from "@/components/ThemeToggle";
 
 function SubmitButton() {
@@ -73,6 +74,10 @@ export default function ParentLoginForm() {
 
         {mode === "login" ? (
           <form action={loginAction}>
+            <AuthLoadingOverlay
+              title="Opening parent portal"
+              message="Checking your parent access and loading the family controls."
+            />
             <input type="hidden" name="redirectTo" value="/parent" />
             <label className="block">
           <span className="mb-2 block text-sm font-black text-ink/70">Parent name or email</span>
@@ -104,6 +109,10 @@ export default function ParentLoginForm() {
           </form>
         ) : (
           <form action={registerAction}>
+            <AuthLoadingOverlay
+              title="Creating family vault"
+              message="Setting up the family space and parent access."
+            />
             <label className="block">
               <span className="mb-2 block text-sm font-black text-ink/70">Family name</span>
               <input name="familyName" placeholder="Your family name" className="h-12 w-full rounded-[8px] border-2 border-ink/10 bg-white px-3 font-bold outline-none focus:border-mint" />
