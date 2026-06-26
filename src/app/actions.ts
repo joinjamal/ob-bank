@@ -23,6 +23,7 @@ import {
   readParentSession,
   readParentSessionToken,
   revokeParentSession,
+  signParentSession,
   signFamilySession
 } from "@/lib/parentAuth";
 
@@ -146,8 +147,7 @@ export async function signInParent(_prevState: { ok: boolean; message: string },
 
   const cookieStore = await cookies();
   const maxAge = keepSignedIn ? 60 * 60 * 24 * 90 : 60 * 60 * 12;
-  const sessionToken = await createParentSession(parent.id, maxAge);
-  cookieStore.set(parentCookieName(), sessionToken, {
+  cookieStore.set(parentCookieName(), signParentSession(parent.id), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -253,8 +253,7 @@ export async function registerParentFamily(_prevState: { ok: boolean; message: s
 
     const cookieStore = await cookies();
     const maxAge = keepSignedIn ? 60 * 60 * 24 * 90 : 60 * 60 * 12;
-    const sessionToken = await createParentSession(parent.id, maxAge);
-    cookieStore.set(parentCookieName(), sessionToken, {
+    cookieStore.set(parentCookieName(), signParentSession(parent.id), {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",

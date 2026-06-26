@@ -39,7 +39,7 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-const minimumVaultAnimationMs = 350;
+const minimumVaultAnimationMs = 100;
 
 const KidWealthTrail = dynamic(() => import("@/components/KidWealthTrail"), {
   ssr: false,

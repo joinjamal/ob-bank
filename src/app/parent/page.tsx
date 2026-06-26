@@ -10,8 +10,9 @@ export const preferredRegion = "hnd1";
 export default async function ParentPage() {
   const cookieStore = await cookies();
   const parentCookie = cookieStore.get(parentCookieName())?.value;
-  const tokenParent = await readParentSessionToken(parentCookie);
-  const parentId = tokenParent?.id ?? readParentSession(parentCookie);
+  const signedParentId = readParentSession(parentCookie);
+  const tokenParent = signedParentId ? null : await readParentSessionToken(parentCookie);
+  const parentId = signedParentId ?? tokenParent?.id;
 
   if (!parentId) {
     return <ParentLoginForm />;

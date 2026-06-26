@@ -229,8 +229,6 @@ export async function getParentData(parentId: string) {
     throw new Error("Parent account not found.");
   }
 
-  await runDueAllowances(parent.familyId);
-
   const [accounts, transactions, allowances] = await Promise.all([
     prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
     getFamilyTransactions(parent.familyId, 120),
