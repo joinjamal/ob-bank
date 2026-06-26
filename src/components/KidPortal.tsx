@@ -64,6 +64,7 @@ export default function KidPortal({
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [message, setMessage] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [pinCheckStatus, setPinCheckStatus] = useState<"idle" | "checking" | "ready" | "invalid">("idle");
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [loadedDetailsFor, setLoadedDetailsFor] = useState<string | null>(initialKidData?.ledger.length ? initialKidData.account.id : null);
@@ -80,25 +81,35 @@ export default function KidPortal({
 
   const loginKey = selectedKid && /^\d{4,8}$/.test(pin) ? `${selectedKid.id}:${pin}:${rememberKid}` : "";
 
-  const requestKidLogin = useCallback(() => {
-    if (!selectedKid || !loginKey) return null;
+  const requestKidLoginFor = useCallback((
+    kid: Pick<Account, "id">,
+    nextPin: string,
+    shouldRemember: boolean
+  ) => {
+    if (!/^\d{4,8}$/.test(nextPin)) return null;
+    const key = `${kid.id}:${nextPin}:${shouldRemember}`;
 
-    if (loginRequestRef.current?.key === loginKey) {
+    if (loginRequestRef.current?.key === key) {
       return loginRequestRef.current.promise;
     }
 
     const promise = fetch("/api/kids/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId: selectedKid.id, pin, remember: rememberKid })
+      body: JSON.stringify({ accountId: kid.id, pin: nextPin, remember: shouldRemember })
     }).then(async (response) => ({
       ok: response.ok,
       body: await response.json().catch(() => null)
     }));
 
-    loginRequestRef.current = { key: loginKey, promise };
+    loginRequestRef.current = { key, promise };
     return promise;
-  }, [loginKey, pin, rememberKid, selectedKid]);
+  }, []);
+
+  const requestKidLogin = useCallback(() => {
+    if (!selectedKid || !loginKey) return null;
+    return requestKidLoginFor(selectedKid, pin, rememberKid);
+  }, [loginKey, pin, rememberKid, requestKidLoginFor, selectedKid]);
 
   const loadKidDetails = useCallback(async (accountId: string) => {
     setIsLoadingDetails(true);
@@ -127,13 +138,75 @@ export default function KidPortal({
     }
   }, [kidData, loadKidDetails, loadedDetailsFor]);
 
+  const openKidVault = useCallback((body: KidData) => {
+    loginRequestRef.current = null;
+    setKidData(body);
+    setLoadedDetailsFor(null);
+    setPin("");
+    setPinCheckStatus("idle");
+    setIsLoggingIn(false);
+    setMessage("");
+    void loadKidDetails(body.account.id);
+    playVaultUnlockSound();
+  }, [loadKidDetails]);
+
+  const finishKidLogin = useCallback((
+    activeKey: string,
+    result: { ok: boolean; body: KidData | { message?: string } | null }
+  ) => {
+    if (loginRequestRef.current?.key !== activeKey) return;
+
+    if (result.ok) {
+      openKidVault(result.body as KidData);
+      return;
+    }
+
+    setPinCheckStatus("invalid");
+    setIsLoggingIn(false);
+    setMessage((result.body as { message?: string } | null)?.message ?? "That PIN did not match.");
+    playVaultErrorSound();
+  }, [openKidVault]);
+
+  const startKidLoginCheck = useCallback((nextPin: string) => {
+    if (!selectedKid || !/^\d{4,8}$/.test(nextPin)) return;
+    const activeKey = `${selectedKid.id}:${nextPin}:${rememberKid}`;
+    setMessage("");
+    setIsLoggingIn(true);
+    setPinCheckStatus("checking");
+    void requestKidLoginFor(selectedKid, nextPin, rememberKid)?.then((result) => {
+      finishKidLogin(activeKey, result);
+    }).catch(() => {
+      if (loginRequestRef.current?.key === activeKey) {
+        setPinCheckStatus("invalid");
+        setIsLoggingIn(false);
+        setMessage("Could not open your profile.");
+        playVaultErrorSound();
+      }
+    });
+  }, [finishKidLogin, rememberKid, requestKidLoginFor, selectedKid]);
+
   useEffect(() => {
     if (loginKey) {
-      void requestKidLogin();
+      setMessage("");
+      setIsLoggingIn(true);
+      setPinCheckStatus("checking");
+      const activeKey = loginKey;
+      void requestKidLogin()?.then((result) => {
+        finishKidLogin(activeKey, result);
+      }).catch(() => {
+        if (loginRequestRef.current?.key === activeKey) {
+          setPinCheckStatus("invalid");
+          setIsLoggingIn(false);
+          setMessage("Could not open your profile.");
+          playVaultErrorSound();
+        }
+      });
     } else {
       loginRequestRef.current = null;
+      setPinCheckStatus("idle");
+      setIsLoggingIn(false);
     }
-  }, [loginKey, requestKidLogin]);
+  }, [finishKidLogin, loginKey, requestKidLogin]);
 
   async function handleLogin() {
     setMessage("");
@@ -151,14 +224,11 @@ export default function KidPortal({
       const body = result.body;
 
       if (!result.ok) {
+        setPinCheckStatus("invalid");
         throw new Error(body?.message ?? "Could not open your profile.");
       }
 
-      setKidData(body);
-      setLoadedDetailsFor(null);
-      setPin("");
-      void loadKidDetails(body.account.id);
-      playVaultUnlockSound();
+      openKidVault(body as KidData);
       const remainingAnimationMs = minimumVaultAnimationMs - (performance.now() - startedAt);
       if (remainingAnimationMs > 0) {
         await new Promise((resolve) => window.setTimeout(resolve, remainingAnimationMs));
@@ -299,6 +369,7 @@ export default function KidPortal({
                       key={kid.id}
                       type="button"
                       onClick={() => setSelectedKidId(kid.id)}
+                      data-account-id={kid.id}
                       className={`kid-color-surface group min-h-56 rounded-[8px] border-2 p-5 text-left transition hover:-translate-y-1 ${
                         selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white/90 shadow-sm"
                       }`}
@@ -339,7 +410,11 @@ export default function KidPortal({
                         <KeyRound size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
                         <input
                           value={pin}
-                          onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 8))}
+                          onChange={(event) => {
+                            const nextPin = event.target.value.replace(/\D/g, "").slice(0, 8);
+                            setPin(nextPin);
+                            startKidLoginCheck(nextPin);
+                          }}
                           onKeyDown={(event) => {
                             if (event.key === "Enter") void handleLogin();
                           }}
@@ -353,10 +428,14 @@ export default function KidPortal({
                     <button
                       type="button"
                       onClick={handleLogin}
-                      disabled={isLoggingIn}
+                      disabled={isLoggingIn || pinCheckStatus === "checking"}
                       className="action-button action-primary w-full"
                     >
-                      {isLoggingIn ? t("kid.opening") : t("kid.open")}
+                      {isLoggingIn
+                        ? t("kid.opening")
+                        : pinCheckStatus === "checking"
+                          ? t("auth.checking")
+                          : t("kid.open")}
                     </button>
                     <label className="flex items-center gap-3 rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/65">
                       <input

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { readDeviceFamilyIdOrDefault } from "@/lib/familySession";
-import { defaultKidPin, isValidPinFormat, verifyKidPin } from "@/lib/kidAuth";
+import { defaultKidPin, hashKidPin, isValidPinFormat, needsKidPinRehash, verifyKidPin } from "@/lib/kidAuth";
 import { kidCookieName, signKidSession } from "@/lib/kidSession";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount } from "@/lib/serializers";
@@ -24,9 +24,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Ask a parent to sign in on this device first." }, { status: 401 });
     }
 
-    const account = await prisma.account.findFirst({ where: { id: accountId, familyId } });
+    const account = await prisma.account.findUnique({ where: { id: accountId } });
 
-    if (!account) {
+    if (!account || account.familyId !== familyId) {
       return NextResponse.json({ message: "Kid account not found." }, { status: 404 });
     }
 
@@ -34,6 +34,13 @@ export async function POST(request: Request) {
 
     if (!validPin) {
       return NextResponse.json({ message: "That PIN did not match." }, { status: 401 });
+    }
+
+    if (account.pinHash && needsKidPinRehash(account.pinHash)) {
+      void prisma.account.update({
+        where: { id: account.id },
+        data: { pinHash: hashKidPin(pin) }
+      }).catch(() => undefined);
     }
 
     const cookieStore = await cookies();

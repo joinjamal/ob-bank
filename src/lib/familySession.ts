@@ -8,6 +8,12 @@ import { prisma } from "@/lib/prisma";
 export async function readDeviceFamilyId() {
   const cookieStore = await cookies();
 
+  const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);
+  if (kidSession) return kidSession.familyId;
+
+  const familyId = readFamilySession(cookieStore.get(familyCookieName())?.value);
+  if (familyId) return familyId;
+
   const parentCookie = cookieStore.get(parentCookieName())?.value;
   const parentId = readParentSession(parentCookie);
   if (parentId) {
@@ -20,19 +26,7 @@ export async function readDeviceFamilyId() {
 
   const tokenParent = await readParentSessionToken(parentCookie);
   if (tokenParent) return tokenParent.familyId;
-
-  const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);
-  if (kidSession) return kidSession.familyId;
-
-  const familyId = readFamilySession(cookieStore.get(familyCookieName())?.value);
-  if (!familyId) return null;
-
-  const family = await prisma.family.findUnique({
-    where: { id: familyId },
-    select: { id: true }
-  });
-
-  return family?.id ?? null;
+  return null;
 }
 
 export async function readDeviceFamilyIdOrDefault() {
