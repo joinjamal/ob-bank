@@ -442,6 +442,198 @@ canvas {
   animation-delay: 240ms;
 }
 
+.vault-unlock-pill {
+  animation: vault-pill-in 180ms ease-out both;
+}
+
+.session-loading-strip {
+  animation: vault-pill-in 180ms ease-out both;
+}
+
+.loading-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #3dcc91;
+  animation: loading-dot 760ms ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 220ms;
+}
+
+.mini-vault {
+  animation: mini-vault-unlock 520ms ease-out both;
+}
+
+.kid-fun-stage {
+  position: relative;
+  min-height: 142px;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 18%, transparent), transparent 13rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+}
+
+html.dark .kid-fun-stage {
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 22%, transparent), transparent 13rem),
+    linear-gradient(135deg, rgba(20, 31, 50, 0.94), rgba(15, 23, 42, 0.9)) !important;
+}
+
+.fun-orbit {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--kid-theme-color, #3dcc91) 42%, transparent);
+  animation: fun-orbit-spin 7s linear infinite;
+}
+
+.fun-coin {
+  position: absolute;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  color: #172033;
+  background: #ffc64e;
+  font-size: 11px;
+  font-weight: 950;
+  box-shadow: 0 10px 20px rgba(23, 32, 51, 0.14);
+  animation: fun-coin-bob 1.5s ease-in-out infinite;
+}
+
+.fun-coin-a {
+  left: -10px;
+  top: 28px;
+}
+
+.fun-coin-b {
+  right: 2px;
+  top: -8px;
+  animation-delay: 140ms;
+}
+
+.fun-coin-c {
+  bottom: -9px;
+  right: 18px;
+  animation-delay: 280ms;
+}
+
+.fun-runner {
+  position: absolute;
+  left: 18px;
+  bottom: 20px;
+  width: 66px;
+  height: 44px;
+  animation: fun-runner-slide 4.2s ease-in-out infinite;
+}
+
+.fun-runner-body {
+  position: absolute;
+  left: 18px;
+  top: 4px;
+  width: 34px;
+  height: 24px;
+  border-radius: 14px 14px 10px 10px;
+  background: color-mix(in srgb, var(--kid-theme-color, #3dcc91) 82%, #ffffff);
+  box-shadow: inset 0 -5px 0 rgba(23, 32, 51, 0.12);
+  animation: fun-runner-hop 680ms ease-in-out infinite;
+}
+
+.fun-runner-leg {
+  position: absolute;
+  bottom: 5px;
+  width: 22px;
+  height: 7px;
+  border-radius: 999px;
+  background: #172033;
+  transform-origin: left center;
+  animation: fun-runner-leg 680ms ease-in-out infinite;
+}
+
+.fun-runner-leg-a {
+  left: 16px;
+}
+
+.fun-runner-leg-b {
+  left: 36px;
+  animation-delay: 340ms;
+}
+
+.fun-progress {
+  position: absolute;
+  left: 102px;
+  right: 132px;
+  bottom: 32px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.08);
+}
+
+.fun-progress span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3dcc91, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 70%, #2f7df6));
+  animation: fun-progress-fill 2.8s ease-in-out infinite;
+}
+
+.fun-badges {
+  position: absolute;
+  right: 126px;
+  top: 28px;
+  display: flex;
+  gap: 8px;
+  color: color-mix(in srgb, var(--kid-theme-color, #3dcc91) 74%, #2f7df6);
+}
+
+.fun-badge {
+  filter: drop-shadow(0 8px 10px rgba(23, 32, 51, 0.12));
+  animation: fun-badge-pop 1.6s ease-in-out infinite;
+}
+
+.fun-badge-b {
+  animation-delay: 160ms;
+}
+
+.fun-badge-c {
+  animation-delay: 320ms;
+}
+
+.fun-sparkle {
+  position: absolute;
+  color: #ffc64e;
+  animation: fun-sparkle-twinkle 1.7s ease-in-out infinite;
+}
+
+.fun-sparkle-a {
+  left: 45%;
+  top: 22px;
+}
+
+.fun-sparkle-b {
+  left: 58%;
+  top: 68px;
+  animation-delay: 260ms;
+}
+
+.fun-sparkle-c {
+  left: 72%;
+  top: 20px;
+  animation-delay: 520ms;
+}
+
 .earned-badge {
   animation: earned-badge-glow 1.8s ease-in-out infinite;
 }
@@ -487,6 +679,132 @@ canvas {
   45% {
     opacity: 1;
     transform: translateY(-4px) scale(1.08);
+  }
+}
+
+@keyframes vault-pill-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mini-vault-unlock {
+  0% {
+    transform: rotate(-8deg) scale(0.94);
+  }
+  55% {
+    transform: rotate(8deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes loading-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fun-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fun-coin-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(10deg);
+  }
+}
+
+@keyframes fun-runner-slide {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(32px);
+  }
+}
+
+@keyframes fun-runner-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes fun-runner-leg {
+  0%,
+  100% {
+    transform: rotate(22deg);
+  }
+  50% {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes fun-progress-fill {
+  0%,
+  100% {
+    transform: translateX(-20%);
+    width: 35%;
+  }
+  50% {
+    transform: translateX(155%);
+    width: 52%;
+  }
+}
+
+@keyframes fun-badge-pop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.12);
+  }
+}
+
+@keyframes fun-sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0.34;
+    transform: scale(0.86) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18) rotate(14deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }
 

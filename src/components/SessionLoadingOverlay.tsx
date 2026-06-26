@@ -14,24 +14,24 @@ export default function SessionLoadingOverlay({
 }) {
   const { t } = useI18n();
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm">
-      <div className="vault-open-card w-full max-w-sm rounded-[8px] bg-white p-6 text-center shadow-lift">
+    <div className="pointer-events-none fixed inset-x-3 top-3 z-50 flex justify-center">
+      <div className="session-loading-strip flex w-full max-w-md items-center gap-3 rounded-full bg-white/95 px-4 py-3 text-ink shadow-lift">
         <div
-          className={`vault-door mx-auto mb-5 grid h-28 w-28 place-items-center rounded-[24px] shadow-lift ${
+          className={`mini-vault grid h-10 w-10 shrink-0 place-items-center rounded-full ${
             tone === "admin" ? "bg-[#050914] text-white" : "bg-ink text-white"
           }`}
         >
-          <div className="vault-dial grid h-16 w-16 place-items-center rounded-full border-8 border-mint/70 bg-white/10">
-            {tone === "admin" ? <ShieldCheck size={28} className="text-mint" /> : <LockKeyhole size={28} className="text-mint" />}
-          </div>
+          {tone === "admin" ? <ShieldCheck size={18} className="text-mint" /> : <LockKeyhole size={18} className="text-mint" />}
         </div>
-        <p className="text-sm font-black uppercase text-mint">{t("common.pleaseWait")}</p>
-        <h2 className="mt-1 text-2xl font-black text-ink">{title}</h2>
-        <p className="mt-2 text-sm font-bold text-ink/55">{message}</p>
-        <div className="mt-5 flex justify-center gap-2">
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-black uppercase text-mint">{t("common.pleaseWait")}</p>
+          <h2 className="truncate text-sm font-black text-ink">{title}</h2>
+          <p className="truncate text-xs font-bold text-ink/55">{message}</p>
+        </div>
+        <div className="loading-dots flex gap-1.5">
+          <span />
+          <span />
+          <span />
         </div>
       </div>
     </div>

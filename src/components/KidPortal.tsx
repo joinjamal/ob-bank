@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
 import BalanceCard from "@/components/BalanceCard";
+import KidVaultFunAnimations from "@/components/KidVaultFunAnimations";
 import KidPinSettings from "@/components/KidPinSettings";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import LanguageToggle from "@/components/LanguageToggle";
@@ -156,9 +157,8 @@ export default function KidPortal({
     setPinCheckStatus("idle");
     setIsLoggingIn(false);
     setMessage("");
-    void loadKidDetails(body.account.id);
     playVaultUnlockSound();
-  }, [loadKidDetails]);
+  }, []);
 
   const finishKidLogin = useCallback((
     activeKey: string,
@@ -178,7 +178,12 @@ export default function KidPortal({
   }, [openKidVault]);
 
   const startKidLoginCheck = useCallback((nextPin: string) => {
-    if (!selectedKid || !/^\d{4,8}$/.test(nextPin)) return;
+    if (!selectedKid || !/^\d{4,8}$/.test(nextPin)) {
+      loginRequestRef.current = null;
+      setPinCheckStatus("idle");
+      setIsLoggingIn(false);
+      return;
+    }
     const activeKey = `${selectedKid.id}:${nextPin}:${rememberKid}`;
     setMessage("");
     setIsLoggingIn(true);
@@ -194,29 +199,6 @@ export default function KidPortal({
       }
     });
   }, [finishKidLogin, rememberKid, requestKidLoginFor, selectedKid]);
-
-  useEffect(() => {
-    if (loginKey) {
-      setMessage("");
-      setIsLoggingIn(true);
-      setPinCheckStatus("checking");
-      const activeKey = loginKey;
-      void requestKidLogin()?.then((result) => {
-        finishKidLogin(activeKey, result);
-      }).catch(() => {
-        if (loginRequestRef.current?.key === activeKey) {
-          setPinCheckStatus("invalid");
-          setIsLoggingIn(false);
-          setMessage("Could not open your profile.");
-          playVaultErrorSound();
-        }
-      });
-    } else {
-      loginRequestRef.current = null;
-      setPinCheckStatus("idle");
-      setIsLoggingIn(false);
-    }
-  }, [finishKidLogin, loginKey, requestKidLogin]);
 
   async function handleLogin() {
     setMessage("");
@@ -463,7 +445,7 @@ export default function KidPortal({
             {message && <p className="mt-4 rounded-[8px] bg-coral/10 p-3 font-bold text-coral">{message}</p>}
           </section>
         </div>
-        {isLoggingIn && <VaultOpeningOverlay kidName={selectedKid?.name ?? t("kid.yourVault")} />}
+        {isLoggingIn && <VaultOpeningPill kidName={selectedKid?.name ?? t("kid.yourVault")} />}
       </main>
     );
   }
@@ -525,6 +507,7 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
+          <KidVaultFunAnimations themeColor={kidData.account.themeColor} />
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <KidWealthTrail account={kidData.account} data={kidData.ledger} />
             <ActivityFeed transactions={kidData.transactions} compact />
@@ -547,23 +530,18 @@ export default function KidPortal({
   );
 }
 
-function VaultOpeningOverlay({ kidName }: { kidName: string }) {
+function VaultOpeningPill({ kidName }: { kidName: string }) {
   const { t } = useI18n();
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm">
-      <div className="vault-open-card w-full max-w-sm rounded-[8px] bg-white p-6 text-center shadow-lift">
-        <div className="vault-door mx-auto mb-5 grid h-28 w-28 place-items-center rounded-[24px] bg-ink text-white shadow-lift">
-          <div className="vault-dial grid h-16 w-16 place-items-center rounded-full border-8 border-mint/70 bg-white/10">
-            <LockKeyhole size={28} className="text-mint" />
-          </div>
+    <div className="pointer-events-none fixed inset-x-3 top-3 z-50 flex justify-center">
+      <div className="vault-unlock-pill flex max-w-[92vw] items-center gap-3 rounded-full bg-white/95 px-4 py-3 text-ink shadow-lift">
+        <div className="mini-vault grid h-10 w-10 place-items-center rounded-full bg-ink text-mint">
+          <LockKeyhole size={18} />
         </div>
-        <p className="text-sm font-black uppercase text-mint">{t("kid.checking")}</p>
-        <h2 className="mt-1 text-2xl font-black text-ink">{t("kid.openingVault", { name: kidName })}</h2>
-        <div className="mt-5 flex justify-center gap-2">
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
-          <span className="vault-light h-3 w-3 rounded-full bg-mint" />
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase text-mint">{t("kid.checking")}</p>
+          <p className="truncate text-sm font-black">{t("kid.openingVault", { name: kidName })}</p>
         </div>
       </div>
     </div>
