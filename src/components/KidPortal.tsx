@@ -83,6 +83,12 @@ export default function KidPortal({
     [kids, selectedKidId]
   );
 
+  useEffect(() => {
+    if (kidData) {
+      setVaultSubtitle(makeKidVaultJoke(locale, kidData.account.name));
+    }
+  }, [kidData?.account.id, kidData?.account.name, locale]);
+
   const loginKey = selectedKid && /^\d{4,8}$/.test(pin) ? `${selectedKid.id}:${pin}:${rememberKid}` : "";
 
   const requestKidLoginFor = useCallback((
@@ -144,7 +150,6 @@ export default function KidPortal({
 
   const openKidVault = useCallback((body: KidData) => {
     loginRequestRef.current = null;
-    setVaultSubtitle(makeKidVaultJoke(locale, body.account.name));
     setKidData(body);
     setLoadedDetailsFor(null);
     setPin("");
@@ -153,7 +158,7 @@ export default function KidPortal({
     setMessage("");
     void loadKidDetails(body.account.id);
     playVaultUnlockSound();
-  }, [loadKidDetails, locale]);
+  }, [loadKidDetails]);
 
   const finishKidLogin = useCallback((
     activeKey: string,

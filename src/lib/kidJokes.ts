@@ -7,13 +7,13 @@ const englishOpeners = [
   "A pancake accountant checked the numbers",
   "Your savings put on superhero socks",
   "A tiny trumpet announced your arrival",
-  "The money monster took a nap",
+  "The spending button took a nap",
   "Your coins formed a tiny marching band",
   "A ninja piggy bank gave you a thumbs up",
   "The calculator says you are suspiciously awesome",
   "Your money walked in wearing sunglasses",
   "The vault door opened with extra sparkle",
-  "A snack-sized dragon is guarding these coins",
+  "A snack-sized guard is watching these coins",
   "The budget wizard has entered the chat",
   "Your balance is doing its homework",
   "A tiny robot counted everything twice",
@@ -34,7 +34,7 @@ const englishPunchlines = [
   "your wallet just whispered, nice",
   "today's mission is to be clever with coins",
   "tiny steps can buy surprisingly big things",
-  "the spending monster has been told to wait",
+  "the spend button has been told to wait",
   "your goal got one pixel closer",
   "excellent work, captain of coins",
   "keep calm and count snacks",
@@ -45,7 +45,8 @@ const englishPunchlines = [
   "this is financial broccoli, but fun",
   "try not to spend it all on invisible pizza",
   "the vault gave that move five stars",
-  "your money is standing up straighter"
+  "your money is looking extra organized",
+  "the vault almost did a cartwheel"
 ];
 
 const arabicOpeners = [
@@ -88,25 +89,20 @@ function nextDailyOpenCount(locale: Locale, kidName: string) {
   return next;
 }
 
-function shuffledCount(count: number, total: number) {
-  const step = total % 2 === 0 ? total - 1 : total - 2;
-  return ((count - 1) * step) % total;
-}
-
-function makeLine(openers: string[], punchlines: string[], count: number) {
-  const total = openers.length * punchlines.length;
-  const index = shuffledCount(count, total);
+function makeLine(openers: string[], punchlines: string[], count: number, separator = ", ") {
+  const index = count - 1;
   const opener = openers[index % openers.length];
-  const punchline = punchlines[Math.floor(index / openers.length) % punchlines.length];
+  const punchline = punchlines[(index * 8 + Math.floor(index / openers.length) * 3) % punchlines.length];
+  const total = openers.length * punchlines.length;
   const cycle = Math.floor((count - 1) / total);
-  return `${opener}, ${punchline}${cycle > 0 ? ` #${cycle + 1}` : ""}.`;
+  return `${opener}${separator}${punchline}${cycle > 0 ? ` #${cycle + 1}` : ""}.`;
 }
 
 export function makeKidVaultJoke(locale: Locale, kidName: string) {
   const count = nextDailyOpenCount(locale, kidName);
 
   if (locale === "ar") {
-    return makeLine(arabicOpeners, arabicPunchlines, count);
+    return makeLine(arabicOpeners, arabicPunchlines, count, "، ");
   }
 
   return makeLine(englishOpeners, englishPunchlines, count);
