@@ -39,7 +39,7 @@ type MoneyAnimation = {
   id: number;
 } | null;
 
-const minimumVaultAnimationMs = 100;
+const minimumVaultAnimationMs = 0;
 
 const KidWealthTrail = dynamic(() => import("@/components/KidWealthTrail"), {
   ssr: false,
@@ -68,11 +68,37 @@ export default function KidPortal({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [loadedDetailsFor, setLoadedDetailsFor] = useState<string | null>(initialKidData?.ledger.length ? initialKidData.account.id : null);
   const animationTimer = useRef<number | null>(null);
+  const loginRequestRef = useRef<{
+    key: string;
+    promise: Promise<{ ok: boolean; body: KidData | { message?: string } | null }>;
+  } | null>(null);
 
   const selectedKid = useMemo(
     () => kids.find((kid) => kid.id === selectedKidId) ?? kids[0],
     [kids, selectedKidId]
   );
+
+  const loginKey = selectedKid && /^\d{4,8}$/.test(pin) ? `${selectedKid.id}:${pin}:${rememberKid}` : "";
+
+  const requestKidLogin = useCallback(() => {
+    if (!selectedKid || !loginKey) return null;
+
+    if (loginRequestRef.current?.key === loginKey) {
+      return loginRequestRef.current.promise;
+    }
+
+    const promise = fetch("/api/kids/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accountId: selectedKid.id, pin, remember: rememberKid })
+    }).then(async (response) => ({
+      ok: response.ok,
+      body: await response.json().catch(() => null)
+    }));
+
+    loginRequestRef.current = { key: loginKey, promise };
+    return promise;
+  }, [loginKey, pin, rememberKid, selectedKid]);
 
   const loadKidDetails = useCallback(async (accountId: string) => {
     setIsLoadingDetails(true);
@@ -101,6 +127,14 @@ export default function KidPortal({
     }
   }, [kidData, loadKidDetails, loadedDetailsFor]);
 
+  useEffect(() => {
+    if (loginKey) {
+      void requestKidLogin();
+    } else {
+      loginRequestRef.current = null;
+    }
+  }, [loginKey, requestKidLogin]);
+
   async function handleLogin() {
     setMessage("");
 
@@ -112,25 +146,23 @@ export default function KidPortal({
     setIsLoggingIn(true);
 
     try {
-      const [response] = await Promise.all([
-        fetch("/api/kids/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accountId: selectedKid.id, pin, remember: rememberKid })
-        }),
-        new Promise((resolve) => window.setTimeout(resolve, minimumVaultAnimationMs))
-      ]);
-      const body = await response.json().catch(() => null);
+      const startedAt = performance.now();
+      const result = await (requestKidLogin() ?? Promise.resolve({ ok: false, body: null }));
+      const body = result.body;
 
-      if (!response.ok) {
+      if (!result.ok) {
         throw new Error(body?.message ?? "Could not open your profile.");
       }
 
-      playVaultUnlockSound();
       setKidData(body);
       setLoadedDetailsFor(null);
       setPin("");
       void loadKidDetails(body.account.id);
+      playVaultUnlockSound();
+      const remainingAnimationMs = minimumVaultAnimationMs - (performance.now() - startedAt);
+      if (remainingAnimationMs > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remainingAnimationMs));
+      }
     } catch (error) {
       setKidData(null);
       playVaultErrorSound();

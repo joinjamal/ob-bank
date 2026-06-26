@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getKidTransactions } from "@/lib/data";
 import { readDeviceFamilyIdOrDefault } from "@/lib/familySession";
 import { defaultKidPin, isValidPinFormat, verifyKidPin } from "@/lib/kidAuth";
 import { kidCookieName, signKidSession } from "@/lib/kidSession";
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       account: serializeAccount(account),
-      transactions: await getKidTransactions(account.id, 8),
+      transactions: [],
       ledger: []
     });
   } catch (error) {

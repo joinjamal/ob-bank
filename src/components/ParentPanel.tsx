@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Baby, LogOut } from "lucide-react";
 import dynamic from "next/dynamic";
 import { signOutParent } from "@/app/actions";
@@ -41,13 +41,33 @@ type ParentData = {
   familyParents: unknown[];
 };
 
-export default function ParentPanel({ initialData }: { initialData: ParentData }) {
+const emptyParentData: ParentData = {
+  parent: {
+    id: "",
+    name: "Parent",
+    email: null,
+    emailVerifiedAt: null,
+    familyId: "",
+    familyName: "Family",
+    familyAccessToken: "",
+    familyAccessLinkId: ""
+  },
+  accounts: [],
+  transactions: [],
+  allowances: [],
+  familyParents: []
+};
+
+export default function ParentPanel({ initialData }: { initialData: ParentData | null }) {
   const { t } = useI18n();
-  const [accounts, setAccounts] = useState(initialData.accounts);
-  const [transactions, setTransactions] = useState(initialData.transactions);
-  const [allowances, setAllowances] = useState(initialData.allowances);
+  const [parentData, setParentData] = useState<ParentData>(initialData ?? emptyParentData);
+  const [accounts, setAccounts] = useState(initialData?.accounts ?? []);
+  const [transactions, setTransactions] = useState(initialData?.transactions ?? []);
+  const [allowances, setAllowances] = useState(initialData?.allowances ?? []);
   const [message, setMessage] = useState("");
-  const [isChildWizardOpen, setIsChildWizardOpen] = useState(initialData.accounts.length === 0);
+  const [isChildWizardOpen, setIsChildWizardOpen] = useState(Boolean(initialData && initialData.accounts.length === 0));
+  const [hasLoadedData, setHasLoadedData] = useState(Boolean(initialData));
+  const [autoWizardChecked, setAutoWizardChecked] = useState(Boolean(initialData));
 
   const sortedAccounts = useMemo(
     () => [...accounts].sort((a, b) => a.name.localeCompare(b.name)),
@@ -61,10 +81,27 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
       setMessage(body?.message ?? t("parent.refreshError"));
       return;
     }
+    setParentData(body);
     setAccounts(body.accounts);
     setTransactions(body.transactions);
     setAllowances(body.allowances);
+    setHasLoadedData(true);
   }, [t]);
+
+  useEffect(() => {
+    if (!initialData) {
+      void loadData();
+    }
+  }, [initialData, loadData]);
+
+  useEffect(() => {
+    if (hasLoadedData && !autoWizardChecked) {
+      setAutoWizardChecked(true);
+      if (accounts.length === 0) {
+        setIsChildWizardOpen(true);
+      }
+    }
+  }, [accounts.length, autoWizardChecked, hasLoadedData]);
 
   async function saveTransaction(payload: {
     accountId: string;
@@ -131,10 +168,10 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
               {t("kid.dashboard")}
             </Link>
             <h1 className="page-title">
-              {t("parent.portal", { name: initialData.parent.name })}
+              {t("parent.portal", { name: parentData.parent.name })}
             </h1>
             <p className="page-subtitle">
-              {t("parent.controls", { family: initialData.parent.familyName })}
+              {t("parent.controls", { family: parentData.parent.familyName })}
             </p>
           </div>
           <div className="app-actions">
@@ -159,36 +196,45 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
         </header>
 
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
-
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="min-w-0 space-y-4">
-            <div className="grid min-w-0 gap-4 md:grid-cols-2">
-              {sortedAccounts.map((account) => (
-                <BalanceCard key={account.id} account={account} />
-              ))}
+        {!hasLoadedData ? (
+          <section className="surface-card mb-4 p-4">
+            <div className="h-5 w-40 animate-pulse rounded bg-ink/10" />
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="h-40 animate-pulse rounded-[8px] bg-ink/5" />
+              <div className="h-40 animate-pulse rounded-[8px] bg-ink/5" />
             </div>
-            <ActivityFeed transactions={transactions.slice(0, 12)} compact />
-          </div>
-          <aside className="min-w-0 space-y-3 xl:sticky xl:top-4 xl:self-start">
-            <section className="surface-card p-3">
-              <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
-            </section>
-            <ToolFrame title={t("parent.editHistory")} description={t("parent.editHistoryDesc")}>
-              <AdminTransactionList
-                transactions={transactions}
-                onEdit={editTransaction}
-                onDelete={deleteTransactions}
-              />
-            </ToolFrame>
-            <ToolFrame title={t("parent.moreSettings")} description={t("parent.moreSettingsDesc")}>
-              <div className="space-y-3">
-                <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
-                <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
-                <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
+          </section>
+        ) : (
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="min-w-0 space-y-4">
+              <div className="grid min-w-0 gap-4 md:grid-cols-2">
+                {sortedAccounts.map((account) => (
+                  <BalanceCard key={account.id} account={account} />
+                ))}
               </div>
-            </ToolFrame>
-          </aside>
-        </div>
+              <ActivityFeed transactions={transactions.slice(0, 12)} compact />
+            </div>
+            <aside className="min-w-0 space-y-3 xl:sticky xl:top-4 xl:self-start">
+              <section className="surface-card p-3">
+                <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
+              </section>
+              <ToolFrame title={t("parent.editHistory")} description={t("parent.editHistoryDesc")}>
+                <AdminTransactionList
+                  transactions={transactions}
+                  onEdit={editTransaction}
+                  onDelete={deleteTransactions}
+                />
+              </ToolFrame>
+              <ToolFrame title={t("parent.moreSettings")} description={t("parent.moreSettingsDesc")}>
+                <div className="space-y-3">
+                  <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
+                  <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
+                  <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
+                </div>
+              </ToolFrame>
+            </aside>
+          </div>
+        )}
       </div>
       <ParentChildWizard
         open={isChildWizardOpen}
