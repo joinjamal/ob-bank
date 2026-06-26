@@ -7,7 +7,6 @@ import dynamic from "next/dynamic";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
 import BalanceCard from "@/components/BalanceCard";
-import KidVaultFunAnimations from "@/components/KidVaultFunAnimations";
 import KidPinSettings from "@/components/KidPinSettings";
 import KidTransactionModal from "@/components/KidTransactionModal";
 import LanguageToggle from "@/components/LanguageToggle";
@@ -39,6 +38,7 @@ type MoneyAnimation = {
   accountId: string;
   type: "Deposit" | "Withdrawal";
   id: number;
+  goalReached?: boolean;
 } | null;
 
 const minimumVaultAnimationMs = 0;
@@ -251,15 +251,15 @@ export default function KidPortal({
     );
   }
 
-  function triggerMoneyAnimation(accountId: string, type: "Deposit" | "Withdrawal") {
+  function triggerMoneyAnimation(accountId: string, type: "Deposit" | "Withdrawal", goalReached = false) {
     playTransactionSound(type);
 
     if (animationTimer.current) {
       window.clearTimeout(animationTimer.current);
     }
 
-    setMoneyAnimation({ accountId, type, id: Date.now() });
-    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), 1100);
+    setMoneyAnimation({ accountId, type, id: Date.now(), goalReached });
+    animationTimer.current = window.setTimeout(() => setMoneyAnimation(null), goalReached ? 1900 : 1200);
   }
 
   async function saveKidTransaction(payload: {
@@ -275,6 +275,11 @@ export default function KidPortal({
     const delta = signedAmount(payload.type, payload.amount);
     const previous = kidData;
     const nextAccount = applyAccountDelta([kidData.account], payload.accountId, delta)[0];
+    const goalReached =
+      payload.type === "Deposit" &&
+      Boolean(kidData.account.goalAmount) &&
+      kidData.account.currentBalance < Number(kidData.account.goalAmount) &&
+      nextAccount.currentBalance >= Number(kidData.account.goalAmount);
 
     setKidData({
       ...kidData,
@@ -282,7 +287,7 @@ export default function KidPortal({
       transactions: [optimisticTransaction, ...kidData.transactions].slice(0, 80),
       ledger: bumpKidLedger(kidData.ledger, delta, nextAccount.currentBalance)
     });
-    triggerMoneyAnimation(payload.accountId, payload.type);
+    triggerMoneyAnimation(payload.accountId, payload.type, goalReached);
 
     fetch("/api/transactions", {
       method: "POST",
@@ -507,7 +512,6 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
-          <KidVaultFunAnimations themeColor={kidData.account.themeColor} />
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <KidWealthTrail account={kidData.account} data={kidData.ledger} />
             <ActivityFeed transactions={kidData.transactions} compact />

@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/money";
 
 type Props = {
   account: Account;
-  animation?: { type: "Deposit" | "Withdrawal"; id: number } | null;
+  animation?: { type: "Deposit" | "Withdrawal"; id: number; goalReached?: boolean } | null;
   showQuickActions?: boolean;
   onAvatarUpload?: (accountId: string, avatarUrl: string) => Promise<void>;
   onProfileStyleChange?: (accountId: string, profileColor: string, profilePattern: string) => void;
@@ -61,6 +61,7 @@ export default function BalanceCard({
   const panel = isBasil ? "bg-basil-soft" : "bg-osama-soft";
   const isDeposit = animation?.type === "Deposit";
   const isWithdrawal = animation?.type === "Withdrawal";
+  const isGoalCelebration = Boolean(animation?.goalReached);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [savedProfileColor, setSavedProfileColor] = useState(account.profileColor || panel);
@@ -128,6 +129,36 @@ export default function BalanceCard({
     <>
       <section className="surface-card relative max-w-full overflow-hidden">
         <div className="kid-color-surface relative overflow-hidden p-4 sm:p-5" style={patternStyle}>
+          {animation && (
+            <div key={`card-effect-${animation.id}`} className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+              {isDeposit && (
+                <>
+                  <span className="money-effect-coin money-effect-coin-a">+</span>
+                  <span className="money-effect-coin money-effect-coin-b">+</span>
+                  <span className="money-effect-coin money-effect-coin-c">+</span>
+                  <span className="money-effect-star money-effect-star-a" />
+                  <span className="money-effect-star money-effect-star-b" />
+                </>
+              )}
+              {isWithdrawal && (
+                <>
+                  <span className="spend-effect-receipt spend-effect-receipt-a">-</span>
+                  <span className="spend-effect-receipt spend-effect-receipt-b">-</span>
+                  <span className="spend-effect-streak spend-effect-streak-a" />
+                  <span className="spend-effect-streak spend-effect-streak-b" />
+                </>
+              )}
+              {isGoalCelebration && (
+                <div className="goal-effect">
+                  <Trophy size={34} />
+                  <span className="goal-effect-ring" />
+                  <span className="goal-effect-spark goal-effect-spark-a" />
+                  <span className="goal-effect-spark goal-effect-spark-b" />
+                  <span className="goal-effect-spark goal-effect-spark-c" />
+                </div>
+              )}
+            </div>
+          )}
           <div className="relative grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-3 inline-flex max-w-full items-center gap-2 truncate rounded-full bg-white/80 px-3 py-1 text-sm font-extrabold">

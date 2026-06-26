@@ -470,172 +470,151 @@ canvas {
   animation: mini-vault-unlock 520ms ease-out both;
 }
 
-.kid-fun-stage {
-  position: relative;
-  min-height: 142px;
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 18%, transparent), transparent 13rem),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+.earned-badge {
+  animation: earned-badge-glow 1.8s ease-in-out infinite;
 }
 
-html.dark .kid-fun-stage {
-  background:
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 22%, transparent), transparent 13rem),
-    linear-gradient(135deg, rgba(20, 31, 50, 0.94), rgba(15, 23, 42, 0.9)) !important;
-}
-
-.fun-orbit {
-  position: absolute;
-  right: 18px;
-  top: 18px;
-  width: 92px;
-  height: 92px;
-  border-radius: 999px;
-  border: 1px dashed color-mix(in srgb, var(--kid-theme-color, #3dcc91) 42%, transparent);
-  animation: fun-orbit-spin 7s linear infinite;
-}
-
-.fun-coin {
+.money-effect-coin,
+.spend-effect-receipt {
   position: absolute;
   display: grid;
-  width: 28px;
-  height: 28px;
   place-items: center;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: 0 14px 26px rgba(23, 32, 51, 0.16);
+}
+
+.money-effect-coin {
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
   color: #172033;
   background: #ffc64e;
-  font-size: 11px;
-  font-weight: 950;
-  box-shadow: 0 10px 20px rgba(23, 32, 51, 0.14);
-  animation: fun-coin-bob 1.5s ease-in-out infinite;
+  animation: money-card-coin 880ms ease-out forwards;
 }
 
-.fun-coin-a {
-  left: -10px;
-  top: 28px;
+.money-effect-coin-a {
+  left: 12%;
+  top: 48%;
 }
 
-.fun-coin-b {
-  right: 2px;
-  top: -8px;
-  animation-delay: 140ms;
+.money-effect-coin-b {
+  left: 42%;
+  top: 36%;
+  animation-delay: 70ms;
 }
 
-.fun-coin-c {
-  bottom: -9px;
-  right: 18px;
-  animation-delay: 280ms;
+.money-effect-coin-c {
+  right: 14%;
+  top: 52%;
+  animation-delay: 130ms;
 }
 
-.fun-runner {
+.money-effect-star,
+.goal-effect-spark {
   position: absolute;
-  left: 18px;
-  bottom: 20px;
-  width: 66px;
-  height: 44px;
-  animation: fun-runner-slide 4.2s ease-in-out infinite;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #3dcc91;
 }
 
-.fun-runner-body {
-  position: absolute;
-  left: 18px;
-  top: 4px;
+.money-effect-star {
+  animation: money-card-star 780ms ease-out forwards;
+}
+
+.money-effect-star-a {
+  left: 28%;
+  top: 24%;
+}
+
+.money-effect-star-b {
+  right: 24%;
+  top: 22%;
+  background: #2f7df6;
+  animation-delay: 110ms;
+}
+
+.spend-effect-receipt {
   width: 34px;
   height: 24px;
-  border-radius: 14px 14px 10px 10px;
-  background: color-mix(in srgb, var(--kid-theme-color, #3dcc91) 82%, #ffffff);
-  box-shadow: inset 0 -5px 0 rgba(23, 32, 51, 0.12);
-  animation: fun-runner-hop 680ms ease-in-out infinite;
+  border-radius: 7px;
+  color: white;
+  background: #ff765f;
+  animation: spend-card-receipt 820ms ease-out forwards;
 }
 
-.fun-runner-leg {
+.spend-effect-receipt-a {
+  left: 20%;
+  top: 20%;
+}
+
+.spend-effect-receipt-b {
+  right: 24%;
+  top: 32%;
+  animation-delay: 90ms;
+}
+
+.spend-effect-streak {
   position: absolute;
-  bottom: 5px;
-  width: 22px;
   height: 7px;
   border-radius: 999px;
-  background: #172033;
-  transform-origin: left center;
-  animation: fun-runner-leg 680ms ease-in-out infinite;
+  background: rgba(255, 118, 95, 0.4);
+  animation: spend-card-streak 680ms ease-out forwards;
 }
 
-.fun-runner-leg-a {
-  left: 16px;
+.spend-effect-streak-a {
+  left: 18%;
+  right: 34%;
+  top: 68%;
 }
 
-.fun-runner-leg-b {
-  left: 36px;
-  animation-delay: 340ms;
+.spend-effect-streak-b {
+  left: 36%;
+  right: 16%;
+  top: 80%;
+  animation-delay: 90ms;
 }
 
-.fun-progress {
+.goal-effect {
   position: absolute;
-  left: 102px;
-  right: 132px;
-  bottom: 32px;
-  height: 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(23, 32, 51, 0.08);
-}
-
-.fun-progress span {
-  display: block;
-  width: 45%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #3dcc91, color-mix(in srgb, var(--kid-theme-color, #3dcc91) 70%, #2f7df6));
-  animation: fun-progress-fill 2.8s ease-in-out infinite;
-}
-
-.fun-badges {
-  position: absolute;
-  right: 126px;
-  top: 28px;
-  display: flex;
-  gap: 8px;
-  color: color-mix(in srgb, var(--kid-theme-color, #3dcc91) 74%, #2f7df6);
-}
-
-.fun-badge {
-  filter: drop-shadow(0 8px 10px rgba(23, 32, 51, 0.12));
-  animation: fun-badge-pop 1.6s ease-in-out infinite;
-}
-
-.fun-badge-b {
-  animation-delay: 160ms;
-}
-
-.fun-badge-c {
-  animation-delay: 320ms;
-}
-
-.fun-sparkle {
-  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   color: #ffc64e;
-  animation: fun-sparkle-twinkle 1.7s ease-in-out infinite;
+  animation: goal-effect-trophy 1.2s ease-out forwards;
 }
 
-.fun-sparkle-a {
-  left: 45%;
-  top: 22px;
+.goal-effect-ring {
+  position: absolute;
+  width: 94px;
+  height: 94px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 198, 78, 0.78);
+  animation: goal-effect-ring 1.1s ease-out forwards;
 }
 
-.fun-sparkle-b {
-  left: 58%;
-  top: 68px;
-  animation-delay: 260ms;
+.goal-effect-spark {
+  animation: goal-effect-spark 980ms ease-out forwards;
 }
 
-.fun-sparkle-c {
-  left: 72%;
-  top: 20px;
-  animation-delay: 520ms;
+.goal-effect-spark-a {
+  left: 24%;
+  top: 28%;
 }
 
-.earned-badge {
-  animation: earned-badge-glow 1.8s ease-in-out infinite;
+.goal-effect-spark-b {
+  right: 24%;
+  top: 30%;
+  background: #2f7df6;
+  animation-delay: 90ms;
+}
+
+.goal-effect-spark-c {
+  left: 50%;
+  bottom: 22%;
+  background: #3dcc91;
+  animation-delay: 160ms;
 }
 
 @keyframes vault-card-pop {
@@ -717,83 +696,108 @@ html.dark .kid-fun-stage {
   }
 }
 
-@keyframes fun-orbit-spin {
-  to {
-    transform: rotate(360deg);
+@keyframes money-card-coin {
+  0% {
+    opacity: 0;
+    transform: translateY(34px) scale(0.72) rotate(-12deg);
   }
-}
-
-@keyframes fun-coin-bob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-6px) rotate(10deg);
-  }
-}
-
-@keyframes fun-runner-slide {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(32px);
-  }
-}
-
-@keyframes fun-runner-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes fun-runner-leg {
-  0%,
-  100% {
-    transform: rotate(22deg);
-  }
-  50% {
-    transform: rotate(-22deg);
-  }
-}
-
-@keyframes fun-progress-fill {
-  0%,
-  100% {
-    transform: translateX(-20%);
-    width: 35%;
-  }
-  50% {
-    transform: translateX(155%);
-    width: 52%;
-  }
-}
-
-@keyframes fun-badge-pop {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-5px) scale(1.12);
-  }
-}
-
-@keyframes fun-sparkle-twinkle {
-  0%,
-  100% {
-    opacity: 0.34;
-    transform: scale(0.86) rotate(0deg);
-  }
-  50% {
+  20% {
     opacity: 1;
-    transform: scale(1.18) rotate(14deg);
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-86px) scale(1.08) rotate(18deg);
+  }
+}
+
+@keyframes money-card-star {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@keyframes spend-card-receipt {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px) translateY(-10px) scale(0.82) rotate(-10deg);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(72px) translateY(42px) scale(0.96) rotate(16deg);
+  }
+}
+
+@keyframes spend-card-streak {
+  0% {
+    opacity: 0;
+    transform: translateX(-26px) scaleX(0.25);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(58px) scaleX(1);
+  }
+}
+
+@keyframes goal-effect-trophy {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.55) rotate(-8deg);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.18) rotate(4deg);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes goal-effect-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes goal-effect-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
   }
 }
 
