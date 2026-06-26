@@ -14,6 +14,7 @@ import SessionLoadingOverlay from "@/components/SessionLoadingOverlay";
 import ThemeToggle from "@/components/ThemeToggle";
 import type { Account, KidPickerAccount, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
+import { makeKidVaultJoke } from "@/lib/kidJokes";
 import {
   applyAccountDelta,
   createOptimisticTransaction,
@@ -55,11 +56,14 @@ export default function KidPortal({
   familyName: string;
   initialKidData?: KidData | null;
 }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [selectedKidId, setSelectedKidId] = useState(kids[0]?.id ?? "");
   const [pin, setPin] = useState("");
   const [rememberKid, setRememberKid] = useState(true);
   const [kidData, setKidData] = useState<KidData | null>(initialKidData);
+  const [vaultSubtitle, setVaultSubtitle] = useState(() =>
+    initialKidData ? makeKidVaultJoke(locale, initialKidData.account.name) : ""
+  );
   const [activeMove, setActiveMove] = useState<"Deposit" | "Withdrawal" | null>(null);
   const [moneyAnimation, setMoneyAnimation] = useState<MoneyAnimation>(null);
   const [message, setMessage] = useState("");
@@ -140,6 +144,7 @@ export default function KidPortal({
 
   const openKidVault = useCallback((body: KidData) => {
     loginRequestRef.current = null;
+    setVaultSubtitle(makeKidVaultJoke(locale, body.account.name));
     setKidData(body);
     setLoadedDetailsFor(null);
     setPin("");
@@ -148,7 +153,7 @@ export default function KidPortal({
     setMessage("");
     void loadKidDetails(body.account.id);
     playVaultUnlockSound();
-  }, [loadKidDetails]);
+  }, [loadKidDetails, locale]);
 
   const finishKidLogin = useCallback((
     activeKey: string,
@@ -469,7 +474,7 @@ export default function KidPortal({
             </div>
             <h1 className="page-title">{t("kid.myBank")}</h1>
             <p className="page-subtitle">
-              {t("kid.subtitle")}
+              {vaultSubtitle || t("kid.subtitle")}
             </p>
           </div>
           <div className="app-actions">
