@@ -3,25 +3,26 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, Baby, LogOut } from "lucide-react";
+import dynamic from "next/dynamic";
 import { signOutParent } from "@/app/actions";
-import AdminSummaryCards from "@/components/AdminSummaryCards";
-import AdminTransactionList from "@/components/AdminTransactionList";
-import AutomaticAllowanceCard from "@/components/AutomaticAllowanceCard";
+import ActivityFeed from "@/components/ActivityFeed";
 import AuthLoadingOverlay from "@/components/AuthLoadingOverlay";
-import BalanceAdjustmentCard from "@/components/BalanceAdjustmentCard";
 import BalanceCard from "@/components/BalanceCard";
-import FamilyAccessLinkCard from "@/components/FamilyAccessLinkCard";
-import FamilyParentsCard, { type FamilyParent } from "@/components/FamilyParentsCard";
-import KidManagementCard from "@/components/KidManagementCard";
 import LanguageToggle from "@/components/LanguageToggle";
 import ParentChildWizard from "@/components/ParentChildWizard";
-import ParentOnboardingCard from "@/components/ParentOnboardingCard";
-import ParentSecurityCard from "@/components/ParentSecurityCard";
 import ThemeToggle from "@/components/ThemeToggle";
 import ToolFrame from "@/components/ToolFrame";
 import TransactionForm from "@/components/TransactionForm";
 import type { Account, RecurringAllowance, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
+
+const AdminTransactionList = dynamic(() => import("@/components/AdminTransactionList"), {
+  ssr: false,
+  loading: () => <section className="surface-card h-40 animate-pulse" />
+});
+const AutomaticAllowanceCard = dynamic(() => import("@/components/AutomaticAllowanceCard"), { ssr: false });
+const BalanceAdjustmentCard = dynamic(() => import("@/components/BalanceAdjustmentCard"), { ssr: false });
+const KidManagementCard = dynamic(() => import("@/components/KidManagementCard"), { ssr: false });
 
 type ParentData = {
   parent: {
@@ -37,7 +38,7 @@ type ParentData = {
   accounts: Account[];
   transactions: Transaction[];
   allowances: RecurringAllowance[];
-  familyParents: FamilyParent[];
+  familyParents: unknown[];
 };
 
 export default function ParentPanel({ initialData }: { initialData: ParentData }) {
@@ -45,7 +46,6 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
   const [accounts, setAccounts] = useState(initialData.accounts);
   const [transactions, setTransactions] = useState(initialData.transactions);
   const [allowances, setAllowances] = useState(initialData.allowances);
-  const [familyParents, setFamilyParents] = useState(initialData.familyParents);
   const [message, setMessage] = useState("");
   const [isChildWizardOpen, setIsChildWizardOpen] = useState(initialData.accounts.length === 0);
 
@@ -64,7 +64,6 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
     setAccounts(body.accounts);
     setTransactions(body.transactions);
     setAllowances(body.allowances);
-    setFamilyParents(body.familyParents);
   }, [t]);
 
   async function saveTransaction(payload: {
@@ -161,45 +160,32 @@ export default function ParentPanel({ initialData }: { initialData: ParentData }
 
         {message && <p className="mb-5 rounded-[8px] bg-coral/10 p-4 font-bold text-coral">{message}</p>}
 
-        <div className="control-grid">
-          <div className="min-w-0 space-y-5">
-            <AdminSummaryCards accounts={sortedAccounts} transactions={transactions} />
-            <div className="grid min-w-0 gap-5 md:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 space-y-4">
+            <div className="grid min-w-0 gap-4 md:grid-cols-2">
               {sortedAccounts.map((account) => (
                 <BalanceCard key={account.id} account={account} />
               ))}
             </div>
-            <AdminTransactionList
-              transactions={transactions}
-              onEdit={editTransaction}
-              onDelete={deleteTransactions}
-            />
+            <ActivityFeed transactions={transactions.slice(0, 12)} compact />
           </div>
-          <aside className="min-w-0 space-y-3">
-            <ToolFrame title={t("parent.addMoneyMove")} description={t("parent.addMoneyMoveDesc")} defaultOpen>
+          <aside className="min-w-0 space-y-3 xl:sticky xl:top-4 xl:self-start">
+            <section className="surface-card p-3">
               <TransactionForm accounts={sortedAccounts} onSubmit={saveTransaction} />
-            </ToolFrame>
-            <ToolFrame title={t("parent.balanceCorrection")} description={t("parent.balanceCorrectionDesc")}>
-              <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
-            </ToolFrame>
-            <ToolFrame title={t("parent.automaticAllowance")} description={t("parent.automaticAllowanceDesc")}>
-              <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
-            </ToolFrame>
-            <ToolFrame title={t("parent.kids")} description={t("parent.kidsDesc")}>
-              <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
-            </ToolFrame>
-            <ToolFrame title={t("parent.shareAccess")} description={t("parent.shareAccessDesc")}>
-              <FamilyParentsCard parents={familyParents} onChanged={loadData} />
-              <FamilyAccessLinkCard
-                familyName={initialData.parent.familyName}
-                token={initialData.parent.familyAccessToken}
-              />
-            </ToolFrame>
-            <ToolFrame title={t("parent.setupChecks")} description={t("parent.setupChecksDesc")}>
-              <ParentOnboardingCard accounts={sortedAccounts} allowances={allowances} />
-              <ParentSecurityCard
+            </section>
+            <ToolFrame title={t("parent.editHistory")} description={t("parent.editHistoryDesc")}>
+              <AdminTransactionList
                 transactions={transactions}
+                onEdit={editTransaction}
+                onDelete={deleteTransactions}
               />
+            </ToolFrame>
+            <ToolFrame title={t("parent.moreSettings")} description={t("parent.moreSettingsDesc")}>
+              <div className="space-y-3">
+                <BalanceAdjustmentCard accounts={sortedAccounts} onAdjusted={loadData} apiBase="/api/parent/transactions" />
+                <AutomaticAllowanceCard accounts={sortedAccounts} schedules={allowances} onChanged={loadData} />
+                <KidManagementCard accounts={sortedAccounts} onChanged={loadData} apiBase="/api/parent/accounts" />
+              </div>
             </ToolFrame>
           </aside>
         </div>

@@ -1,20 +1,17 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { BadgeDollarSign, Check, KeyRound, LockKeyhole, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { updateAccountAvatar } from "@/app/actions";
 import ActivityFeed from "@/components/ActivityFeed";
 import BalanceCard from "@/components/BalanceCard";
 import KidPinSettings from "@/components/KidPinSettings";
-import KidProgressPanel from "@/components/KidProgressPanel";
 import KidTransactionModal from "@/components/KidTransactionModal";
-import KidWealthTrail from "@/components/KidWealthTrail";
 import LanguageToggle from "@/components/LanguageToggle";
 import SessionLoadingOverlay from "@/components/SessionLoadingOverlay";
-import StandardCalculator from "@/components/StandardCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
-import ToolFrame from "@/components/ToolFrame";
 import type { Account, KidPickerAccount, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -44,6 +41,11 @@ type MoneyAnimation = {
 
 const minimumVaultAnimationMs = 350;
 
+const KidWealthTrail = dynamic(() => import("@/components/KidWealthTrail"), {
+  ssr: false,
+  loading: () => <section className="surface-card h-72 animate-pulse" />
+});
+
 export default function KidPortal({
   kids,
   familyName,
@@ -64,6 +66,7 @@ export default function KidPortal({
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [loadedDetailsFor, setLoadedDetailsFor] = useState<string | null>(initialKidData?.ledger.length ? initialKidData.account.id : null);
   const animationTimer = useRef<number | null>(null);
 
   const selectedKid = useMemo(
@@ -83,13 +86,20 @@ export default function KidPortal({
         throw new Error(body?.message ?? "Could not load activity.");
       }
 
-      setKidData((current) => (current?.account.id === accountId ? body : current));
+        setKidData((current) => (current?.account.id === accountId ? body : current));
+        setLoadedDetailsFor(accountId);
     } catch {
       // Keep the vault open even if the chart/activity refresh is slow.
     } finally {
       setIsLoadingDetails(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (kidData && loadedDetailsFor !== kidData.account.id) {
+      void loadKidDetails(kidData.account.id);
+    }
+  }, [kidData, loadKidDetails, loadedDetailsFor]);
 
   async function handleLogin() {
     setMessage("");
@@ -118,6 +128,7 @@ export default function KidPortal({
 
       playVaultUnlockSound();
       setKidData(body);
+      setLoadedDetailsFor(null);
       setPin("");
       void loadKidDetails(body.account.id);
     } catch (error) {
@@ -393,14 +404,10 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <KidWealthTrail account={kidData.account} data={kidData.ledger} />
             <ActivityFeed transactions={kidData.transactions} compact />
           </div>
-          <KidProgressPanel accounts={[kidData.account]} transactions={kidData.transactions} />
-          <ToolFrame title={t("kid.moreTools")} description={t("kid.moreToolsDescription")}>
-            <StandardCalculator />
-          </ToolFrame>
         </div>
       </div>
 

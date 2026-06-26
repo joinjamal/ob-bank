@@ -35,6 +35,18 @@ export async function readDeviceFamilyId() {
   return family?.id ?? null;
 }
 
+export async function readDeviceFamilyIdOrDefault() {
+  const familyId = await readDeviceFamilyId();
+  if (familyId) return familyId;
+
+  const family = await prisma.family.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true }
+  });
+
+  return family?.id ?? null;
+}
+
 export async function readRememberedKidSession() {
   const cookieStore = await cookies();
   const kidSession = readKidSession(cookieStore.get(kidCookieName())?.value);

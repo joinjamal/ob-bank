@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getKidDashboardData } from "@/lib/data";
-import { readDeviceFamilyId } from "@/lib/familySession";
+import { getKidQuickDashboardData } from "@/lib/data";
+import { readDeviceFamilyIdOrDefault } from "@/lib/familySession";
 import { defaultKidPin, isValidPinFormat, verifyKidPin } from "@/lib/kidAuth";
 import { kidCookieName, signKidSession } from "@/lib/kidSession";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const accountId = String(body.accountId ?? "");
     const pin = String(body.pin ?? "");
     const remember = Boolean(body.remember);
-    const familyId = await readDeviceFamilyId();
+    const familyId = await readDeviceFamilyIdOrDefault();
 
     if (!accountId || !isValidPinFormat(pin)) {
       return NextResponse.json({ message: "Choose a kid and enter a 4 digit PIN." }, { status: 400 });
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       maxAge: remember ? 60 * 60 * 24 * 90 : 60 * 60
     });
 
-    return NextResponse.json(await getKidDashboardData(account.id));
+    return NextResponse.json(await getKidQuickDashboardData(account.id));
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : "Could not sign in." },

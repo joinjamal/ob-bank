@@ -1,6 +1,5 @@
 import { buildWealthTrailFromTransactions } from "@/lib/ledger";
 import { runDueAllowances, serializeRecurringAllowance } from "@/lib/allowances";
-import { ensureFamilyAccessLink } from "@/lib/familyAccessLinks";
 import { toMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { serializeAccount, serializeTransaction } from "@/lib/serializers";
@@ -64,6 +63,15 @@ export async function getFamilyName(familyId: string) {
     select: { name: true }
   });
   return family?.name ?? "your family";
+}
+
+export async function getDefaultFamilyId() {
+  const family = await prisma.family.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true }
+  });
+
+  return family?.id ?? null;
 }
 
 export async function getTransactions(limit?: number) {
@@ -174,6 +182,22 @@ export async function getKidDashboardData(accountId: string) {
   };
 }
 
+export async function getKidQuickDashboardData(accountId: string) {
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+
+  if (!account) {
+    throw new Error("Kid account not found.");
+  }
+
+  const transactions = await getKidTransactions(accountId, 8);
+
+  return {
+    account: serializeAccount(account),
+    transactions,
+    ledger: []
+  };
+}
+
 export async function getDashboardData() {
   const [accounts, transactions, ledger] = await Promise.all([
     getAccounts(),
@@ -198,13 +222,7 @@ export async function getAdminData() {
 export async function getParentData(parentId: string) {
   const parent = await prisma.parent.findUnique({
     where: { id: parentId },
-    include: {
-      family: {
-        include: {
-          parents: { orderBy: { name: "asc" } }
-        }
-      }
-    }
+    include: { family: true }
   });
 
   if (!parent) {
@@ -212,7 +230,6 @@ export async function getParentData(parentId: string) {
   }
 
   await runDueAllowances(parent.familyId);
-  const familyAccess = await ensureFamilyAccessLink(parent.familyId);
 
   const [accounts, transactions, allowances] = await Promise.all([
     prisma.account.findMany({ where: { familyId: parent.familyId }, orderBy: { name: "asc" } }),
@@ -240,15 +257,10 @@ export async function getParentData(parentId: string) {
       emailVerifiedAt: parent.emailVerifiedAt?.toISOString() ?? null,
       familyId: parent.familyId,
       familyName: parent.family.name,
-      familyAccessToken: familyAccess.token,
-      familyAccessLinkId: familyAccess.link.id
+      familyAccessToken: "",
+      familyAccessLinkId: ""
     },
-    familyParents: parent.family.parents.map((familyParent) => ({
-      id: familyParent.id,
-      familyId: familyParent.familyId,
-      name: familyParent.name,
-      email: familyParent.email
-    })),
+    familyParents: [],
     accounts: accounts.map(serializeAccount),
     transactions,
     allowances: allowances.map(serializeRecurringAllowance),
