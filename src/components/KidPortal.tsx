@@ -459,21 +459,25 @@ export default function KidPortal({
   return (
     <main className="app-shell">
       <div className="app-container">
-        <header className="app-header">
-          <div>
-            <div className="eyebrow-pill mb-3">
-              <BadgeDollarSign size={17} className="text-mint" />
-              {t("kid.vault", { name: kidData.account.name })}
+        <header className="kid-vault-topbar">
+          <div className="kid-vault-identity">
+            <img
+              src={kidData.account.avatarUrl}
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
+            />
+            <div className="min-w-0">
+              <div className="kid-vault-name">
+                <BadgeDollarSign size={16} className="text-mint" />
+                <span className="truncate">{t("kid.vault", { name: kidData.account.name })}</span>
+              </div>
+              <p className="kid-vault-line">{vaultSubtitle || t("kid.subtitle")}</p>
             </div>
-            <h1 className="page-title">{t("kid.myBank")}</h1>
-            <p className="page-subtitle">
-              {vaultSubtitle || t("kid.subtitle")}
-            </p>
           </div>
-          <div className="app-actions">
+          <div className="kid-vault-actions" aria-label={t("kid.settings")}>
             <LanguageToggle compact />
             <ThemeToggle compact />
-            <KidPinSettings account={kidData.account} variant="button" />
+            <KidPinSettings account={kidData.account} variant="icon" />
             <button
               type="button"
               onClick={() => {
@@ -484,10 +488,11 @@ export default function KidPortal({
                   setIsSigningOut(false);
                 });
               }}
-              className="action-button action-quiet"
+              className="icon-button"
+              aria-label={t("kid.logout")}
+              title={t("kid.logout")}
             >
-              <LogOut size={17} />
-              {t("kid.switch")}
+              <LogOut size={18} />
             </button>
           </div>
         </header>

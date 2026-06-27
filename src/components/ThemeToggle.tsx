@@ -31,7 +31,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
     <button
       type="button"
       onClick={toggleTheme}
-      className="theme-toggle action-button action-quiet px-3"
+      className={compact ? "theme-toggle compact-theme-toggle" : "theme-toggle action-button action-quiet px-3"}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Light mode" : "Dark mode"}
     >

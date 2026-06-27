@@ -20,6 +20,27 @@
     @apply mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:mt-0 lg:justify-end;
   }
 
+  .kid-vault-topbar {
+    @apply mb-3 flex items-center justify-between gap-3 rounded-[8px] border border-white/70 bg-white/85 p-3 shadow-sm sm:mb-4 sm:p-4;
+    backdrop-filter: blur(20px);
+  }
+
+  .kid-vault-identity {
+    @apply flex min-w-0 flex-1 items-center gap-3;
+  }
+
+  .kid-vault-name {
+    @apply flex min-w-0 items-center gap-1.5 text-sm font-black text-ink sm:text-base;
+  }
+
+  .kid-vault-line {
+    @apply mt-0.5 max-w-[46vw] truncate text-xs font-extrabold leading-snug text-ink/55 sm:max-w-3xl sm:text-sm;
+  }
+
+  .kid-vault-actions {
+    @apply flex shrink-0 items-center gap-1.5;
+  }
+
   .surface-card {
     @apply rounded-[8px] border border-white/75 bg-white/90 shadow-lift;
     backdrop-filter: blur(22px);
@@ -76,6 +97,10 @@
 
   .icon-button {
     @apply grid h-10 w-10 place-items-center rounded-[8px] bg-ink/5 text-ink transition hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .compact-theme-toggle {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-ink/5 text-ink shadow-sm transition hover:bg-ink hover:text-white;
   }
 
   .field-input {
@@ -175,6 +200,7 @@ html.dark .surface-card {
 }
 
 html.dark .app-header,
+html.dark .kid-vault-topbar,
 html.dark .hero-surface,
 html.dark .kid-entry-panel {
   background-color: rgba(20, 31, 50, 0.92) !important;

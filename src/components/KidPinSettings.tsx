@@ -10,7 +10,7 @@ export default function KidPinSettings({
   variant = "card"
 }: {
   account: Account;
-  variant?: "card" | "button";
+  variant?: "card" | "button" | "icon";
 }) {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(variant === "card");
@@ -44,7 +44,7 @@ export default function KidPinSettings({
       setCurrentPin("");
       setNewPin("");
       setMessage(t("kidPin.saved"));
-      if (variant === "button") {
+      if (variant !== "card") {
         window.setTimeout(() => setIsOpen(false), 650);
       }
     } catch (error) {
@@ -64,7 +64,7 @@ export default function KidPinSettings({
           <h2 className="text-xl font-black">{t("kidPin.title")}</h2>
           <p className="text-sm font-bold text-ink/55">{t("kidPin.description")}</p>
         </div>
-        {variant === "button" && (
+        {variant !== "card" && (
           <button
             type="button"
             onClick={() => setIsOpen(false)}
@@ -107,7 +107,7 @@ export default function KidPinSettings({
     </form>
   );
 
-  if (variant === "button") {
+  if (variant === "button" || variant === "icon") {
     return (
       <>
         <button
@@ -116,10 +116,16 @@ export default function KidPinSettings({
             setMessage("");
             setIsOpen(true);
           }}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
+          className={
+            variant === "icon"
+              ? "icon-button"
+              : "inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-white px-3 text-sm font-black text-ink shadow-sm transition hover:-translate-y-0.5 sm:px-4 sm:text-base"
+          }
+          aria-label={t("kidPin.change")}
+          title={t("kidPin.change")}
         >
-          <KeyRound size={20} />
-          {t("kidPin.change")}
+          <KeyRound size={variant === "icon" ? 18 : 20} />
+          {variant !== "icon" && t("kidPin.change")}
         </button>
         {isOpen && (
           <div className="fixed inset-0 z-50 grid place-items-center bg-ink/55 p-4 backdrop-blur-sm">

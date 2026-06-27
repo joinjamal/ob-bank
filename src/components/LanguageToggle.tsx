@@ -11,11 +11,11 @@ export default function LanguageToggle({ compact = false }: { compact?: boolean 
     <button
       type="button"
       onClick={() => setLocale(nextLocale)}
-      className="action-button action-quiet px-3"
+      className={compact ? "icon-button" : "action-button action-quiet px-3"}
       aria-label={t("common.language")}
       title={t("common.language")}
     >
-      <Languages size={17} className="text-mint" />
+      {!compact && <Languages size={17} className="text-mint" />}
       {!compact && <span>{locale === "en" ? "العربية" : "English"}</span>}
       {compact && <span>{locale === "en" ? "ع" : "EN"}</span>}
     </button>
