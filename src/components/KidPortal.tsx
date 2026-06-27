@@ -345,7 +345,7 @@ export default function KidPortal({
             </div>
           </header>
 
-          <section className="kid-entry-panel">
+          <section className="kid-entry-panel kid-login-panel">
             {kids.length === 0 ? (
               <div className="rounded-[8px] bg-mint/10 p-5">
                 <h2 className="text-2xl font-black text-ink">{t("kid.emptyTitle")}</h2>
@@ -360,31 +360,36 @@ export default function KidPortal({
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-                <div className="grid gap-3 sm:grid-cols-2">
+              <div className="kid-login-grid">
+                <div className="kid-profile-grid">
                   {kids.map((kid) => (
                     <button
                       key={kid.id}
                       type="button"
-                      onClick={() => setSelectedKidId(kid.id)}
+                      onClick={() => {
+                        setSelectedKidId(kid.id);
+                        setPin("");
+                        setMessage("");
+                        setPinCheckStatus("idle");
+                      }}
                       data-account-id={kid.id}
-                      className={`kid-color-surface group min-h-56 rounded-[8px] border-2 p-5 text-left transition hover:-translate-y-1 ${
+                      className={`kid-profile-tile kid-color-surface group ${
                         selectedKidId === kid.id ? "border-mint shadow-lift" : "border-white/90 shadow-sm"
                       }`}
                       style={{ backgroundColor: kid.profileColor, "--kid-theme-color": kid.themeColor } as CSSProperties}
                     >
-                      <div className="flex h-full flex-col justify-between gap-5">
+                      <div className="kid-profile-tile-inner">
                         <img
                           src={kid.avatarUrl}
                           alt={`${kid.name} avatar`}
-                          className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-sm transition group-hover:scale-105"
+                          className="kid-profile-avatar"
                           loading="eager"
                           decoding="async"
                         />
-                        <div className="flex items-end justify-between gap-3">
-                          <p className="text-3xl font-black text-ink">{kid.name}</p>
+                        <div className="kid-profile-name-row">
+                          <p className="kid-profile-name">{kid.name}</p>
                           <span
-                            className={`grid h-8 w-8 place-items-center rounded-full text-sm font-black ${
+                            className={`kid-profile-check ${
                               selectedKidId === kid.id ? "bg-mint text-white" : "bg-white/70 text-ink/40"
                             }`}
                           >
@@ -396,12 +401,12 @@ export default function KidPortal({
                   ))}
                 </div>
 
-                <div className="quiet-card flex flex-col justify-between p-4">
+                <div className="quiet-card kid-pin-card">
                   <div>
-                    <p className="section-heading">{t("kid.openTitle")}</p>
-                    <p className="section-copy mt-1">{t("kid.openHelp")}</p>
+                    <p className="kid-pin-title">{selectedKid ? t("kid.vault", { name: selectedKid.name }) : t("kid.openTitle")}</p>
+                    <p className="kid-pin-help">{t("kid.openHelp")}</p>
                   </div>
-                  <div className="mt-6 space-y-3">
+                  <div className="kid-pin-controls">
                     <label>
                       <span className="field-label">{t("kid.pin")}</span>
                       <div className="relative">
@@ -417,25 +422,22 @@ export default function KidPortal({
                             if (event.key === "Enter") void handleLogin();
                           }}
                           inputMode="numeric"
-                          type="password"
+                          type="tel"
+                          enterKeyHint="done"
+                          autoComplete="off"
                           placeholder="0000"
-                          className="field-input pl-10 text-lg font-black"
+                          className="field-input kid-pin-input"
                         />
                       </div>
                     </label>
-                    <button
-                      type="button"
-                      onClick={handleLogin}
-                      disabled={isLoggingIn || pinCheckStatus === "checking"}
-                      className="action-button action-primary w-full"
-                    >
-                      {isLoggingIn
-                        ? t("kid.opening")
-                        : pinCheckStatus === "checking"
-                          ? t("auth.checking")
-                          : t("kid.open")}
-                    </button>
-                    <label className="flex items-center gap-3 rounded-[8px] bg-ink/5 px-3 py-3 text-sm font-black text-ink/65">
+                    <div className="kid-pin-status">
+                      {isLoggingIn || pinCheckStatus === "checking"
+                        ? t("auth.checking")
+                        : pin.length >= 4
+                          ? t("kid.open")
+                          : t("kid.openTitle")}
+                    </div>
+                    <label className="kid-remember-row">
                       <input
                         checked={rememberKid}
                         onChange={(event) => setRememberKid(event.target.checked)}

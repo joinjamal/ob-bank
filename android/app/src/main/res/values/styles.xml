@@ -16,6 +16,8 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
         <item name="android:background">@color/ob_bank_navy</item>
         <item name="android:windowBackground">@color/ob_bank_navy</item>
         <item name="android:navigationBarColor">@color/ob_bank_navy</item>
@@ -25,6 +27,10 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
         <item name="android:background">@color/ob_bank_navy</item>
         <item name="android:windowBackground">@drawable/splash</item>
         <item name="windowSplashScreenBackground">@color/ob_bank_navy</item>

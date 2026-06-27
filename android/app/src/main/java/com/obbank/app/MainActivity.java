@@ -3,6 +3,8 @@ package com.obbank.app;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import androidx.appcompat.app.ActionBar;
 import com.getcapacitor.BridgeActivity;
 
@@ -11,6 +13,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setStatusBarColor(OB_BANK_NAVY);
         getWindow().setNavigationBarColor(OB_BANK_NAVY);
         getWindow().getDecorView().setBackgroundColor(OB_BANK_NAVY);
