@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { signOutAdmin } from "@/app/actions";
 import AdminTransactionList from "@/components/AdminTransactionList";
@@ -35,13 +35,21 @@ type AdminData = {
   families: FamilySummary[];
 };
 
-export default function AdminPanel({ initialData }: { initialData: AdminData }) {
+const emptyAdminData: AdminData = {
+  accounts: [],
+  transactions: [],
+  ledger: [],
+  families: []
+};
+
+export default function AdminPanel({ initialData }: { initialData: AdminData | null }) {
   const { t } = useI18n();
-  const [accounts, setAccounts] = useState<Account[]>(initialData.accounts);
-  const [transactions, setTransactions] = useState<Transaction[]>(initialData.transactions);
-  const [, setLedger] = useState<LedgerPoint[]>(initialData.ledger);
-  const [families, setFamilies] = useState<FamilySummary[]>(initialData.families);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>((initialData ?? emptyAdminData).accounts);
+  const [transactions, setTransactions] = useState<Transaction[]>((initialData ?? emptyAdminData).transactions);
+  const [, setLedger] = useState<LedgerPoint[]>((initialData ?? emptyAdminData).ledger);
+  const [families, setFamilies] = useState<FamilySummary[]>((initialData ?? emptyAdminData).families);
+  const [hasLoadedData, setHasLoadedData] = useState(Boolean(initialData));
+  const [isRefreshing, setIsRefreshing] = useState(!initialData);
   const [error, setError] = useState("");
 
   const sortedAccounts = useMemo(
@@ -67,14 +75,28 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
         throw new Error("Could not load admin data.");
       }
 
-      setAccounts(await accountResponse.json());
-      setTransactions(await transactionResponse.json());
-      setLedger(await ledgerResponse.json());
-      setFamilies(await familyResponse.json());
+      const [nextAccounts, nextTransactions, nextLedger, nextFamilies] = await Promise.all([
+        accountResponse.json(),
+        transactionResponse.json(),
+        ledgerResponse.json(),
+        familyResponse.json()
+      ]);
+
+      setAccounts(nextAccounts);
+      setTransactions(nextTransactions);
+      setLedger(nextLedger);
+      setFamilies(nextFamilies);
+      setHasLoadedData(true);
     } finally {
       setIsRefreshing(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!initialData) {
+      void loadData();
+    }
+  }, [initialData, loadData]);
 
   async function editTransaction(transactionId: string, payload: { type: "Deposit" | "Withdrawal"; amount: number; reason: string }) {
     const previous = transactions.find((transaction) => transaction.id === transactionId);
@@ -193,17 +215,30 @@ export default function AdminPanel({ initialData }: { initialData: AdminData }) 
               Updating admin data...
             </p>
           )}
-          <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
-          <ToolFrame title="Transaction history" description="Search, export, edit, or delete platform entries.">
-            <AdminTransactionList
-              transactions={transactions}
-              onEdit={editTransaction}
-              onDelete={deleteTransactions}
-            />
-          </ToolFrame>
-          <ToolFrame title="Families" description="Inspect tenants, reset parent access, or remove abandoned spaces.">
-            <FamilyManagementCard families={families} onChanged={loadData} />
-          </ToolFrame>
+          {!hasLoadedData ? (
+            <section className="surface-card p-4">
+              <div className="h-5 w-44 rounded-full bg-ink/10" />
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="h-24 rounded-[8px] bg-ink/5" />
+                <div className="h-24 rounded-[8px] bg-ink/5" />
+                <div className="h-24 rounded-[8px] bg-ink/5" />
+              </div>
+            </section>
+          ) : (
+            <>
+              <AdminAnalytics accounts={sortedAccounts} transactions={transactions} families={families} />
+              <ToolFrame title="Transaction history" description="Search, export, edit, or delete platform entries.">
+                <AdminTransactionList
+                  transactions={transactions}
+                  onEdit={editTransaction}
+                  onDelete={deleteTransactions}
+                />
+              </ToolFrame>
+              <ToolFrame title="Families" description="Inspect tenants, reset parent access, or remove abandoned spaces.">
+                <FamilyManagementCard families={families} onChanged={loadData} />
+              </ToolFrame>
+            </>
+          )}
         </div>
       </div>
     </main>

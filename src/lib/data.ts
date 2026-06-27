@@ -65,6 +65,31 @@ export async function getFamilyName(familyId: string) {
   return family?.name ?? "your family";
 }
 
+export async function getFamilyKidPortalData(familyId: string) {
+  const family = await prisma.family.findUnique({
+    where: { id: familyId },
+    select: {
+      name: true,
+      accounts: {
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          themeColor: true,
+          profileColor: true,
+          profilePattern: true
+        }
+      }
+    }
+  });
+
+  return {
+    familyName: family?.name ?? "your family",
+    kids: family?.accounts ?? []
+  };
+}
+
 export async function getDefaultFamilyId() {
   const family = await prisma.family.findFirst({
     orderBy: { createdAt: "asc" },
@@ -164,19 +189,13 @@ export async function getKidDashboardData(accountId: string) {
     throw new Error("Kid account not found.");
   }
 
-  if (account.familyId) {
-    await runDueAllowances(account.familyId);
-  }
-
-  const refreshedAccount = await prisma.account.findUnique({ where: { id: accountId } });
-
   const [transactions, ledger] = await Promise.all([
     getKidTransactions(accountId),
     getKidLedger(accountId)
   ]);
 
   return {
-    account: serializeAccount(refreshedAccount ?? account),
+    account: serializeAccount(account),
     transactions,
     ledger
   };
