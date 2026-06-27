@@ -319,23 +319,23 @@ export default function KidPortal({
 
   if (!kidData) {
     return (
-      <main className="app-shell">
+      <main className="app-shell kid-login-shell">
         <div className="app-container max-w-5xl">
-          <header className="app-header">
-            <div>
-              <div className="eyebrow-pill mb-3">
+          <header className="kid-login-topbar">
+            <div className="min-w-0">
+              <div className="kid-login-badge">
                 <BadgeDollarSign size={17} className="text-mint" />
                 {t("kid.loginBadge")}
               </div>
-              <h1 className="page-title">{t("kid.chooseVault")}</h1>
-              <p className="page-subtitle">
+              <h1 className="kid-login-title">{t("kid.chooseVault")}</h1>
+              <p className="kid-login-subtitle">
                 {familyName}: {t("kid.choose")}
               </p>
             </div>
-            <div className="app-actions">
+            <div className="kid-login-actions">
               <Link
                 href="/parent"
-                className="action-button action-quiet"
+                className="kid-login-parent-button"
               >
                 <UserRound size={17} className="text-mint" />
                 {t("kid.parent")}
