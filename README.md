@@ -72,6 +72,32 @@ npm install
 npm run dev
 ```
 
+## Android App
+
+This repo includes a Capacitor Android app that opens the live OB Bank site at:
+
+```text
+https://ob-bank.vercel.app
+```
+
+Use this workflow after deploying the web app:
+
+```bash
+npm run android:sync
+npm run android:open
+```
+
+Android Studio will open the native project in `android/`. From there, choose a device or emulator and press Run.
+
+To build from the command line:
+
+```bash
+cd android
+gradlew.bat assembleDebug
+```
+
+The app id is `com.obbank.app`. Update `capacitor.config.ts` if you later move OB Bank to your own domain.
+
 ## API Routes
 
 - `GET /api/accounts`: current account cards for Basil and Osama
