@@ -12,6 +12,7 @@ import KidTransactionModal from "@/components/KidTransactionModal";
 import LanguageToggle from "@/components/LanguageToggle";
 import SessionLoadingOverlay from "@/components/SessionLoadingOverlay";
 import ThemeToggle from "@/components/ThemeToggle";
+import ToolFrame from "@/components/ToolFrame";
 import type { Account, KidPickerAccount, Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
 import { makeKidVaultJoke } from "@/lib/kidJokes";
@@ -512,9 +513,13 @@ export default function KidPortal({
             onProfileStyleChange={handleProfileStyleChange}
             onQuickAdd={(_, type) => setActiveMove(type)}
           />
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <KidWealthTrail account={kidData.account} data={kidData.ledger} />
-            <ActivityFeed transactions={kidData.transactions} compact />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ToolFrame title={t("kidTrail.badge")} description={t("kidTrail.hiddenHelp")}>
+              <KidWealthTrail account={kidData.account} data={kidData.ledger} />
+            </ToolFrame>
+            <ToolFrame title={t("activity.recent")} description={t("activity.hiddenHelp")}>
+              <ActivityFeed transactions={kidData.transactions} compact />
+            </ToolFrame>
           </div>
         </div>
       </div>
