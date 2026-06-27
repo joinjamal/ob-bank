@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ob_bank_navy">#07111F</color>
+    <color name="ob_bank_panel">#101827</color>
+    <color name="ob_bank_mint">#42D39B</color>
+    <color name="ob_bank_coral">#FF725E</color>
+</resources>
