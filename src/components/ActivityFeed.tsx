@@ -1,10 +1,29 @@
 "use client";
 
+"use client";
+
 import { formatDistanceToNow } from "date-fns";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { Transaction } from "@/components/types";
 import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/money";
+
+function getEmojiForReason(reason: string): string {
+  const lowercase = reason.toLowerCase();
+  if (lowercase.includes("allowance")) return "💰";
+  if (lowercase.includes("interest")) return "📈";
+  if (lowercase.includes("book") || lowercase.includes("school") || lowercase.includes("read")) return "📚";
+  if (lowercase.includes("toy") || lowercase.includes("lego") || lowercase.includes("doll")) return "🧸";
+  if (lowercase.includes("ice cream") || lowercase.includes("candy") || lowercase.includes("chocolate") || lowercase.includes("snack") || lowercase.includes("food") || lowercase.includes("fair")) return "🍦";
+  if (lowercase.includes("gift") || lowercase.includes("birthday") || lowercase.includes("present")) return "🎁";
+  if (lowercase.includes("chore") || lowercase.includes("task") || lowercase.includes("clean") || lowercase.includes("help")) return "🧹";
+  if (lowercase.includes("game") || lowercase.includes("roblox") || lowercase.includes("fortnite") || lowercase.includes("vbuck") || lowercase.includes("switch")) return "🎮";
+  if (lowercase.includes("movie") || lowercase.includes("cinema") || lowercase.includes("show")) return "🎬";
+  if (lowercase.includes("sport") || lowercase.includes("soccer") || lowercase.includes("football") || lowercase.includes("basketball")) return "⚽";
+  if (lowercase.includes("deposit") || lowercase.includes("save")) return "📥";
+  if (lowercase.includes("spend") || lowercase.includes("withdraw") || lowercase.includes("bought")) return "💸";
+  return "";
+}
 
 export default function ActivityFeed({
   transactions,
@@ -33,6 +52,10 @@ export default function ActivityFeed({
           visibleTransactions.map((transaction) => {
             const isDeposit = transaction.type === "Deposit";
             const Icon = isDeposit ? ArrowUpCircle : ArrowDownCircle;
+            const emoji = getEmojiForReason(transaction.reason || "");
+            const displayReason = transaction.reason
+              ? (emoji ? `${emoji} ${transaction.reason}` : transaction.reason)
+              : t("activity.balanceUpdate");
 
             return (
               <article
@@ -47,7 +70,7 @@ export default function ActivityFeed({
                   <Icon size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-black">{transaction.reason || t("activity.balanceUpdate")}</p>
+                  <p className="truncate font-black">{displayReason}</p>
                   <p className="text-sm font-bold text-ink/50">
                     {transaction.accountName} -{" "}
                     {formatDistanceToNow(new Date(transaction.date), { addSuffix: true })}

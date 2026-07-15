@@ -225,12 +225,24 @@ export default function BalanceCard({
             </div>
             {hasGoal && <span className="text-sm font-black text-ink/70">{formatMoney(goalAmount)}</span>}
           </div>
-          <div className="h-4 overflow-hidden rounded-full bg-ink/10">
+          <div className="relative h-4 rounded-full bg-ink/10">
             <div
               className="h-full rounded-full bg-mint transition-all duration-700"
               style={{ width: `${progressPercentage}%` }}
             />
+            {hasGoal && (
+              <span
+                className="absolute -top-1 text-lg transition-all duration-700 select-none pointer-events-none"
+                style={{
+                  left: `calc(${progressPercentage}% - 10px)`,
+                  transition: "left 0.7s ease-in-out"
+                }}
+              >
+                {progressPercentage >= 100 ? "🏆" : "🚀"}
+              </span>
+            )}
           </div>
+
           {hasGoal && progressPercentage >= 100 && (
             <p className="mt-2 rounded-[8px] bg-mint/15 px-3 py-2 text-sm font-black text-mint">
               {t("balance.goalReached")}

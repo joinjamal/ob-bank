@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getKidDashboardData } from "@/lib/data";
 import { kidCookieName, readKidSession } from "@/lib/kidSession";
+import { runDueAllowances } from "@/lib/allowances";
 
 export const preferredRegion = "hnd1";
 
@@ -21,6 +22,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Open the vault with your PIN first." }, { status: 401 });
     }
 
+    // Run any due automatic allowances
+    await runDueAllowances(kidSession.familyId);
+
     return NextResponse.json(await getKidDashboardData(accountId));
   } catch (error) {
     return NextResponse.json(
@@ -29,3 +33,4 @@ export async function GET(request: Request) {
     );
   }
 }
+

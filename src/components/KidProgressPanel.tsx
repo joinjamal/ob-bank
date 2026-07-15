@@ -81,7 +81,7 @@ export default function KidProgressPanel({
                     </span>
                     <span>{insight.account.goalName ? `${insight.goalProgress}%` : `${insight.xp}%`}</span>
                   </div>
-                  <div className="h-4 overflow-hidden rounded-full bg-ink/10">
+                  <div className="relative h-4 rounded-full bg-ink/10">
                     <div
                       className="h-full rounded-full transition-all duration-700"
                       style={{
@@ -89,7 +89,19 @@ export default function KidProgressPanel({
                         backgroundColor: insight.account.themeColor
                       }}
                     />
+                    {insight.account.goalName && (
+                      <span
+                        className="absolute -top-1 text-lg transition-all duration-700 select-none pointer-events-none"
+                        style={{
+                          left: `calc(${insight.goalProgress}% - 10px)`,
+                          transition: "left 0.7s ease-in-out"
+                        }}
+                      >
+                        {insight.goalProgress >= 100 ? "🏆" : "🚀"}
+                      </span>
+                    )}
                   </div>
+
                   <p className="mt-2 text-sm font-bold text-ink/50">{getQuestPrompt(insight, t)}</p>
                 </div>
               </div>
