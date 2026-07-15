@@ -1,0 +1,14 @@
+name: Keep Alive
+
+on:
+  schedule:
+    # Runs at 00:00 every Monday, Wednesday, and Friday
+    - cron: '0 0 * * 1,3,5'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Application
+        run: curl -I https://ob-bank.vercel.app
