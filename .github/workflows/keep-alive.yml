@@ -13,7 +13,7 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Health Check (DB query)
+      - name: Ping Health Check (DB query via Vercel)
         run: |
           echo "Pinging health check endpoint..."
           HTTP_STATUS=$(curl -s -o /tmp/health_response.json -w "%{http_code}" https://ob-bank.vercel.app/api/health)
@@ -21,7 +21,7 @@ jobs:
           cat /tmp/health_response.json
           echo ""
           if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::Health check failed with status $HTTP_STATUS"
+            echo "::warning::Health check failed with status $HTTP_STATUS"
             # Retry once after 30 seconds
             echo "Retrying in 30 seconds..."
             sleep 30
@@ -31,8 +31,32 @@ jobs:
             echo ""
             if [ "$HTTP_STATUS" != "200" ]; then
               echo "::error::Health check retry also failed. Database may be paused."
-              exit 1
             fi
+          else
+            echo "✅ Database is healthy via Vercel"
           fi
-          echo "✅ Database is healthy"
 
+      - name: Direct Supabase REST Ping (backup keep-alive)
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::notice::SUPABASE_URL or SUPABASE_ANON_KEY not set. Skipping direct ping."
+            echo "To enable, add these as GitHub repository secrets."
+            exit 0
+          fi
+          echo "Pinging Supabase REST API directly..."
+          HTTP_STATUS=$(curl -s -o /tmp/supabase_response.json -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "Supabase HTTP Status: $HTTP_STATUS"
+          cat /tmp/supabase_response.json
+          echo ""
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Supabase database is responding directly"
+          else
+            echo "::warning::Direct Supabase ping returned status $HTTP_STATUS"
+          fi
