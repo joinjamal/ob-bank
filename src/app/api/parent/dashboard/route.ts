@@ -9,8 +9,12 @@ export async function GET() {
   try {
     const parent = await requireParentApi();
     
-    // Run any due automatic allowances
-    await runDueAllowances(parent.familyId);
+    // Run any due automatic allowances — don't block dashboard if this fails
+    try {
+      await runDueAllowances(parent.familyId);
+    } catch {
+      // Allowance run failed — continue loading dashboard
+    }
 
     return NextResponse.json(await getParentData(parent.id));
   } catch (error) {

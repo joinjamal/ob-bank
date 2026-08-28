@@ -8,17 +8,31 @@ export const dynamic = "force-dynamic";
 export const preferredRegion = "hnd1";
 
 export default async function Home() {
-  const familyId = await readDeviceFamilyIdOrDefault();
+  let familyId: string | null = null;
+
+  try {
+    familyId = await readDeviceFamilyIdOrDefault();
+  } catch {
+    // Database may be unreachable — show login form as fallback
+    return <ParentLoginForm />;
+  }
 
   if (!familyId) {
     return <ParentLoginForm />;
   }
 
-  // Run any due automatic allowances
-  await runDueAllowances(familyId);
+  // Run due allowances — failures should not block page load
+  try {
+    await runDueAllowances(familyId);
+  } catch {
+    // Allowance run failed (e.g. DB timeout) — continue anyway
+  }
 
-  const { kids, familyName } = await getFamilyKidPortalData(familyId);
-
-  return <KidPortal kids={kids} familyName={familyName} initialKidData={null} />;
+  try {
+    const { kids, familyName } = await getFamilyKidPortalData(familyId);
+    return <KidPortal kids={kids} familyName={familyName} initialKidData={null} />;
+  } catch {
+    // Database query failed — show login form as fallback
+    return <ParentLoginForm />;
+  }
 }
-

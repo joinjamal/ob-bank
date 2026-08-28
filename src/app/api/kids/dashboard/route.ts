@@ -22,8 +22,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Open the vault with your PIN first." }, { status: 401 });
     }
 
-    // Run any due automatic allowances
-    await runDueAllowances(kidSession.familyId);
+    // Run any due automatic allowances — don't block dashboard if this fails
+    try {
+      await runDueAllowances(kidSession.familyId);
+    } catch {
+      // Allowance run failed — continue loading dashboard
+    }
+
 
     return NextResponse.json(await getKidDashboardData(accountId));
   } catch (error) {

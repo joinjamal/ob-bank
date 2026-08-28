@@ -2,13 +2,37 @@ name: Keep Alive
 
 on:
   schedule:
-    # Runs at 00:00 every Monday, Wednesday, and Friday
-    - cron: '0 0 * * 1,3,5'
+    # Run every day at 06:00, 14:00, and 22:00 UTC to keep Supabase alive
+    # Supabase free-tier pauses after 7 days of inactivity
+    - cron: '0 6 * * *'
+    - cron: '0 14 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch: # Allows manual trigger
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Application
-        run: curl -I https://ob-bank.vercel.app
+      - name: Ping Health Check (DB query)
+        run: |
+          echo "Pinging health check endpoint..."
+          HTTP_STATUS=$(curl -s -o /tmp/health_response.json -w "%{http_code}" https://ob-bank.vercel.app/api/health)
+          echo "HTTP Status: $HTTP_STATUS"
+          cat /tmp/health_response.json
+          echo ""
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::Health check failed with status $HTTP_STATUS"
+            # Retry once after 30 seconds
+            echo "Retrying in 30 seconds..."
+            sleep 30
+            HTTP_STATUS=$(curl -s -o /tmp/health_retry.json -w "%{http_code}" https://ob-bank.vercel.app/api/health)
+            echo "Retry HTTP Status: $HTTP_STATUS"
+            cat /tmp/health_retry.json
+            echo ""
+            if [ "$HTTP_STATUS" != "200" ]; then
+              echo "::error::Health check retry also failed. Database may be paused."
+              exit 1
+            fi
+          fi
+          echo "✅ Database is healthy"
+
