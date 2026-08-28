@@ -1,52 +1,44 @@
 # OB Bank
 
-OB Bank is a full-stack digital allowance bank for Basil and Osama. It uses a hosted Supabase Postgres database through Prisma and is ready to deploy on Vercel.
+OB Bank is a full-stack digital allowance bank for Basil and Osama. It uses Neon Serverless Postgres with Prisma and is deployed on Vercel.
 
 ## Stack
 
 - Next.js App Router with React and TypeScript
 - Tailwind CSS for responsive UI
-- Prisma ORM with Supabase Postgres
+- Prisma ORM with Neon Serverless Postgres
 - Recharts for analytics
 - Papa Parse CSV import endpoint
 - In-browser Web Audio sounds for deposits and withdrawals
 - Password-protected parent admin route at `/admin`
 
-## Supabase
+## Database (Neon Postgres)
 
-The Supabase project is already created:
+OB Bank is connected to Neon Serverless Postgres:
 
-- Project name: OB Bank
-- Project ref: `qpjblmdlglqewxqwhfpi`
-- Project URL: `https://qpjblmdlglqewxqwhfpi.supabase.co`
-- Region: `ap-northeast-1`
+- Provider: Neon Serverless Postgres
+- Host: `ep-wild-snow-axjyshpq.c-4.us-east-2.aws.neon.tech`
 
-The database schema and starter seed data have been applied to Supabase.
-
-For Vercel/serverless deployments with Prisma, set these environment variables:
+For Vercel/serverless deployments with Prisma, set these environment variables in Vercel:
 
 ```bash
-DATABASE_URL="postgres://postgres.qpjblmdlglqewxqwhfpi:[YOUR-DATABASE-PASSWORD]@[YOUR-POOLER-HOST]:6543/postgres?pgbouncer=true&connection_limit=1"
-DIRECT_URL="postgres://postgres.qpjblmdlglqewxqwhfpi:[YOUR-DATABASE-PASSWORD]@[YOUR-POOLER-HOST]:5432/postgres"
-NEXT_PUBLIC_SUPABASE_URL="https://qpjblmdlglqewxqwhfpi.supabase.co"
+DATABASE_URL="postgresql://neondb_owner:[PASSWORD]@ep-wild-snow-axjyshpq-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://neondb_owner:[PASSWORD]@ep-wild-snow-axjyshpq.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require"
 ADMIN_PASSWORD="choose-a-strong-parent-password"
 ADMIN_SESSION_SECRET="choose-a-long-random-session-secret"
 ```
 
-Use the Supabase dashboard Connect panel to copy the exact pooler host and insert the database password.
-
 ## Vercel Deployment
 
 1. Push this repo to GitHub.
-2. Import the repo in Vercel as a Next.js project.
-3. Add the environment variables from `.env.example` in Vercel Project Settings.
-4. Deploy.
+2. Ensure `DATABASE_URL` and `DIRECT_URL` environment variables are configured in Vercel Project Settings.
+3. Deploy.
 
 `postinstall` runs `prisma generate`, so Vercel has the Prisma client during build.
 
 ## Avatar Uploads
 
-Kid avatars are clickable on `/`. Uploaded images are resized in the browser and saved as base64 data URLs in `accounts.avatar_url`. This keeps the two-kid app simple and avoids Supabase Storage policies. If you later prefer Supabase Storage, create a public bucket named `avatars`, upload images there, and store the public URL in the same `avatar_url` field.
+Kid avatars are clickable on `/`. Uploaded images are resized in the browser and saved as base64 data URLs in `accounts.avatar_url`.
 
 ## Parent Admin
 
@@ -58,12 +50,6 @@ Visit `/admin` and sign in with `ADMIN_PASSWORD`. Parent tools live there:
 - Delete transactions
 
 Edits and deletes recalculate the affected kid's balance automatically.
-
-If you add new migrations later, run:
-
-```bash
-npm run prisma:deploy
-```
 
 ## Local Development
 
@@ -88,41 +74,3 @@ npm run android:open
 ```
 
 Android Studio will open the native project in `android/`. From there, choose a device or emulator and press Run.
-
-To build from the command line:
-
-```bash
-cd android
-gradlew.bat assembleDebug
-```
-
-The app id is `com.obbank.app`. Update `capacitor.config.ts` if you later move OB Bank to your own domain.
-
-## API Routes
-
-- `GET /api/accounts`: current account cards for Basil and Osama
-- `GET /api/transactions`: latest 30 transactions with account details
-- `POST /api/transactions`: creates a deposit or withdrawal and snapshots today's ledger
-- `GET /api/ledger`: historical balance rows for the trend chart
-- `POST /api/import`: imports legacy CSV transaction rows
-
-Example transaction body:
-
-```json
-{
-  "accountId": "uuid",
-  "type": "Deposit",
-  "amount": 25,
-  "reason": "Weekly allowance"
-}
-```
-
-CSV import headers:
-
-```csv
-kid,date,type,amount,reason
-Basil,2026-06-12,Deposit,25,Weekly allowance
-Osama,2026-06-12,Withdrawal,8.50,Book fair
-```
-
-`reason` is optional for both manual entries and CSV imports.
